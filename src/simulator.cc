@@ -40,7 +40,7 @@ simulator::simulator(int N, vector<double> z, char const *run, vector<double> pa
   }
 
   if (!strcmp("aligned", name)){
-    string aligned_crystal_sim = "sum_angles1mm40GeVelec.txt";
+    string aligned_crystal_sim = "../crystalSimulations/sum_angles1mm40GeVelec.txt";
     load_doubles(aligned_crystal_sim, intensity_sum);
 
     intensity_sum.erase(intensity_sum.begin(), intensity_sum.begin() + 5);
@@ -73,7 +73,7 @@ simulator::simulator(int N, vector<double> z, char const *run, vector<double> pa
 }
 
 void simulator::load_doubles(string filename, vector<double> &data){
-  ifstream datafile(filename);
+  ifstream datafile (filename);
   double val;
   if (datafile.is_open()){
     while (true){
@@ -110,13 +110,13 @@ void simulator::print_energy(void){
 void simulator::generate_beam(void){
   /* Generate a beam-profile using measured data and store hits in Events */
   vector<double> x, y, xw, yw, a, xaw, yaw;
-  string xdata_coords = "../beamParemters/xdat_" + beam_spatial_distro,
-         ydata_coords = "../beamParemters/ydat_" + beam_spatial_distro,
-         xdata_weights = "../beamParemters/xweight_" + beam_spatial_distro,
-         ydata_weights = "../beamParemters/yweight_" + beam_spatial_distro,
-         xangles_weights = "../beamParemters/angles_xweight_" + beam_spatial_distro,
-         yangles_weights = "../beamParemters/angles_yweight_" + beam_spatial_distro,
-         angles = "../beamParemters/angles.txt";
+  string xdata_coords = "../beamParameters/xdat_" + beam_spatial_distro,
+         ydata_coords = "../beamParameters/ydat_" + beam_spatial_distro,
+         xdata_weights = "../beamParameters/xweight_" + beam_spatial_distro,
+         ydata_weights = "../beamParameters/yweight_" + beam_spatial_distro,
+         xangles_weights = "../beamParameters/angles_xweight_" + beam_spatial_distro,
+         yangles_weights = "../beamParameters/angles_yweight_" + beam_spatial_distro,
+         angles = "../beamParameters/angles.txt";
 
   load_doubles(xdata_coords, x);
   load_doubles(xdata_weights, xw);

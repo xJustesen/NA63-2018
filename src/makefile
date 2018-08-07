@@ -2,6 +2,7 @@ CC	:= g++
 CXXFLAGS += -std=c++11 -Ofast -fopenmp -Wall -larmadillo -I/home/christian/Root/include
 LDLIBS += -lm -march=native -larmadillo -fopenmp $(shell /home/christian/Documents/root/bin/root-config --libs)
 DATPATH := /home/christian/Documents/CERN2018NA63
+# BEAMPARAMS := /home/christian/Dropbox/speciale/code/beamParameters
 
 all : outputdata
 

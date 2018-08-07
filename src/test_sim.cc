@@ -15,7 +15,8 @@ int main(int argc, char const *argv[]){
   // params = {Ebeam, d_crystal, mean_entry_angle_x, mean_entry_angle_y, dev_entry_angle_x, dev_entry_angle_y};
   vector<double> params;
   double param;
-  ifstream paramsfile (filename);
+  string file = "../beamParameters/" + (string)filename;
+  ifstream paramsfile (file);
   if (paramsfile.is_open()){
     while (true){
       paramsfile >> param;
