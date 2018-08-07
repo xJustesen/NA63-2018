@@ -9,6 +9,7 @@
 #include <armadillo>
 #include <fstream>
 #include <omp.h>
+#include <string>
 
 // ROOT LIBRARYS
 #include "TROOT.h"
@@ -100,7 +101,7 @@ class analyser {
     vector<double> zplanes;
 
     static bool sortFunc(const vector<double> &p1, const vector<double> &p2); // sort a vector<vector<>>, descending
-    void coord2pixel(double xhit, double yhit, int &pixel);  // converts coordinates to pixelno
+    int coord2pixel(double xhit, double yhit);  // converts coordinates to pixelno
     void align_plane(mat &mat_Tot, vector<vector<vector<double>>>  Hits0, vector<vector<vector<double>>>  Hits1, vector<vector<vector<double>>> &Hits2, vector<double> z); // aligns plane '2' using '0' and '1'
     bool check_convergence(mat mat_T, mat mat_temp_T); // checks if T-matrix has changed
     void adjust_coordinates(vector<vector<vector<double>>> &Hits, mat mat_T); // adjusts coordinates for alignment

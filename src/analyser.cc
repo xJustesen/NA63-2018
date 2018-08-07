@@ -60,10 +60,9 @@ void analyser::print_pixels(void) {
 }
 
 void analyser::print_hotpixels(void) {
-  string filename = DATPATH + "/hotpixels_run" + runno + ".txt";
-  ofstream output (filename);
   for (size_t i = 0; i < hotpixels.size(); i++) {
-    output << "## PLANE\t" << i << "\tPIXEL DATA\n";
+    string filename = DATPATH + "/hotpixels_run" + runno +  "_plane_" + to_string(i) + ".txt";
+    ofstream output (filename);
     for (size_t j = 0; j < hotpixels[i].size(); j++) {
       output << hotpixels[i][j] << "\n";
     }
@@ -500,8 +499,7 @@ void analyser::extract_hit_data(vector<vector<vector<double>>> &hitcoord, vector
     for (size_t j = 0; j < eventdata.size(); j++) {
       vector<double> hitdata = eventdata[j];
       if (hitdata[3] == plane) {
-        int pixel;
-        coord2pixel(hitdata[0], hitdata[1], pixel);
+        int pixel = coord2pixel(hitdata[0], hitdata[1]);
         pixelgrid[pixel][1] += 1;
         hitcoord[i].push_back({hitdata[0], hitdata[1]});
       }
@@ -509,13 +507,13 @@ void analyser::extract_hit_data(vector<vector<vector<double>>> &hitcoord, vector
   }
 }
 
-void analyser::coord2pixel(double xhit, double yhit, int &pixel) {
+int analyser::coord2pixel(double xhit, double yhit) {
   /* Determine pixelno from coordinates */
   double dx = (xmax - xmin) / ncols;
   double dy = (ymax - ymin) / nrows;
   int colno = (xhit + xmax)/dx;
   int rowno = (yhit + ymax)/dy;
-  pixel = rowno * ncols + colno;
+  return rowno * ncols + colno;
 }
 
 void analyser::count_hits(int &count, vector<vector<vector<double>>> hitcoord) {
@@ -553,8 +551,7 @@ void analyser::remove_hot_pixels(vector<vector<vector<double>>> &hitcoord, vecto
       for (size_t k = 0; k < hitcoord[j].size(); k++) {
         double xhit = hitcoord[j][k][0];
         double yhit = hitcoord[j][k][1];
-        int pixel;
-        coord2pixel(xhit, yhit, pixel);
+        int pixel = coord2pixel(xhit, yhit);
         if (pixel == hotpix) {
           hitcoord[j].erase(hitcoord[j].begin() + k);
           k--;
