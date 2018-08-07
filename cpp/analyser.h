@@ -109,12 +109,12 @@ class analyser {
     bool check_convergence(mat mat_T, mat mat_temp_T); // checks if T-matrix has changed
     void adjust_coordinates(vector<vector<vector<double>>> &Hits, mat mat_T); // adjusts coordinates for alignment
     void save_hit(vector<double> hitp, vector<double> hit, mat &mat_expected, mat &mat_observed, int indx);  // stores expected hit (projection) and observed hit
-    void construct_T_mat(vector<vector<vector<double>>> Hits0, vector<vector<vector<double>>> Hits1, vector<vector<vector<double>>> Hits2, mat &mat_T, double dr_crit, vector<double> z);  // uses all hits in 2 planes to project to third, and then stores acceptable observed hits in third planes with corresponding projectd hit
+    mat construct_T_mat(vector<vector<vector<double>>> Hits0, vector<vector<vector<double>>> Hits1, vector<vector<vector<double>>> Hits2, double dr_crit, vector<double> z);  // uses all hits in 2 planes to project to third, and then stores acceptable observed hits in third planes with corresponding projectd hit
     vector<double> rect_project(vector<double> hit0, vector<double> hit1, vector<double> z);  // updates projected hit 'proj' by rectilinear projection using hit0, hit1 and coordinates z
     double calc_ang(double m, double n); // calculate angle between intersecting lines
     double calc_slope(vec x, vec y); // calculate slope of line
     double calc_dist(double x0, double y0, double x1,double y1); // calculates distance between two points in a plane
-    void calc_pair_energy(double &energy,vector<vector<vector<double>>> pairedtracks);
+    double calc_pair_energy(vector<vector<vector<double>>> pairedtracks);
     void calc_interdistance(vector<vector<vector<double>>> Hits0, vector<vector<vector<double>>> Hits1, vector<vector<vector<double>>> Hits2, vector<double> z, vector<double> &distvec); // calculates the distance from every projected hit into a plane to every observed hit
     mat lines3d_nearestpoints(vec A, vec B, vec C, vec D); // determine the 2 closest points on 2 lines
     void beam_divergence(int, int, int, string);
