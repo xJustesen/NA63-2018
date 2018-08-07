@@ -683,16 +683,16 @@ void simulator::mimosa_detector(int planeno, int eventno, int &detections){
     if (inside_bounds){
       /* Combine neighbor-hits into single hit if they are closer than detectors resoultion */
       if (mimosas[planeno][eventno].size() > 0){
-        double dist = calc_dist(particles[eventno][hitno][0] + Dx, particles[eventno][hitno][1] + Dx, mimosas[planeno][eventno][0][0], mimosas[planeno][eventno][0][1]);
+        double dist = calc_dist(particles[eventno][hitno][0] + Dx, particles[eventno][hitno][1] + Dy, mimosas[planeno][eventno][0][0], mimosas[planeno][eventno][0][1]);
 
         /* Save hit in "mimosas" array. This array has the same structure and contains equivalent data as the "hitcoords" array in the "analyser" class */
         if (dist > mimosa_res){
-          mimosas[planeno][eventno].push_back({particles[eventno][hitno][0] + Dx, particles[eventno][hitno][1] + Dx});
+          mimosas[planeno][eventno].push_back({particles[eventno][hitno][0] + Dx, particles[eventno][hitno][1] + Dy});
         }
         /* The distance is shorter than detector resolution, so we combine two hits. This is equivalent to moving the previously recorded hit by half the seperation */
         else {
           double dx = mimosas[planeno][eventno][0][0] - particles[eventno][hitno][0] - Dx;
-          double dy = mimosas[planeno][eventno][0][1] - particles[eventno][hitno][1] - Dx;
+          double dy = mimosas[planeno][eventno][0][1] - particles[eventno][hitno][1] - Dy;
           mimosas[planeno][eventno][0][0] += dx/2.0;
           mimosas[planeno][eventno][0][1] += dy/2.0;
         }

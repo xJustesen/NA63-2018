@@ -1,0 +1,8 @@
+set terminal png
+figpath = "/home/jens/Dropbox/speciale/figures/Align"
+datpath = "/home/jens/Dropbox/speciale/data/Align"
+set output figpath."/hits_corr_plane_01.png"
+set title 'Correlation between x-pos of hits in plane 0 and 1' font ',20'
+set key off
+set xlabel 'xpos, plane 0 (micrometer)'
+set ylabel 'xpos, plane 1 (micrometer)'
