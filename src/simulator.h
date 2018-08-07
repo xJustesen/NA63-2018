@@ -34,6 +34,7 @@ class simulator{
     vector<vector<vector<double>>> particles; // stores particles data
     vector<vector<double>> intensities;  // intensity at different points in space
     vector<vector<double>> angles;  // angles used to determine emission angle of photon
+    vector<vector<int>> hotpixels;
     vector<double> energies;  // photon energies used in simulation. Perfect detection should yield exactly these energies
     vector<double> zplanes; // z-coordinates of detectors
     vector<double> intensities_sum; // summed distribution of simulated energy intensities for aligned crystal
@@ -77,7 +78,11 @@ class simulator{
     void aligned_crystal(int eventno, int &emitted);
 
     /* Numerical methods */
+    int binarySearch(vector<int> numbers, int low, int high, int val);
+    int coord2pixel(double xhit, double yhit);
+    void load_hotpixels(void);
     void load_doubles(string filename, vector<double> &data);
+    void load_int(string filename, vector<int> &data);
     void simplex_update(vector<vec> simplex, vec fs, vec &centroid, int &ihigh, int &ilow);
     double simplex_size(vector<vec> simplex);
     void simplex_reduce(vector<vec> &simplex, int ilow);
