@@ -168,6 +168,10 @@ void analyser::image_crystal(void) {
 double analyser::calc_pair_energy(vector<vector<vector<double>>> pairedtracks) {
   double L = 0.15, q = 1.6021766e-19, B = 0.12, c = 299792458; // SI units
   double energy = 0;
+  /*
+  The energy of the photon corresponds to the total energy of each particle in the pair.
+  The energy of each particle is calculated seperately in this loop
+  */
   for (int i = 0; i < 2; i++) {
     vec M4MM_x = {pairedtracks[i][3][0], pairedtracks[i][4][0]};
     vec M4MM_z = {zplanes[3], (zplanes[4]+zplanes[3])/2};
@@ -177,10 +181,10 @@ double analyser::calc_pair_energy(vector<vector<vector<double>>> pairedtracks) {
     double m = calc_slope(M4MM_z, M4MM_x);
     double n = calc_slope(M5M6_z, M5M6_x);
     vector<double> slope = {m, n};
-    slopes.push_back(slope);  // push-back is slow, but not a huge issue
+    slopes.push_back(slope);
 
     double ang = calc_ang(m, n);  // calculate deflection angle to find energy
-    energy += q*c*L*B/abs(ang); // calculate energy as sum of both particles energy in Joule
+    energy += q*c*L*B/abs(ang); // Joule
   }
 
   return energy;
@@ -195,6 +199,11 @@ void analyser::pair_tracks(void) {
   energies.resize(tracks.size()*200);
   zclosepos.resize(tracks.size()*200);
 
+  /*
+  Here we find pairs. We only want a track to pair exactly one other track.
+  To ensure this we iterate first from i = 0 -> number of tracks, then j = i + 1 -> number of tracks.
+  If multiple pairs are found we erase them from the tracks array.
+  */
   for (size_t i = 0; i < tracks.size(); i++) {
     int matchedtracks = 0;
     for (size_t j = i+1; j < tracks.size(); j++) {
@@ -217,6 +226,7 @@ void analyser::pair_tracks(void) {
         }
       }
     }
+    /* Only save pair if there is a single match */
     if (matchedtracks == 1) {
       vec P1 = {tracks[i][6][0], tracks[i][6][1], M6M5_z[0]}, Q1 = {tracks[i][7][0], tracks[i][7][1], M6M5_z[1]};
       vec P2 = {tracks[matchedtrack][2][0], tracks[matchedtrack][2][1], M3M4_z[0]}, Q2 = {tracks[matchedtrack][3][0], tracks[matchedtrack][3][1], M6M5_z[1]};
@@ -276,6 +286,11 @@ void analyser::construct_tracks(void) {
     M1M2_slopes[i].resize(2);
     divergence[i].resize(2);
 
+    /*
+    Here we construct tracks. Each loop iterates over hits in a mimosa detector (0 -> 5).
+    Conditions to find tracks checked periodically. All acceptable tracks are saved, which
+    means bad tracks are saved. These should later be discarded in "pair_tracks" function
+    */
     for (size_t j = 0; j < hitcoords[0][i].size(); j++) {
       for (size_t k = 0; k < hitcoords[1][i].size(); k++) {
         vector<double> M1M2_Proj = rect_project(hitcoords[0][i][j], hitcoords[1][i][k], M1M2_z);
@@ -332,7 +347,6 @@ void analyser::construct_tracks(void) {
 void analyser::calc_interdistance(vector<vector<vector<double>>> Hits0, vector<vector<vector<double>>> Hits1, vector<vector<vector<double>>> Hits2, vector<double> z, vector<double> &distvec) {
   /* Calculate distances between projected and observes hits */
   distvec.resize(500*Nevents);
-
   int indx = 0;
   for (int i = 0; i < Nevents; i++) {
     vector<vector<double>> hits0 = Hits0[i];
@@ -354,7 +368,7 @@ void analyser::calc_interdistance(vector<vector<vector<double>>> Hits0, vector<v
 }
 
 double analyser::calc_dist(double x0, double y0, double x1,double y1) {
-  return sqrt(pow(x1 - x0, 2) + pow(y1 - y0, 2));
+  return sqrt(pow(x1 - x0, 2) + pow(y1 - y0, 2)); // pythagoras
 }
 
 vector<double> analyser::rect_project(vector<double> hit0, vector<double> hit1, vector<double> z) {
@@ -370,15 +384,14 @@ void analyser::align_plane(mat &mat_Tot, vector<vector<vector<double>>>  Hits0, 
   for (size_t j = 0; j < dr_crit_list.size(); j++) {
     double dr_crit = dr_crit_list[j];
     mat mat_temp_T = zeros<mat>(3,3);
-    bool convergence = false;
 
-    while (!convergence) {
+    do {
       mat mat_T = construct_T_mat(Hits0, Hits1, Hits2, dr_crit, z);
       mat_Tot = mat_T * mat_Tot;
       adjust_coordinates(Hits2, mat_T);
-      convergence = check_convergence(mat_T, mat_temp_T);
+      bool convergence = check_convergence(mat_T, mat_temp_T);
       mat_temp_T = mat_T;
-    }
+    } while (!convergence);
   }
 }
 
@@ -430,9 +443,9 @@ void analyser::save_hit(vector<double> hitp, vector<double> hit, mat &mat_expect
     mat_observed.row(indx) = vec_observed;
 }
 
-bool analyser::check_convergence(mat mat_T, mat mat_temp_T) {
+bool analyser::check_convergence(mat A, mat B) {
   /* Check similarity between inputted matrices */
-  return sum(abs(vectorise(mat_T) - vectorise(mat_temp_T))) < tol;
+  return sum(abs(vectorise(A) - vectorise(B))) < tol;
 }
 
 void analyser::construct_distarray(void) {
@@ -532,18 +545,22 @@ bool analyser::sortFunc(const vector<double> &p1, const vector<double> &p2) {
 }
 
 void analyser::locate_hot_pixels(vector<vector<double>> pixelgrid, vector<int> &hotpixels, int i) {
+
+  /*
+  We need to identify hot pixels. We do this by sorting the pixelgrid by number of pixels, descendind,
+  and then saving the pixelno. of the hotpixels.
+  */
   sort(pixelgrid.begin(), pixelgrid.end(), sortFunc);
   double lim = 4E-04 * Nevents;
   for (size_t i = 0; i < pixelgrid.size(); i++) {
     if (pixelgrid[i][1] > lim) {
       hotpixels.push_back(pixelgrid[i][0]);
-    } else {
-      break;
-    }
+    } else break;
   }
 }
 
 void analyser::remove_hot_pixels(vector<vector<vector<double>>> &hitcoord, vector<vector<double>> &pixelgrid, vector<int> hotpixels) {
+  /* We remove both the number of counts in pixelgrid for hotpixels, and erase hitcoordinates from hotpixels. */
   for (size_t i = 0; i < hotpixels.size(); i++) {
     int hotpix = hotpixels[i];
     pixelgrid[hotpix][1] = 0;
@@ -567,6 +584,7 @@ void analyser::extract_root_data(void) {
   int N_hits_max = 0;
   int N_hits_min = 100;
 
+  /* Open root file and obtain relevant data */
   TFile *f = TFile::Open(filename);
   TTree* T1 = (TTree *)f->Get("T");
   TLeaf *Hpk = (TLeaf *)T1->GetLeaf("fAHits.Hpk");
@@ -578,6 +596,7 @@ void analyser::extract_root_data(void) {
   int N_events = T1->GetEntries();
   cerr << "\nTotal number of events :\t" << N_events << "\n";
 
+  /* Extract data from each event */
   for (int i  = 0; i < N_events; i++) {
     T1->GetEntry(i);
     int N_hits = fAHitsN->GetValue();
@@ -591,16 +610,18 @@ void analyser::extract_root_data(void) {
         HitData[1] = Hv->GetValue(j);
         HitData[2] = 1.0;
         HitData[3] = static_cast<double>(Hpk->GetValue(j) -1);
+
         if (HitData[3] == 0) {
           N_hits_tot += 1;
           N_hits_0 += 1;
+          if (N_hits_0 > N_hits_max) {
+            N_hits_max = N_hits_0;
+          }
+          if (N_hits_0 < N_hits_min) {
+            N_hits_min = N_hits_0;
+          }
         }
-        if (N_hits_0 > N_hits_max) {
-          N_hits_max = N_hits_0;
-        }
-        if (N_hits_0 < N_hits_min) {
-          N_hits_min = N_hits_0;
-        }
+
         EventData[j] = HitData;
       }
       Events.push_back(EventData);
