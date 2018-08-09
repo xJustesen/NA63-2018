@@ -72,7 +72,7 @@ class simulator{
     void amorph_crystal(int eventno, int &emitted, double X0, double d_c, int no_slices = 1);  // simulate amorphous crystal
     bool photon_emitted_amorph(double l, double X0, double Epart);  // calculate wether or not photon is emitted (false: no emission)
     static double photonic_energy_distribution(vec x, double randno, double E, double norm);
-    double Borsollini(double E1, double E2, double E_phot);  // the approximated Borsollini opening angle of e-/e+ pair
+    void Borsellino(double E1, double E2, double E_phot, double &phi1, double &phi2);  // the approximated Borsellino opening angle of e-/e+ pair
     void make_intensity_distro(vector<vector<double>> &intensity, vector<vector<double>> &angles);
     bool photon_emitted_aligned(double l);
     void aligned_crystal(int eventno, int &emitted);

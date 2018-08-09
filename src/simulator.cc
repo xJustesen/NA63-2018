@@ -2,11 +2,7 @@
 
 /* Look up global variables (globalvars.h) */
 extern default_random_engine generator;
-extern normal_distribution<double> xdistro;
-extern normal_distribution<double> ydistro;
-extern uniform_int_distribution<int> hits_per_event;
-extern normal_distribution<double> x_entry_angles;
-extern normal_distribution<double> y_entry_angles;
+extern normal_distribution<double> R_normal;
 extern uniform_real_distribution<double> R;
 
 simulator::simulator(int N, vector<double> z, char const *run, vector<double> params, char const *filename){
@@ -67,6 +63,7 @@ simulator::simulator(int N, vector<double> z, char const *run, vector<double> pa
 
   /* Make probability distributions and seed rng */
   R.param(uniform_real_distribution<double>(0.0, 1.0).param());
+  R_normal.param(normal_distribution<double>(0.0, 1.0).param());
   generator.seed(random_device{}());
 
   /* Report progress to terminal */
@@ -162,10 +159,10 @@ void simulator::generate_beam(void){
   load_doubles(yangles_weights, yaw);
   load_doubles(angles, a);
 
-  int hits_per_event = 7;
+  int nohits = 3;
   for (int i = 0; i < Nevents; i++){
-    particles[i].resize(hits_per_event);
-    for (int j = 0; j < hits_per_event; j++){
+    particles[i].resize(nohits);
+    for (int j = 0; j < nohits; j++){
       int xindx = select_member(x, xw);
       int yindx = select_member(y, yw);
       int xangleindx = select_member(a, xaw);
@@ -231,7 +228,7 @@ void simulator::propagate_particles(void){
 
     /* Traverse crystal */
     if (!strcmp("amorphous", name)){
-      amorph_material(i, emitted, X0_C_amorph, 2060E+03 + d_c, d_c, 0.3 * d_c);
+      amorph_material(i, emitted, X0_C_amorph, 2060E+03 + d_c, d_c, 300);
       SA_mult_scat(d_c, i, X0_C_amorph, 2060E+03 + d_c);
     } else if (!strcmp("aligned", name)){
       aligned_crystal(i, emitted);
@@ -267,7 +264,7 @@ void simulator::propagate_particles(void){
     /* Traverse converter foil */
     project_particle(photons, zplanes[2] - d_f, i);
     converter_foil(i, d_f, X0_Ta, 100);
-    // SA_mult_scat(i, d_f, X0_Ta, zplanes[2]);
+    SA_mult_scat(d_f, i, X0_Ta, zplanes[2]);
 
     /* MIMOSA 3 detector */
     // amorph_material(i, emitted, X0_tape, zplanes[2] + 50.0, 50.0, 15);
@@ -313,6 +310,7 @@ void simulator::propagate_particles(void){
     // amorph_material(i, emitted, X0_tape, zplanes[5] + 50.0, 50.0, 15);
     SA_mult_scat(50.0, i, X0_tape, zplanes[5] + 50.0);
     mimosa_detector(5, i, total_detected);
+
     total_emitted += emitted;
 
     if ( (i+1) % 100001 == 0){
@@ -329,14 +327,26 @@ void simulator::propagate_particles(void){
 
 void simulator::amorph_material(int eventno, int &emitted, double X0, double z, double L, int N_slices) {
   double Emin = 2.0*0.5109989461E-03;
-  vector<double> xcrystal = {-6000.0, -500.0, 5500.0};
-  vector<double> ycrystal = {-3500.0, 3800.0, -3500.0};
+  vector<double> xcrystal;
+  vector<double> ycrystal;
+  int nvert;
+  if (d_c == 1.0E+03) {
+    xcrystal = {-5500.0, -400.0, 5600.0, 2500.0, -3200.0, -5400.0};
+    ycrystal = {-1500.0, 3700.0, -2000.0, -5000.0, -5000.0, -3300.0};
+    nvert = 6;
+  }
+  if (d_c == 1.5E+03) {
+    xcrystal = {-5000.0, -700.0, 4400.0, 1000.0, -5600.0};
+    ycrystal = {300.0, 5000.0, -1000.0, -3500.0, -2000.0};
+    nvert = 5;
+  }
+
   double dl = L/(double)N_slices;
   for (size_t hitno = 0; hitno < particles[eventno].size(); hitno++) {
 
     double dldL = (z - particles[eventno][hitno][2])/L;
     int no_slices = dldL * N_slices;
-    bool inside_bounds = isInside(3, xcrystal, ycrystal, particles[eventno][hitno][0], particles[eventno][hitno][1]);
+    bool inside_bounds = isInside(nvert, xcrystal, ycrystal, particles[eventno][hitno][0], particles[eventno][hitno][1]);
 
     if ((X0 == 21.35E+04 and inside_bounds) or X0 != 21.35E+04) {
       for (int i = 0; i < no_slices; i++) {
@@ -350,7 +360,7 @@ void simulator::amorph_material(int eventno, int &emitted, double X0, double z, 
           double randno = R(generator);
           double norm = 4.0/3.0 * log(Epart/Emin) - 4.0/(3.0*Epart) * (Epart - Emin) + 1.0/(2.0*Epart*Epart) * (Epart*Epart - Emin*Emin);
           function<double(vec)> energy =  [randno, Epart, norm] (vec x) {return photonic_energy_distribution(x, randno, Epart, norm);};  // make lambda-function in order to use same randno during iteration
-          vec sc1 = {0.1}; vec sc2 = {5.0}; vector<vec> initial_simplex = {sc1, sc2};
+          vec sc1 = {0.01}; vec sc2 = {20.0}; vector<vec> initial_simplex = {sc1, sc2};
           vec photon_energy = simplex_NM(energy, initial_simplex, 1.0E-08);
           energies.push_back(photon_energy(0));
 
@@ -383,8 +393,9 @@ void simulator::amorph_material(int eventno, int &emitted, double X0, double z, 
               double positron_energy = photon_energy(0) - electron_energy; // energy conservation
 
               /* Calculate deflection of e+/e- pair */
-              double electron_defl = Borsollini(electron_energy, positron_energy, photon_energy(0)); // deflection angle based on approximated Borsollini distribution
-              double positron_defl = electron_energy * electron_defl / positron_energy; // conservation of momentum
+              double electron_defl;
+              double positron_defl;
+              Borsellino(electron_energy, positron_energy, photon_energy(0), electron_defl, positron_defl); // deflection angle based on approximated Borsellino distribution
 
               /* Add e+/e- pair to "particles" array */
               vector<double> electron = photons[eventno].back();
@@ -418,14 +429,11 @@ void simulator::converter_foil(int eventno, double d_f, double X0, int no_slices
   for (size_t i = 0; i < photons[eventno].size(); i++){
     double dldL = (zplanes[2] - photons[eventno][i][2])/d_f;
     int N_slices = dldL * no_slices;  // remaining number of slices
-
-    // cerr << N_slices << "\n";
     for (int j = 0; j < N_slices; j++){
       /* Proceed only if a conversion happens */
       double randno = R(generator);
       if (randno < 0.038/(double)no_slices and photons[eventno][i][5] > Emin){
         conversions++;
-
         /* Calculate energy gained by e+/e- pair */
         double photon_energy = photons[eventno][i][5];
         energies.push_back(photon_energy);
@@ -435,8 +443,9 @@ void simulator::converter_foil(int eventno, double d_f, double X0, int no_slices
         double positron_energy = photon_energy - electron_energy; // energy conservation
 
         /* Calculate deflection of e+/e- pair */
-        double electron_defl = Borsollini(electron_energy, positron_energy, photon_energy); // deflection angle based on approximated Borsollini distribution
-        double positron_defl = electron_energy * electron_defl / positron_energy; // conservation of momentum
+        double electron_defl;
+        double positron_defl;
+        Borsellino(electron_energy, positron_energy, photon_energy, electron_defl, positron_defl); // deflection angle based on approximated Borsellino distribution
 
         /* Add e+/e- pair to "particles" array */
         vector<double> electron = photons[eventno][i];
@@ -454,46 +463,45 @@ void simulator::converter_foil(int eventno, double d_f, double X0, int no_slices
         particles[eventno].push_back(positron);
         particles[eventno].push_back(electron);
 
+        // cerr << electron[2] << "\t" << positron[2] << "\n";
+
         photons[eventno].erase(photons[eventno].begin() + i); // remove i'th photon since it converted
 
         int sz = particles[eventno].size();
 
         /* Iterate over the pair*/
-        for (int jj = 0; jj < 2; jj++){
-          for (int k = 0; k < N_slices - j - 1; k++){
-            double randno = R(generator);
-            double Epart = particles[eventno][sz - 1 - jj][5];
-            bool emission = photon_emitted_amorph(dl, X0, Epart);
-
-            /* Proceed only if photon is emitted */
-            if (emission){
-              double norm = 4.0/3.0 * log(Epart/Emin) - 4.0/(3.0*Epart) * (Epart - Emin) + 1.0/(2.0*Epart*Epart) * (Epart*Epart - Emin*Emin);
-              function<double(vec)> energy =  [randno, Epart, norm] (vec x) {return photonic_energy_distribution(x, randno, Epart, norm);};  // make lambda-function in order to use same randno during iteration
-              vec sc1 = {0.1}; vec sc2 = {5.0}; vector<vec> initial_simplex = {sc1, sc2};  // initial simplex for Nelder-Mead. The initial guess is hugely important for convergence
-              vec photon_energy = simplex_NM(energy, initial_simplex, 1.0E-08);  // solve for energy using Nelder-Mead simplex.
-
-              /* Determine deflection of photon */
-              double gamma = particles[eventno][sz - 1 - jj][5]/(5.109989461E-4);
-              uniform_real_distribution<double> defl_angle(-1.0/gamma, 1.0/gamma);
-
-              /* Update particles and photons vectors */
-              vector<double> photon = particles[eventno][sz - 1 - jj];
-              // photon[2] += l - d_f; // z-val
-              photon[2] += (1 + k) * dl;
-              photon[4] = 0.0;  // charge
-              photon[5] = photon_energy(0);
-              double dx = defl_angle(generator);
-              double dy = sqrt(1.0/(gamma*gamma) - dx*dx);
-              photon[6] += dx;
-              photon[7] += dy;
-
-              particles[eventno][sz - 1 - jj][5] -= photon_energy(0); // energy lost by particle as it emits photon
-              particles[eventno][sz - 1 - jj][2] += (1 + k) * dl;
-
-              photons[eventno].push_back(photon);
-            }
-          }
-        }
+        // for (int jj = 0; jj < 2; jj++){
+        //   for (int k = 0; k < N_slices - j - 1; k++){
+        //     double randno = R(generator);
+        //     double Epart = particles[eventno][sz - 1 - jj][5];
+        //     bool emission = photon_emitted_amorph(dl, X0, Epart);
+        //     emission = false;
+        //     /* Proceed only if photon is emitted */
+        //     if (emission){
+        //       double norm = 4.0/3.0 * log(Epart/Emin) - 4.0/(3.0*Epart) * (Epart - Emin) + 1.0/(2.0*Epart*Epart) * (Epart*Epart - Emin*Emin);
+        //       function<double(vec)> energy =  [randno, Epart, norm] (vec x) {return photonic_energy_distribution(x, randno, Epart, norm);};  // make lambda-function in order to use same randno during iteration
+        //       vec sc1 = {0.1}; vec sc2 = {5.0}; vector<vec> initial_simplex = {sc1, sc2};  // initial simplex for Nelder-Mead. The initial guess is hugely important for convergence
+        //       vec photon_energy = simplex_NM(energy, initial_simplex, 1.0E-08);  // solve for energy using Nelder-Mead simplex.
+        //
+        //       /* Determine deflection of photon */
+        //       double gamma = particles[eventno][sz - 1 - jj][5]/(5.109989461E-4);
+        //       uniform_real_distribution<double> defl_angle(-1.0/gamma, 1.0/gamma);
+        //
+        //       /* Update particles and photons vectors */
+        //       vector<double> photon = particles[eventno][sz - 1 - jj];
+        //       photon[2] += (1 + k) * dl;
+        //       photon[4] = 0.0;  // charge
+        //       photon[5] = photon_energy(0);
+        //       double dx = defl_angle(generator);
+        //       double dy = sqrt(1.0/(gamma*gamma) - dx*dx);
+        //       photon[6] += dx;
+        //       photon[7] += dy;
+        //
+        //       particles[eventno][sz - 1 - jj][5] -= photon_energy(0); // energy lost by particle as it emits photon
+        //       photons[eventno].push_back(photon);
+        //     }
+        //   }
+        // }
         i -= 1; // subtract 1 from iterator since we removed element
         break;
       }
@@ -511,6 +519,8 @@ void simulator::amorph_crystal(int eventno, int &emitted, double X0, double d, i
   */
   vector<double> xcrystal = {-6.7E+03, -2.0E+02, 6.5E+03, 4.50E+02, -4.7E+03};
   vector<double> ycrystal = {-4.72E+03, 2.0E+03, -4.72E+03, -8.50E+03, -8.50E+03};
+
+
   normal_distribution<double> distribution(0.0, 1.0);
   double dl = d/(double)no_slices;
   double Emin = 2*0.5109989461E-03;  // 2 * electron mass in GeV
@@ -761,17 +771,20 @@ void simulator::project_particle(vector<vector<vector<double>>> &particletype, d
 
 void simulator::SA_mult_scat(double d, int i, double X0, double zcoord){
   /* (i,j) : (eventno, hitno). The following formulae taken from PDG ch. 32, 2014 (particles through matter) */
+
   for (size_t j = 0; j < particles[i].size(); j++){
     double l = zcoord - particles[i][j][2];
+    // if (X0 == 0.4094E+04) cerr << particles[i][j][2] << "\t" << zcoord << "\t" << l << "\n";
     for (int k = 0; k < 2; k++){
-      double z1 = R(generator);
-      double z2 = R(generator);
+      double z1 = R_normal(generator);
+      double z2 = R_normal(generator);
       double z = particles[i][j][4]/q;
-      double theta0 = z * 0.0136/particles[i][j][5] * sqrt(l/X0) * (1 + 0.038 * log(l/X0));
-      double dy = (z1*l*theta0)/sqrt(12) +  (z2*l*theta0)/2;
+      double theta0 = z * 0.0136/particles[i][j][5] * sqrt(l/X0) * (1.0 + 0.038 * log(l/X0));
+      double dy = l * theta0 * (z1/sqrt(12) +  z2/2.0);
       double dtheta0 = z2 * theta0;
       particles[i][j][k] += dy + l*particles[i][j][6+k]; // total (x/y) displacement
       particles[i][j][6+k] += dtheta0; // xslope/yslope
+      // if (X0 == 0.4094E+04) cerr << dy << "\t" << z1 << "\t" << z2 << "\t" << theta0 << "\t" << z << "\t" << l/X0 << "\t" << 0.0136/particles[i][j][5] << "\n";
     }
     particles[i][j][2] = zcoord;
   }
@@ -789,13 +802,13 @@ void simulator::mimosa_magnet(int eventno){
   }
 }
 
-double simulator::Borsollini(double E1, double E2, double E_phot){
-  /* Approximated (SAA) Borsollini opening angle of produced electron (1) positron (2) pair */
+void simulator::Borsellino(double E1, double E2, double E_phot, double &phi1, double &phi2){
+  /* Approximated (SAA) Borsellino opening angle of produced electron (1) positron (2) pair */
   double u1 = R(generator), u2 = R(generator);
-  double nu0 = E_phot*m*c/(E1*E2);
+  double nu0 = E_phot*m*c/(E1*E2) * 1.6021766E+10;
   double nu = nu0*(sqrt(1.0/(1.0 - u1) - 1.0) + 0.70*u2);
-  double phi1 = nu/(E1/E2 + 1 - nu*nu/4); // deflection of particle 1
-  return phi1;
+  phi1 = nu/(E1/E2 + 1.0 - nu*nu/2); // deflection of particle 1
+  phi2 = nu - phi1; // deflection of particle 2
 }
 
 void simulator::pair_production(int eventno, double d_f, double X0, int N_slices){
@@ -817,8 +830,9 @@ void simulator::pair_production(int eventno, double d_f, double X0, int N_slices
         double positron_energy = photon_energy - electron_energy; // energy conservation
 
         /* Calculate deflection of e+/e- pair */
-        double electron_defl = Borsollini(electron_energy, positron_energy, photon_energy); // deflection angle based on approximated Borsollini distribution
-        double positron_defl = electron_energy * electron_defl / positron_energy; // conservation of momentum
+        double electron_defl;
+        double positron_defl;
+        Borsellino(electron_energy, positron_energy, photon_energy, electron_defl, positron_defl); // deflection angle based on approximated Borsellino distribution
 
         /* Add e+/e- pair to "particles" array */
         vector<double> electron = photons[eventno][i];
