@@ -1,8 +1,31 @@
 #include "analyser.h"
 
+void load_doubles(string filename, vector<double> &data) {
+  ifstream datafile (filename);
+  double val;
+  if (datafile.is_open()){
+    while (true){
+      datafile >> val;
+      if (datafile.eof()) break;
+      data.push_back(val);
+    }
+    datafile.close();
+  }
+  else cout << "Unable to open file: " << filename << "\n";
+}
+
+
 int main(int argc, char const *argv[]){
   vector<double> z = {0, 1832.3e3, 8913e3, 8989e3, 9196.2e3, 9273.7e3}; // (micro-meters)
-
+  vector<double> cuts;
+  cerr << argc << "\n";
+  if (argc == 4) {
+    string filename = argv[3];
+    load_doubles(argv[3], cuts);
+  } else {
+    cuts = {-INFINITY, INFINITY};
+  }
+  cerr << cuts[0] << "\t" << cuts[1] << "\n";
   /* Initialise class "analyser" */
   analyser Data(z, argv[1], argv[2]);
 
@@ -28,16 +51,12 @@ int main(int argc, char const *argv[]){
 
     /* Identify and remove hot pixels */
     Data.locate_hot_pixels(pixelgrid, hotpixel, nhits0);
-
     Data.remove_hot_pixels(hitcoord, pixelgrid, hotpixel);
-
     Data.count_hits(nhits1, hitcoord);
 
     /* Update variables */
     Data.update_hitcoords(i, hitcoord);
-
     Data.update_pixelgrids(i, pixelgrid);
-
     Data.update_hotpixels(i, hotpixel);
 
     cerr << "Plane " << i << ": Hits before removal: " << nhits0 <<  ";\thits after removal: " << nhits1 << ";\thits removed: " << nhits0 - nhits1 << ";\tPixels removed: " << hotpixel.size() << ";\tmax hits allowed per pixel: " << floor(4e-4 * Data.Nevents) <<"\n";
@@ -55,19 +74,29 @@ int main(int argc, char const *argv[]){
   cerr << "\nAlignment finished, building tracks\n";
 
   /* Construct & pair particles tracks & determine energy */
-  Data.construct_tracks();
-  Data.pair_tracks();
-  /* Save data to txt-files */
-  Data.image_crystal();
-  Data.print_energy();
-  Data.print_hits();
-  Data.print_hotpixels();
-  // Data.construct_distarray();
-  Data.print_interdistance();
-  Data.print_slope();
-  Data.print_pixels();
-  Data.print_zpos();
-  Data.print_M1M2_slope();
+  for (size_t i = 0; i < cuts.size()/2; i++) {
+    string name;
+    if (argc == 4) {
+      name = (string)argv[2] + "_cut_" + to_string(i);
+    } else {
+      name = argv[2];
+    }
+    double cut_ub = cuts[2*i];
+    double cut_lb = cuts[2*i + 1];
+    Data.construct_tracks(cut_ub, cut_lb);
+    Data.pair_tracks();
+    /* Save data to txt-files */
+    Data.image_crystal(name);
+    Data.print_energy(name);
+    Data.print_hits(name);
+    Data.print_hotpixels(name);
+    Data.print_interdistance(name);
+    Data.print_slope(name);
+    Data.print_pixels(name);
+    Data.print_zpos(name);
+    Data.print_M1M2_slope(name);
+  }
+
 
   /* Terminate main */
   return 0;

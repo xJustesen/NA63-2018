@@ -48,8 +48,8 @@ void analyser::update_hotpixels(int plane, vector<int> hotpixel) {
   hotpixels[plane] = hotpixel;
 }
 
-void analyser::print_pixels(void) {
-  string filename = DATPATH + "/pixeldata_run" + runno + ".txt";
+void analyser::print_pixels(string name) {
+  string filename = DATPATH + "/pixeldata_run" + name + ".txt";
   ofstream output (filename);
   for (size_t i = 0; i < pixelgrids.size(); i++) {
     output << "## PLANE\t" << i << "\tPIXEL DATA\n";
@@ -59,9 +59,9 @@ void analyser::print_pixels(void) {
   }
 }
 
-void analyser::print_hotpixels(void) {
+void analyser::print_hotpixels(string name) {
   for (size_t i = 0; i < hotpixels.size(); i++) {
-    string filename = DATPATH + "/hotpixels_run" + runno +  "_plane_" + to_string(i) + ".txt";
+    string filename = DATPATH + "/hotpixels_run" + name +  "_plane_" + to_string(i) + ".txt";
     ofstream output (filename);
     for (size_t j = 0; j < hotpixels[i].size(); j++) {
       output << hotpixels[i][j] << "\n";
@@ -69,8 +69,8 @@ void analyser::print_hotpixels(void) {
   }
 }
 
-void analyser::print_interdistance(void){
-  string filename = DATPATH + "/interdistance_data_" + runno + ".txt";;
+void analyser::print_interdistance(string name){
+  string filename = DATPATH + "/interdistance_data_" + name + ".txt";;
   ofstream output (filename);
   for (size_t i = 0; i < distarray.size(); i++) {
     output << "## DATABLOCK\t" << i << "\tINTERDISTANCE DATA\n";
@@ -81,8 +81,8 @@ void analyser::print_interdistance(void){
   }
 }
 
-void analyser::print_hits(void){
-  string filename = DATPATH + "/hits_coord_data_" + runno + ".txt";
+void analyser::print_hits(string name){
+  string filename = DATPATH + "/hits_coord_data_" + name + ".txt";
   ofstream output (filename);
   for (size_t i = 0; i < hitcoords.size(); i++) {
     output << "## PLANE\t" << i << "\tHIT DATA\n";
@@ -94,25 +94,25 @@ void analyser::print_hits(void){
   }
 }
 
-void analyser::print_energy(void) {
-  string filename = DATPATH + "/energy_" + runno + ".txt";
+void analyser::print_energy(string name) {
+  string filename = DATPATH + "/energy_" + name + ".txt";
   ofstream output (filename);
   for (size_t i = 0; i < energies.size(); i++) {
     output << energies[i] << "\n";
   }
 }
 
-void analyser::print_slope(void) {
-  string filename = DATPATH + "/angles_" + runno + ".txt";
+void analyser::print_slope(string name) {
+  string filename = DATPATH + "/angles_" + name + ".txt";
   ofstream output (filename);
   for (size_t i = 0; i < slopes.size(); i++) {
     output << slopes[i][0] << " " << slopes[i][1] << "\n";
   }
 }
 
-void analyser::print_M1M2_slope(void) {
-  string filename1 = DATPATH + "/angles_M1M2_" + runno + ".txt";
-  string filename2 = DATPATH + "/beam_divergence_"  + runno + ".txt";
+void analyser::print_M1M2_slope(string name) {
+  string filename1 = DATPATH + "/angles_M1M2_" + name + ".txt";
+  string filename2 = DATPATH + "/beam_divergence_"  + name + ".txt";
   ofstream output1 (filename1);
   ofstream output2 (filename2);
   for (int i = 0; i < Nevents; i++) {
@@ -125,8 +125,8 @@ void analyser::print_M1M2_slope(void) {
   }
 }
 
-void analyser::print_zpos(void) {
-  string filename = DATPATH + "/zclosepos_" + runno + ".txt";
+void analyser::print_zpos(string name) {
+  string filename = DATPATH + "/zclosepos_" + name + ".txt";
   ofstream output (filename);
   for (size_t i = 0; i < zclosepos.size(); i++) {
     output << zclosepos[i] << "\n";
@@ -157,8 +157,8 @@ mat analyser::lines3d_nearestpoints(vec A, vec B, vec C, vec D) {
   return closepos;
 }
 
-void analyser::image_crystal(void) {
-  string filename = DATPATH + "/crystal_image_" + runno + ".txt";
+void analyser::image_crystal(string name) {
+  string filename = DATPATH + "/crystal_image_" + name + ".txt";
   ofstream output (filename);
   for (size_t i = 0; i < paired_tracks.size(); i++) {
     output << paired_tracks[i][0][1][0] << "\t" << paired_tracks[i][0][1][1] << "\n" << paired_tracks[i][1][1][0] << "\t" << paired_tracks[i][1][1][1] << "\n";
@@ -269,11 +269,9 @@ void analyser::beam_divergence(int eventno, int x_indx, int y_indx, string name)
   }
 }
 
-void analyser::construct_tracks(void) {
+void analyser::construct_tracks(double M1M2_slope_lb, double M1M2_slope_ub) {
   /* Construct particle tracks from M1 -> M6 */
   int M1_MM_tot_tracks = 0, M1_M6_tot_tracks = 0;
-
-  double M1M2_slope_lb = -INFINITY, M1M2_slope_ub = INFINITY;
 
   M1M2_slopes.resize(Nevents);
   divergence.resize(Nevents);
@@ -305,6 +303,7 @@ void analyser::construct_tracks(void) {
               vec M3M4_y = {hitcoords[2][i][l][1], hitcoords[3][i][m][1]};
               double M3M4_slope = calc_slope(vec_M3M4_z, M3M4_y);
               beam_divergence(i, j, k, str2);
+              /* Only pick out certain angles of entry into crystal */
               if (M1M2_slopes[i][0][j] > M1M2_slope_lb and M1M2_slopes[i][0][j] < M1M2_slope_ub) {
                 if (M2M3_d < M2M3_d_lim) {
                   vector<double> M3M4_Proj = rect_project(hitcoords[2][i][l], hitcoords[3][i][m], M3M4_z);
@@ -383,13 +382,14 @@ void analyser::align_plane(mat &mat_Tot, vector<vector<vector<double>>>  Hits0, 
   /* Align detector relative to M1-M2 */
   for (size_t j = 0; j < dr_crit_list.size(); j++) {
     double dr_crit = dr_crit_list[j];
+    bool convergence;
     mat mat_temp_T = zeros<mat>(3,3);
 
     do {
       mat mat_T = construct_T_mat(Hits0, Hits1, Hits2, dr_crit, z);
       mat_Tot = mat_T * mat_Tot;
       adjust_coordinates(Hits2, mat_T);
-      bool convergence = check_convergence(mat_T, mat_temp_T);
+      convergence = check_convergence(mat_T, mat_temp_T);
       mat_temp_T = mat_T;
     } while (!convergence);
   }

@@ -5,7 +5,7 @@ extern default_random_engine generator;
 extern normal_distribution<double> R_normal;
 extern uniform_real_distribution<double> R;
 
-simulator::simulator(int N, vector<double> z, char const *run, vector<double> params, char const *filename){
+simulator::simulator(int N, vector<double> z, char const *run, vector<double> params, char const *filename) {
   /* Simulation paramters */
   Nevents = N;  // number of simulated events
   zplanes = z;  // z-coordinates of mimosa detectors
@@ -14,10 +14,6 @@ simulator::simulator(int N, vector<double> z, char const *run, vector<double> pa
   assert (!strcmp("amorphous", name) or !strcmp("aligned", name) or !strcmp("background", name));
   E = params[0];  // energy of beam [GeV]
   d_c = params[1];  // thickness of crystal target [micrometer]
-  // double mean_entry_angle_x = params[2],
-  //        mean_entry_angle_y = params[3],
-  //        dev_entry_angle_x = params[4],
-  //        dev_entry_angle_y = params[5];
 
   conversions = 0;
   DATPATH = "/home/christian/Dropbox/speciale/data";  // path to save results
@@ -31,11 +27,11 @@ simulator::simulator(int N, vector<double> z, char const *run, vector<double> pa
   particles.resize(Nevents);
   photons.resize(Nevents);
   mimosas.resize(6);
-  for (int i = 0; i < 6; i++){
+  for (int i = 0; i < 6; i++) {
     mimosas[i].resize(5*Nevents);
   }
 
-  if (!strcmp("aligned", name)){
+  if (!strcmp("aligned", name)) {
     string aligned_crystal_sim = "../crystalSimulations/sum_angles1mm40GeVelec.txt";
     load_doubles(aligned_crystal_sim, intensity_sum);
 
@@ -91,7 +87,7 @@ void simulator::load_hotpixels(void) {
   }
 }
 
-void simulator::load_doubles(string filename, vector<double> &data){
+void simulator::load_doubles(string filename, vector<double> &data) {
   ifstream datafile (filename);
   double val;
   if (datafile.is_open()){
@@ -149,7 +145,7 @@ void simulator::generate_beam(void){
          ydata_weights = "../beamParameters/yweight_" + beam_spatial_distro,
          xangles_weights = "../beamParameters/angles_xweight_" + beam_spatial_distro,
          yangles_weights = "../beamParameters/angles_yweight_" + beam_spatial_distro,
-         angles = "../beamParameters/angles.txt";
+         beam_angles = "../beamParameters/angles.txt";
 
   load_doubles(xdata_coords, x);
   load_doubles(xdata_weights, xw);
@@ -157,10 +153,13 @@ void simulator::generate_beam(void){
   load_doubles(ydata_weights, yw);
   load_doubles(xangles_weights, xaw);
   load_doubles(yangles_weights, yaw);
-  load_doubles(angles, a);
+  load_doubles(beam_angles, a);
 
-  int nohits = 3;
+  // uniform_int_distribution<int> hits_per_event(1, 3);
+
+  int nohits = 2;
   for (int i = 0; i < Nevents; i++){
+    // nohits = hits_per_event(generator);
     particles[i].resize(nohits);
     for (int j = 0; j < nohits; j++){
       int xindx = select_member(x, xw);
@@ -183,131 +182,138 @@ void simulator::propagate_particles(void){
   int total_emitted = 0, total_detected = 0;
 
   /* Radiation length of different materials. Used to calculate SAMS of particle. Units micro-meter */
-  double X0_Si_amorph = 9.370E+04,
+  double X0_Si_amorph = 425400,// 9.370E+04,
          X0_C_amorph = 21.35E+04,
          X0_C_gem = 12.13E+04,
+         X0_Mimosa = 9.370E+04,
          X0_He = 5.671E+09,
          X0_air = 3.039E+08,
          X0_Ta = 0.4094E+04,
          X0_tape = 19.63E+04,
          X0_Mylar =  28.54E+04;
+
+
   double d_f = 200.0; // thickness of Tantalum foil (micro-meter)
 
-  // #pragma omp parallel for
+  // #pragma omp parallel for // doesn't work due to lambda-function used in Simplex call
   double start_time = omp_get_wtime();
   double T = 0;
   for (int i = 0; i < Nevents; i++){
     int emitted = 0;
-    // amorph_crystal(i, emitted, X0_Si_amorph, 1.0E+03, 300);
+    amorph_crystal(i, emitted, X0_Mimosa, 2.5E+03, 300);
 
     /* First Mylar window. No multiple scattering since we take the beam profile from the data, where multiple scattering is intrisincly included */
     // amorph_crystal(i, emitted, X0_Mylar, 50.0);
     // pair_production(i, 50.0, X0_Mylar);
+
     /* MIMOSA 1 detector */
-    // amorph_material(i, emitted, X0_tape, 50.0, 50.0, 15);
+    amorph_material(i, emitted, X0_tape, 50.0, 50.0, 1);
     SA_mult_scat(0, i, X0_tape, 50.0);
     mimosa_detector(0, i, total_detected);
-    // amorph_material(i, emitted, X0_Si_amorph, 100.0, 50.0, 15);
-    SA_mult_scat(0.003, i, X0_Si_amorph, 100.0);
+    amorph_material(i, emitted, X0_Mimosa, 100.0, 50.0, 1);
+    SA_mult_scat(0.003, i, X0_Mimosa, 100.0);
 
     /* Helium between M1 and M2 */
-    // amorph_material(i, emitted, X0_He, zplanes[1] - 50.0, zplanes[1] - 150.0, 100);
+    amorph_material(i, emitted, X0_He, zplanes[1] - 50.0, zplanes[1] - 150.0);
     SA_mult_scat(zplanes[1] - zplanes[0], i,  X0_He, zplanes[1] - 50.0);
 
     /* MIMOSA 2 detector */
-    // amorph_material(i, emitted, X0_tape, zplanes[1], 50.0, 15);
+    amorph_material(i, emitted, X0_tape, zplanes[1], 50.0, 1);
     SA_mult_scat(50.0, i, X0_tape, zplanes[1]);
     mimosa_detector(1, i, total_detected);
-    // amorph_material(i, emitted, X0_Si_amorph, zplanes[1] + 50.0, 50.0, 15);
-    SA_mult_scat(0.003, i, X0_Si_amorph, zplanes[1] + 50.0);
+    amorph_material(i, emitted, X0_Mimosa, zplanes[1] + 50.0, 50.0, 1);
+    SA_mult_scat(0.003, i, X0_Mimosa, zplanes[1] + 50.0);
+
     /* Last mylar window He encasing */
-    // amorph_material(i, emitted, X0_Mylar, zplanes[1] + 100.0, 50.0, 15);
+    amorph_material(i, emitted, X0_Mylar, zplanes[1] + 100.0, 50.0, 1);
     SA_mult_scat(50.0, i, X0_Mylar, zplanes[1] + 100.0);
-    // amorph_material(i, emitted, X0_air, 2060E+03, 227600, 100);
+
+    /* Air */
+    amorph_material(i, emitted, X0_air, 2060E+03, 227600);
     SA_mult_scat(200.0, i, X0_air, 2060E+03);
 
     /* Traverse crystal */
     if (!strcmp("amorphous", name)){
-      amorph_material(i, emitted, X0_C_amorph, 2060E+03 + d_c, d_c, 300);
+      amorph_material(i, emitted, X0_C_amorph, 2060E+03 + d_c, d_c, 0.3 * d_c);
       SA_mult_scat(d_c, i, X0_C_amorph, 2060E+03 + d_c);
     } else if (!strcmp("aligned", name)){
       aligned_crystal(i, emitted);
       SA_mult_scat(d_c, i, X0_C_gem, 2060E+03);
       pair_production(i, d_c, X0_C_gem, 300);
     }
-    // amorph_material(i, emitted, X0_air, 2310E+03, 250E+03, 15);
+
+    /* Air */
+    amorph_material(i, emitted, X0_air, 2310E+03, 250.0E+03);
     SA_mult_scat(1, i, X0_air, 2310.0E+03);
 
     /* Traverse Scintilators */
-    // amorph_material(i, emitted, X0_Si_amorph, 2310E+03 + 1.0E+03, 1.0E+03, 15);
+    amorph_material(i, emitted, X0_Si_amorph, 2310E+03 + 1.0E+03, 1.0E+03, 1);
     SA_mult_scat(1.0E+03, i, X0_Si_amorph, 2310E+03 + 1.0E+03);
 
     /* Air between S2 and vacuum tube */
-    // amorph_material(i, emitted, X0_air, 2311E+03  + 1.5E+06, 1.5E+06, 15);
+    amorph_material(i, emitted, X0_air, 2311E+03  + 1.5E+06, 1.5E+06);
     SA_mult_scat(1.5E+06, i, X0_air, 2310E+03  + 1.5E+06);
-    /* Traverse vacuum chamber and MBPL magnet */
-    // amorph_material(i, emitted, X0_Mylar, 2310E+03  + 1.5E+06 + 120.0, 120.0, 15);
+
+    /* 1st vacuum tube window */
+    amorph_material(i, emitted, X0_Mylar, 2310E+03  + 1.5E+06 + 120.0, 120.0, 1);
     SA_mult_scat(120.0, i, X0_Mylar, 2310E+03  + 1.5E+06 + 120.0);
-    // amorph_material(i, emitted, X0_tape, 2310E+03 + 1.5E+06 + 120.0 + 100.0, 100.0, 15);
+    amorph_material(i, emitted, X0_tape, 2310E+03 + 1.5E+06 + 120.0 + 100.0, 100.0, 1);
     SA_mult_scat(100.0, i, X0_tape, 2310E+03 + 1.5E+06 + 120.0 + 100.0);
-    // project_particle(particles, zplanes[2], i);
+
     MBPL_magnet(i);
-    // pair_production(i, 120.0, X0_Mylar, 30);
-    SA_mult_scat(120, i, X0_Mylar, 2310E+03 + 1.5E+06 + 120.0 + 100.0 + 120.0);
-    // amorph_material(i, emitted, X0_tape, 2310E+03 + 1.5E+06 + 120.0 + 100.0 + 120.0 + 100.0, 100.0, 15);
-    SA_mult_scat(100.0, i, X0_tape, 2310E+03 + 1.5E+06 + 120.0 + 100.0 + 120.0 + 100.0);
-    //
-    // /* Air between vacuum tube and M3 */
-    pair_production(i, 1500.0E+03, X0_air, 100);
+
+
+    /* Air between vacuum tube and M3 */
+    amorph_material(i, emitted, X0_air, zplanes[2] - d_f, 1.0E+06);
     SA_mult_scat(100.0, i, X0_air, zplanes[2] - d_f);
 
     /* Traverse converter foil */
     project_particle(photons, zplanes[2] - d_f, i);
-    converter_foil(i, d_f, X0_Ta, 100);
+    converter_foil(i, d_f, X0_Ta, 300);
     SA_mult_scat(d_f, i, X0_Ta, zplanes[2]);
 
     /* MIMOSA 3 detector */
-    // amorph_material(i, emitted, X0_tape, zplanes[2] + 50.0, 50.0, 15);
+    amorph_material(i, emitted, X0_tape, zplanes[2] + 50.0, 50.0, 1);
     SA_mult_scat(50.0, i, X0_tape, zplanes[2] + 50.0);
     mimosa_detector(2, i, total_detected);
-    // amorph_material(i, emitted, X0_Si_amorph, zplanes[2] + 100.0, 50.0, 15);
-    SA_mult_scat(0.003, i, 9.370E+04 , zplanes[2] + 100.0);
+    amorph_material(i, emitted, X0_Mimosa, zplanes[2] + 100.0, 50.0, 1);
+    SA_mult_scat(0.003, i, X0_Mimosa , zplanes[2] + 100.0);
 
     /* Air between M3 and M4 */
-    // amorph_material(i, emitted, X0_air, zplanes[3], zplanes[3] - zplanes[2]);
+    amorph_material(i, emitted, X0_air, zplanes[3], zplanes[3] - zplanes[2]);
     SA_mult_scat(zplanes[3] - zplanes[2], i, X0_air, zplanes[3]);
 
     /* MIMOSA 4 detector */
-    // amorph_material(i, emitted, X0_tape, zplanes[3] + 50.0, 50.0, 15);
+    amorph_material(i, emitted, X0_tape, zplanes[3] + 50.0, 50.0, 1);
     SA_mult_scat(50.0, i, X0_tape, zplanes[3] + 50.0);
     mimosa_detector(3, i, total_detected);
-    // amorph_material(i, emitted, X0_Si_amorph, zplanes[3] + 100.0, 50.0, 15);
-    SA_mult_scat(0.003, i, 9.370E+04, zplanes[3] + 100.0);
+    amorph_material(i, emitted, X0_Mimosa, zplanes[3] + 100.0, 50.0, 1);
+    SA_mult_scat(0.003, i, X0_Mimosa, zplanes[3] + 100.0);
 
     /* Air between M4 and middle of MIMOSA magnet */
-    // amorph_material(i, emitted, X0_air, (zplanes[4] + zplanes[3])/2.0,(zplanes[4] - zplanes[3])/2.0, 15);
+    amorph_material(i, emitted, X0_air, (zplanes[4] + zplanes[3])/2.0,(zplanes[4] - zplanes[3] - 100.0)/2.0);
     SA_mult_scat((zplanes[4] - zplanes[3])/2.0, i, X0_air, (zplanes[4] + zplanes[3])/2.0);
 
     /* MIMOSA magnet */
     mimosa_magnet(i);
 
     /* Air between middle of MIMOSA magnet and M5 */
-    // amorph_material(i, emitted, X0_air, zplanes[4], (zplanes[4] - zplanes[3])/2.0, 15);
+    amorph_material(i, emitted, X0_air, zplanes[4], (zplanes[4] - zplanes[3])/2.0);
     SA_mult_scat((zplanes[4] - zplanes[3])/2.0, i, X0_air, zplanes[4]);
 
     /* MIMOSA 5 detector */
-    // amorph_material(i, emitted, X0_tape, zplanes[4] + 50.0, 50.0, 15);
+    amorph_material(i, emitted, X0_tape, zplanes[4] + 50.0, 50.0, 1);
     SA_mult_scat(50.0, i, X0_tape, zplanes[4] + 50.0);
     mimosa_detector(4, i, total_detected);
-    // amorph_material(i, emitted, X0_Si_amorph, zplanes[4] + 100.0, 50.0, 15);
-    SA_mult_scat(0.003, i, 9.370E+04, zplanes[4] + 100.0);
+    amorph_material(i, emitted, X0_Mimosa, zplanes[4] + 100.0, 50.0, 1);
+    SA_mult_scat(0.003, i, X0_Mimosa, zplanes[4] + 100.0);
 
     /* Air between MIMOSA 5 and MIMOSA 6 detectors */
-    // amorph_material(i, emitted, X0_air, zplanes[5], zplanes[5] - zplanes[4]);
+    amorph_material(i, emitted, X0_air, zplanes[5], zplanes[5] - zplanes[4]);
     SA_mult_scat(zplanes[5] - zplanes[4], i, X0_air, zplanes[5]);
 
     /* MIMOSA 6 detector */
-    // amorph_material(i, emitted, X0_tape, zplanes[5] + 50.0, 50.0, 15);
+    amorph_material(i, emitted, X0_tape, zplanes[5] + 50.0, 50.0, 1);
     SA_mult_scat(50.0, i, X0_tape, zplanes[5] + 50.0);
     mimosa_detector(5, i, total_detected);
 
@@ -360,8 +366,22 @@ void simulator::amorph_material(int eventno, int &emitted, double X0, double z, 
           double randno = R(generator);
           double norm = 4.0/3.0 * log(Epart/Emin) - 4.0/(3.0*Epart) * (Epart - Emin) + 1.0/(2.0*Epart*Epart) * (Epart*Epart - Emin*Emin);
           function<double(vec)> energy =  [randno, Epart, norm] (vec x) {return photonic_energy_distribution(x, randno, Epart, norm);};  // make lambda-function in order to use same randno during iteration
-          vec sc1 = {0.01}; vec sc2 = {20.0}; vector<vec> initial_simplex = {sc1, sc2};
-          vec photon_energy = simplex_NM(energy, initial_simplex, 1.0E-08);
+          vec sc1, sc2;
+          if (E == 40.0) {
+            sc1 = {0.01};
+            sc2 = {5.0};
+          }
+          if (E == 20.0) {
+            sc1 = {0.01};
+            sc2 = {5.0};
+          }
+          if (E == 80.0) {
+            sc1 = {0.01};
+            sc2 = {10.0};
+          }
+
+          vector<vec> initial_simplex = {sc1, sc2};
+          vec photon_energy = simplex_NM(energy, initial_simplex, 1.0E-10);
           energies.push_back(photon_energy(0));
 
           /* Determine direction of photon */
@@ -379,43 +399,6 @@ void simulator::amorph_material(int eventno, int &emitted, double X0, double z, 
           photon[7] += dy;
           particles[eventno][hitno][5] -= photon_energy(0);
           photons[eventno].push_back(photon);
-
-          /* Determine if a conversion happens in remaining slices */
-          for (int j = 0; j < no_slices - i - 1; j++) {
-            bool conversion = pair_produced(dl, X0);
-
-            /* Proceed only if conversion happens */
-            if (conversion and photon_energy(0) > Emin) {
-              /* Calculate energy gained by e+/e- pair */
-              double electron_energy = R(generator);  // random number for the inverse transform sampling in "electronic_energy_distribution"
-              electronic_energy_distribution(electron_energy); // the fractional electron energy, ie E_e-/ E_photon
-              electron_energy *= photon_energy(0);
-              double positron_energy = photon_energy(0) - electron_energy; // energy conservation
-
-              /* Calculate deflection of e+/e- pair */
-              double electron_defl;
-              double positron_defl;
-              Borsellino(electron_energy, positron_energy, photon_energy(0), electron_defl, positron_defl); // deflection angle based on approximated Borsellino distribution
-
-              /* Add e+/e- pair to "particles" array */
-              vector<double> electron = photons[eventno].back();
-              electron[2] += dl * (j + 1);
-              electron[4] = (-1.0)*q;
-              electron[5] = electron_energy;
-              electron[6] += electron_defl;
-              vector<double> positron = photons[eventno].back();
-              positron[2] += dl * (j + 1);
-              positron[4] = q;
-              positron[5] = positron_energy;
-              positron[6] += positron_defl;
-
-              particles[eventno].push_back(positron);
-              particles[eventno].push_back(electron);
-
-              photons[eventno].pop_back();
-              break;
-            }
-          } // pair production end
         }
       } // emission end
     }
@@ -446,7 +429,7 @@ void simulator::converter_foil(int eventno, double d_f, double X0, int no_slices
         double electron_defl;
         double positron_defl;
         Borsellino(electron_energy, positron_energy, photon_energy, electron_defl, positron_defl); // deflection angle based on approximated Borsellino distribution
-
+        // cerr << electron_defl << "\t" << positron_defl << "\n";
         /* Add e+/e- pair to "particles" array */
         vector<double> electron = photons[eventno][i];
         electron[2] += dl * (j + 1);
@@ -463,45 +446,8 @@ void simulator::converter_foil(int eventno, double d_f, double X0, int no_slices
         particles[eventno].push_back(positron);
         particles[eventno].push_back(electron);
 
-        // cerr << electron[2] << "\t" << positron[2] << "\n";
-
         photons[eventno].erase(photons[eventno].begin() + i); // remove i'th photon since it converted
 
-        int sz = particles[eventno].size();
-
-        /* Iterate over the pair*/
-        // for (int jj = 0; jj < 2; jj++){
-        //   for (int k = 0; k < N_slices - j - 1; k++){
-        //     double randno = R(generator);
-        //     double Epart = particles[eventno][sz - 1 - jj][5];
-        //     bool emission = photon_emitted_amorph(dl, X0, Epart);
-        //     emission = false;
-        //     /* Proceed only if photon is emitted */
-        //     if (emission){
-        //       double norm = 4.0/3.0 * log(Epart/Emin) - 4.0/(3.0*Epart) * (Epart - Emin) + 1.0/(2.0*Epart*Epart) * (Epart*Epart - Emin*Emin);
-        //       function<double(vec)> energy =  [randno, Epart, norm] (vec x) {return photonic_energy_distribution(x, randno, Epart, norm);};  // make lambda-function in order to use same randno during iteration
-        //       vec sc1 = {0.1}; vec sc2 = {5.0}; vector<vec> initial_simplex = {sc1, sc2};  // initial simplex for Nelder-Mead. The initial guess is hugely important for convergence
-        //       vec photon_energy = simplex_NM(energy, initial_simplex, 1.0E-08);  // solve for energy using Nelder-Mead simplex.
-        //
-        //       /* Determine deflection of photon */
-        //       double gamma = particles[eventno][sz - 1 - jj][5]/(5.109989461E-4);
-        //       uniform_real_distribution<double> defl_angle(-1.0/gamma, 1.0/gamma);
-        //
-        //       /* Update particles and photons vectors */
-        //       vector<double> photon = particles[eventno][sz - 1 - jj];
-        //       photon[2] += (1 + k) * dl;
-        //       photon[4] = 0.0;  // charge
-        //       photon[5] = photon_energy(0);
-        //       double dx = defl_angle(generator);
-        //       double dy = sqrt(1.0/(gamma*gamma) - dx*dx);
-        //       photon[6] += dx;
-        //       photon[7] += dy;
-        //
-        //       particles[eventno][sz - 1 - jj][5] -= photon_energy(0); // energy lost by particle as it emits photon
-        //       photons[eventno].push_back(photon);
-        //     }
-        //   }
-        // }
         i -= 1; // subtract 1 from iterator since we removed element
         break;
       }
@@ -526,43 +472,37 @@ void simulator::amorph_crystal(int eventno, int &emitted, double X0, double d, i
   double Emin = 2*0.5109989461E-03;  // 2 * electron mass in GeV
 
   for (size_t hitno = 0; hitno < particles[eventno].size(); hitno++){
-    /* Check if particle is going to hit crystal */
-    bool inside_bounds = isInside(5, xcrystal, ycrystal, particles[eventno][hitno][0], particles[eventno][hitno][1]);
+    for (int i = 0; i < no_slices; i ++){
+      double Epart = particles[eventno][hitno][5];
+      if (Epart < Emin) break;
+      /* Determine if photon is emitted */
+      bool emission = photon_emitted_amorph(dl, X0, Epart);
 
-    if ((X0 == 21.35E+04 and inside_bounds) or X0 != 21.35E+04) {
-      for (int i = 0; i < no_slices; i ++){
-        double Epart = particles[eventno][hitno][5];
-        if (Epart < Emin) break;
-        /* Determine if photon is emitted */
-        bool emission = photon_emitted_amorph(dl, X0, Epart);
+      /* If photon is emitted update "photons" array and particles array */
+      if (emission){
+        emitted++;
 
-        /* If photon is emitted update "photons" array and particles array */
-        if (emission){
-          emitted++;
+        /* Determine photon energy */
+        double randno = R(generator);
+        Epart = particles[eventno][hitno][5];
+        double norm = 4.0/3.0 * log(Epart/Emin) - 4.0/(3.0*Epart) * (Epart - Emin) + 1.0/(2.0*Epart*Epart) * (Epart*Epart - Emin*Emin);
+        function<double(vec)> energy =  [randno, Epart, norm] (vec x) {return photonic_energy_distribution(x, randno, Epart, norm);};  // make lambda-function in order to use same randno during iteration
+        vec sc1 = {0.1}; vec sc2 = {5.0}; vector<vec> initial_simplex = {sc1, sc2};  // initial simplex for Nelder-Mead. The initial guess is hugely important for convergence
+        vec photon_energy = simplex_NM(energy, initial_simplex, 1.0E-08);  // solve for energy using Nelder-Mead simplex.
 
-          /* Determine photon energy */
-          double randno = R(generator);
-          Epart = particles[eventno][hitno][5];
-          double norm = 4.0/3.0 * log(Epart/Emin) - 4.0/(3.0*Epart) * (Epart - Emin) + 1.0/(2.0*Epart*Epart) * (Epart*Epart - Emin*Emin);
-          function<double(vec)> energy =  [randno, Epart, norm] (vec x) {return photonic_energy_distribution(x, randno, Epart, norm);};  // make lambda-function in order to use same randno during iteration
-          vec sc1 = {0.1}; vec sc2 = {5.0}; vector<vec> initial_simplex = {sc1, sc2};  // initial simplex for Nelder-Mead. The initial guess is hugely important for convergence
-          vec photon_energy = simplex_NM(energy, initial_simplex, 1.0E-08);  // solve for energy using Nelder-Mead simplex.
+        /* Determine direction of photon */
+        double gamma = particles[eventno][hitno][5]/(5.109989461E-4);
+        uniform_real_distribution<double> defl_angle(-1.0/gamma, 1.0/gamma);
 
-          /* Determine direction of photon */
-          double gamma = particles[eventno][hitno][5]/(5.109989461E-4);
-          uniform_real_distribution<double> defl_angle(-1.0/gamma, 1.0/gamma);
-
-          /* Update particles and photons vectors */
-          vector<double> photon = particles[eventno][hitno];
-          photon[4] = 0.0;  // charge
-          photon[5] = photon_energy(0);
-          double dx = defl_angle(generator);
-          double dy = sqrt(1.0/(gamma*gamma) - dx*dx);
-          photon[6] += dx;
-          photon[7] += dy;
-          particles[eventno][hitno][5] -= photon_energy(0); // energy lost by particle as it emits photon
-          photons[eventno].push_back(photon);
-        }
+        /* Update particles and photons vectors */
+        vector<double> photon = particles[eventno][hitno];
+        photon[4] = 0.0;  // charge
+        photon[5] = photon_energy(0);
+        double dx = defl_angle(generator);
+        double dy = sqrt(1.0/(gamma*gamma) - dx*dx);
+        photon[6] += dx;
+        photon[7] += dy;
+        photons[eventno].push_back(photon);
       }
     }
   }
@@ -609,19 +549,20 @@ bool simulator::photon_emitted_aligned(double N){
   return randno < I_integral/N;
 }
 
-void simulator::aligned_crystal(int eventno, int &emitted){
+void simulator::aligned_crystal(int eventno, int &emitted) {
   /* Simulate a particle travelling through an aligned crystal.
      Multiple scattering is taken into account in the "propagte particles" function.
    */
-  int no_slices = 15;
+  int no_slices = 300;
   vector<double> angle_indx = linspace(0.0, angles.size()-1, angles.size());
   for (size_t hitno = 0; hitno < particles[eventno].size(); hitno++){
-    for (int i = 0; i < no_slices; i++){
+    for (int i = 0; i < no_slices; i++) {
       /* Determine if photon is emit\ed */
       bool emission = photon_emitted_aligned(no_slices);
+      double Epart = particles[eventno][hitno][5];
 
       /* If photon is emitted update "photons" array and particles array */
-      if (emission){
+      if (emission and Epart > 2*0.5109989461E-03) {
         emitted++;
 
         /* Determine which energy photon is emitted with */
@@ -644,10 +585,6 @@ void simulator::aligned_crystal(int eventno, int &emitted){
         photon[7] += dy;
         particles[eventno][hitno][5] -= energies_interp[E_indx]; // energy lost by particle as it emits photon
         photons[eventno].push_back(photon);
-      }
-      /* Break loop if particle converts to photon which does not have enough energy to convert into e-/e+ pair */
-      if (particles[eventno][hitno][5] < 2*0.5109989461E-03){
-        break;
       }
     }
   }
@@ -795,10 +732,10 @@ void simulator::mimosa_magnet(int eventno){
     double L = 0.15; // length traveled through Mimosa magnet in m
     double B = 0.12; // strength of magnetic field in T
     for (size_t hitno = 0; hitno < particles[eventno].size(); hitno++){
-      double dx;
-      if (particles[eventno][hitno][4] > 0) dx = L*B*0.299792458/(particles[eventno][hitno][5]);
-      else dx = (-1.0) * L*B*0.299792458/(particles[eventno][hitno][5]);
-      particles[eventno][hitno][6] += dx; // update direction of particle
+      // cerr << dx << "\t" << L*B*0.299792458/(particles[eventno][hitno][5]) << "\n";
+      // if (particles[eventno][hitno][4] > 0) dx = L*B*0.299792458/(particles[eventno][hitno][5]);
+      // else dx = (-1.0) * L*B*0.299792458/(particles[eventno][hitno][5]);
+      particles[eventno][hitno][6] += (particles[eventno][hitno][4]*L*B*c)/(particles[eventno][hitno][5] * 1.6021766E-10); // update direction of particle
   }
 }
 

@@ -54,21 +54,21 @@ class analyser {
     void remove_hot_pixels(vector<vector<vector<double>>> &hitcoord, vector<vector<double>> &pixelgrid, vector<int> hotpixels);  // removes hot pixels
     void align_wo_T(void);  // determines alignment matrix by aligning planes
     void align_w_T(void);  // aligns planes using alignment matrix
-    void construct_tracks(void);  // construct M1 -> M6 track
+    void construct_tracks(double M1M2_slope_lb, double M1M2_slope_ub);  // construct M1 -> M6 track
     void pair_tracks(void); // pair electron/positron tracks
     void update_pixelgrids(int plane, vector<vector<double>> pixelgrid);
     void update_hitcoords(int plane, vector<vector<vector<double>>> hitcoord);
     void update_hotpixels(int plane, vector<int> hotpixel);
-    void print_pixels(void); // saves pixeldata
-    void print_hotpixels(void); // prints hotpixels
-    void print_hits(void); // saves hitcoords
-    void print_interdistance(void); // saves distances
-    void print_energy(void);  // saves energy
-    void print_slope(void); // saves angles of a track's incoming + outgoing angle in the Mimosa magnet
-    void print_M1M2_slope(void); // saves M1-M2 angles
-    void print_zpos(void);  // saves z-position of closest approach
+    void print_pixels(string name); // saves pixeldata
+    void print_hotpixels(string name); // prints hotpixels
+    void print_hits(string name); // saves hitcoords
+    void print_interdistance(string name); // saves distances
+    void print_energy(string name);  // saves energy
+    void print_slope(string name); // saves angles of a track's incoming + outgoing angle in the Mimosa magnet
+    void print_M1M2_slope(string name); // saves M1-M2 angles
+    void print_zpos(string name);  // saves z-position of closest approach
     void construct_distarray(void);
-    void image_crystal(void);
+    void image_crystal(string name);
 
   private:
     string DATPATH; // directory to store data

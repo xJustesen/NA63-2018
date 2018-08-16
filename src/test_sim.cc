@@ -12,7 +12,6 @@ int main(int argc, char const *argv[]){
   char const *filename = argv[3];
 
   /* Load beam-parameters from file */
-  // params = {Ebeam, d_crystal, mean_entry_angle_x, mean_entry_angle_y, dev_entry_angle_x, dev_entry_angle_y};
   vector<double> params;
   double param;
   string file = "../beamParameters/" + (string)filename;
@@ -24,9 +23,7 @@ int main(int argc, char const *argv[]){
       params.push_back(param);
     }
     paramsfile.close();
-  }
-  else cout << "Unable to open file containing beam parameters";
-
+  } else cout << "Unable to open file containing beam parameters";
 
   /* Initialise analyse and simulate classs */
   analyser analyse(z, name, runno);
@@ -55,5 +52,6 @@ int main(int argc, char const *argv[]){
   analyse.image_crystal();
   simulate.print_energy();
   simulate.print_hits();
+
   return 0;
 }
