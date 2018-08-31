@@ -37,51 +37,58 @@ outputdata : main
 	# ./main $(DATPATH)/run78_01.root 78
 
 	# 40 GeV ; Aligned ; 1mm C
-	# ./main $(DATPATH)/run71_01.root 71
-	# ./main $(DATPATH)/run72_01.root 72
-	# ./main $(DATPATH)/run79_01.root 79
-	# ./main $(DATPATH)/run80_01.root 80
-	# ./main $(DATPATH)/run81_01.root 81
+	./main $(DATPATH)/run71_01.root 71
+	./main $(DATPATH)/run72_01.root 72
+	./main $(DATPATH)/run79_01.root 79
+	./main $(DATPATH)/run80_01.root 80
+	./main $(DATPATH)/run81_01.root 81
+
+	# 40 GeV ; Aligned ; 1.5mm C
+	./main $(DATPATH)/run30_01.root 30
+	./main $(DATPATH)/run35_01.root 35
+	./main $(DATPATH)/run36_01.root 36
+	./main $(DATPATH)/run37_01.root 37
+	./main $(DATPATH)/run38_01.root 38
 
 	# 40 GeV ; Background ; 1mm C
-	# ./main $(DATPATH)/run74_01.root 74
+	./main $(DATPATH)/run74_01.root 74
 	#
-	# # 40 GeV ; Amorphous ; 1.5mm C
-	# ./main $(DATPATH)/run32_01.root 32
-	# ./main $(DATPATH)/run33_01.root 33
-	# ./main $(DATPATH)/run34_01.root 34
-	# ./main $(DATPATH)/run39_01.root 39
-	# ./main $(DATPATH)/run40_01.root 40
-	# ./main $(DATPATH)/run41_01.root 41
-	# ./main $(DATPATH)/run43_01.root 43
+	# 40 GeV ; Amorphous ; 1.5mm C
+	./main $(DATPATH)/run32_01.root 32
+	./main $(DATPATH)/run33_01.root 33
+	./main $(DATPATH)/run34_01.root 34
+	./main $(DATPATH)/run39_01.root 39
+	./main $(DATPATH)/run40_01.root 40
+	./main $(DATPATH)/run41_01.root 41
+	./main $(DATPATH)/run43_01.root 43
 	#
-	# # # 40 GeV ; Background ; 1.5mm C
-	# ./main $(DATPATH)/run31_01.root 31
+	# # 40 GeV ; Background ; 1.5mm C
+	./main $(DATPATH)/run31_01.root 31
 	#
-	# # 80 GeV ; Amorphous ; 1mm C
-	# ./main $(DATPATH)/run86_01.root 86
-	# ./main $(DATPATH)/run87_01.root 87
-	# ./main $(DATPATH)/run88_01.root 88
-	# ./main $(DATPATH)/run89_01.root 89
-	#
-	# # 80 GeV ; Background ; 1mm C
-	# ./main $(DATPATH)/run85_01.root 85
-	# ./main $(DATPATH)/run90_01.root 90
-	# ./main $(DATPATH)/run91_01.root 91
-	#
-	# # 80 GeV ; Amorphous ; 1.5mm C
-	# ./main $(DATPATH)/run49_01.root 49
-	# ./main $(DATPATH)/run50_01.root 50
-	# ./main $(DATPATH)/run51_01.root 51
-	# ./main $(DATPATH)/run52_01.root 52
-	./main $(DATPATH)/run53_01.root 53 $(PARAMPATH)/1mmC_cuts.txt
-	# ./main $(DATPATH)/run56_01.root 56
-	# ./main $(DATPATH)/run57_01.root 57
-	#
-	# # 80 GeV ; Background ; 1.5mm C
-	# ./main $(DATPATH)/run48_01.root 48
-	# ./main $(DATPATH)/run54_01.root 54
-	# ./main $(DATPATH)/run55_01.root 55
+	# 80 GeV ; Amorphous ; 1mm C
+	./main $(DATPATH)/run86_01.root 86
+	./main $(DATPATH)/run87_01.root 87
+	./main $(DATPATH)/run88_01.root 88
+	./main $(DATPATH)/run89_01.root 89
+
+	# 80 GeV ; Background ; 1mm C
+	./main $(DATPATH)/run85_01.root 85
+	./main $(DATPATH)/run90_01.root 90
+	./main $(DATPATH)/run91_01.root 91
+
+	# 80 GeV ; Amorphous ; 1.5mm C
+	./main $(DATPATH)/run49_01.root 49
+	./main $(DATPATH)/run50_01.root 50
+	./main $(DATPATH)/run51_01.root 51
+	./main $(DATPATH)/run52_01.root 52
+	./main $(DATPATH)/run53_01.root 53
+	./main $(DATPATH)/run56_01.root 56
+	./main $(DATPATH)/run57_01.root 57
+
+	# 80 GeV ; Background ; 1.5mm C
+	./main $(DATPATH)/run48_01.root 48
+	./main $(DATPATH)/run54_01.root 54
+	./main $(DATPATH)/run55_01.root 55
 
 main : main.cc analyser.cc
 
@@ -151,11 +158,16 @@ outputsim : test_sim
 	# ./test_sim background sim_background4_20GeV_1.5mm 20GeV_beam_params_1.5mm.txt
 	# ./test_sim background sim_background5_20GeV_1.5mm 20GeV_beam_params_1.5mm.txt
 
+	# ./test_sim aligned sim_aligned1_40GeV_no_background 40GeV_beam_params.txt
+	# ./test_sim aligned sim_aligned2_40GeV_no_background 40GeV_beam_params.txt
+	# ./test_sim aligned sim_aligned3_40GeV_no_background 40GeV_beam_params.txt
+	# ./test_sim aligned sim_aligned4_40GeV_no_background 40GeV_beam_params.txt
+	# ./test_sim aligned sim_aligned5_40GeV_no_background 40GeV_beam_params.txt
 	./test_sim amorphous sim_amorphous1_40GeV_no_background 40GeV_beam_params.txt
-	# ./test_sim amorphous sim_amorphous2_40GeV_no_background 40GeV_beam_params.txt
-	# ./test_sim amorphous sim_amorphous3_40GeV_no_background 40GeV_beam_params.txt
-	# ./test_sim amorphous sim_amorphous4_40GeV_no_background 40GeV_beam_params.txt
-	# ./test_sim amorphous sim_amorphous5_40GeV_no_background 40GeV_beam_params.txt
+	./test_sim amorphous sim_amorphous2_40GeV_no_background 40GeV_beam_params.txt
+	./test_sim amorphous sim_amorphous3_40GeV_no_background 40GeV_beam_params.txt
+	./test_sim amorphous sim_amorphous4_40GeV_no_background 40GeV_beam_params.txt
+	./test_sim amorphous sim_amorphous5_40GeV_no_background 40GeV_beam_params.txt
 	# ./test_sim amorphous sim_amorphous1_40GeV 40GeV_beam_params.txt
 	# ./test_sim amorphous sim_amorphous2_40GeV 40GeV_beam_params.txt
 	# ./test_sim amorphous sim_amorphous3_40GeV 40GeV_beam_params.txt

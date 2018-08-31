@@ -39,7 +39,9 @@ using namespace std;
 using namespace arma;
 
 class analyser {
+
   public:
+
     cube T; // armadillo cube for collecting alignment matrices (rank-3 tensor)
     int Nevents;  // total number of events
     vector<vector<vector<double>>> Events;  // containts root data
@@ -69,8 +71,10 @@ class analyser {
     void print_zpos(string name);  // saves z-position of closest approach
     void construct_distarray(void);
     void image_crystal(string name);
+    void print_planar_dist(int plane, string name);
 
   private:
+
     string DATPATH; // directory to store data
     char const *runno;  // used to name output files
     int ncols, nrows; // pixel columns/rows of Mimosa-26
@@ -112,10 +116,10 @@ class analyser {
     double calc_slope(vec x, vec y); // calculate slope of line
     double calc_dist(double x0, double y0, double x1,double y1); // calculates distance between two points in a plane
     double calc_pair_energy(vector<vector<vector<double>>> pairedtracks);
-    void calc_interdistance(vector<vector<vector<double>>> Hits0, vector<vector<vector<double>>> Hits1, vector<vector<vector<double>>> Hits2, vector<double> z, vector<double> &distvec); // calculates the distance from every projected hit into a plane to every observed hit
+    vector<double> calc_interdistance(vector<vector<vector<double>>> Hits0, vector<vector<vector<double>>> Hits1, vector<vector<vector<double>>> Hits2, vector<double> z); // calculates the distance from every projected hit into a plane to every observed hit
     mat lines3d_nearestpoints(vec A, vec B, vec C, vec D); // determine the 2 closest points on 2 lines
     void beam_divergence(int, int, int, string);
-};
 
+};
 
 #endif

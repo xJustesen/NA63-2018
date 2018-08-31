@@ -17,8 +17,10 @@
 using namespace std;
 using namespace arma;
 
-class simulator{
+class simulator {
+
   public:
+
     double E; // energy of particle
     double d_c; // size of crystal
     vector<vector<vector<vector<double>>>> mimosas; // equivalent to the "hitcoords" vector in "analyser" class
@@ -27,9 +29,10 @@ class simulator{
     simulator(int N, vector<double> z, char const *run, vector<double> params, char const *filename);
     void propagate_particles(void);  // propaget particles through the experiment
     void print_hits(void);
-    void print_energy(void);
+    void print_energy(string name);
 
   private:
+
     vector<vector<vector<double>>> photons; // stores photon data
     vector<vector<vector<double>>> particles; // stores particles data
     vector<vector<double>> intensities;  // intensity at different points in space
@@ -75,7 +78,7 @@ class simulator{
     void Borsellino(double E1, double E2, double E_phot, double &phi1, double &phi2);  // the approximated Borsellino opening angle of e-/e+ pair
     void make_intensity_distro(vector<vector<double>> &intensity, vector<vector<double>> &angles);
     bool photon_emitted_aligned(double l);
-    void aligned_crystal(int eventno, int &emitted);
+    void aligned_crystal(int eventno, int &emitted, int no_slices);
 
     /* Numerical methods */
     int binarySearch(vector<int> numbers, int low, int high, int val);
@@ -99,6 +102,7 @@ class simulator{
     int isInside(int nvert, vector<double> vertx, vector<double> verty, double testx, double testy); // check if point (testx, testy) is inside boundaries of polygon defined by verticecs (vertx, verty)
     double calc_dist(double x0, double y0, double x1,double y1);
     void project_particle(vector<vector<vector<double>>> &particletype, double zcoord, int eventno); // rectilinear-projection hit into plane
+
 };
 
 #endif
