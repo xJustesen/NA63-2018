@@ -56,7 +56,7 @@ class analyser {
     void remove_hot_pixels(vector<vector<vector<double>>> &hitcoord, vector<vector<double>> &pixelgrid, vector<int> hotpixels);  // removes hot pixels
     void align_wo_T(void);  // determines alignment matrix by aligning planes
     void align_w_T(void);  // aligns planes using alignment matrix
-    void construct_tracks(double M1M2_slope_lb, double M1M2_slope_ub);  // construct M1 -> M6 track
+    void construct_tracks(double M1M2_slope_lb_x, double M1M2_slope_ub_x, double M1M2_slope_lb_y, double M1M2_slope_ub_y);  // construct M1 -> M6 track
     void pair_tracks(void); // pair electron/positron tracks
     void update_pixelgrids(int plane, vector<vector<double>> pixelgrid);
     void update_hitcoords(int plane, vector<vector<vector<double>>> hitcoord);
@@ -87,11 +87,11 @@ class analyser {
     double Match_d;
     double Match_d_foil;
     double yz_defl_lim;
-    vector<vector<vector<vector<double>>>> paired_tracks;
+    vector<vector<vector<vector<vector<double>>>>> paired_tracks;
     vector<vector<vector<double>>> divergence;
     vector<vector<vector<double>>> M1M2_slopes;
     vector<vector<vector<double>>> pixelgrids;
-    vector<vector<vector<double>>> tracks;
+    vector<vector<vector<vector<double>>>> tracks;
     vector<vector<double>> distarray;  // vector with distances between projected and observed hits
     vector<vector<double>> slopes;
     vector<vector<int>> hotpixels;
@@ -100,8 +100,8 @@ class analyser {
     vector<double> M2M3_z;
     vector<double> M3M4_z;
     vector<double> M6M5_z;
-    vector<double> energies;
-    vector<double> zclosepos;
+    vector<vector<double>> energies;
+    vector<vector<double>> zclosepos;
     vector<double> zplanes;
 
     static bool sortFunc(const vector<double> &p1, const vector<double> &p2); // sort a vector<vector<>>, descending
@@ -119,6 +119,7 @@ class analyser {
     vector<double> calc_interdistance(vector<vector<vector<double>>> Hits0, vector<vector<vector<double>>> Hits1, vector<vector<vector<double>>> Hits2, vector<double> z); // calculates the distance from every projected hit into a plane to every observed hit
     mat lines3d_nearestpoints(vec A, vec B, vec C, vec D); // determine the 2 closest points on 2 lines
     void beam_divergence(int, int, int, string);
+    void save_vector(string name, vector<double> data);
 
 };
 

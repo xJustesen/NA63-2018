@@ -1,9 +1,17 @@
 #include "simulator.h"
-
+#include <fstream>
 /* Look up global variables (globalvars.h) */
 extern default_random_engine generator;
 extern normal_distribution<double> R_normal;
 extern uniform_real_distribution<double> R;
+
+struct point
+{
+    double angx;
+    double angy;
+    double posx;
+    double posy;
+};
 
 simulator::simulator(int N, vector<double> z, char const *run, vector<double> params, char const *filename) {
 
@@ -17,12 +25,24 @@ simulator::simulator(int N, vector<double> z, char const *run, vector<double> pa
   d_c = params[1];  // thickness of crystal target [micrometer]
 
   conversions = 0;
+  no_photons = 0;
   DATPATH = "/home/christian/Dropbox/speciale/data";  // path to save results
 
   /* Physics constants */
   q = -1.6021766208E-19; // charge of electron in Coulomb
   c = 299792458; // speed of light in vac. in m/s
   m = 9.10938356E-31; // electron/positron mass in kg
+
+  /* Radiation length of different materials. Used to calculate SAMS of particle. Units micro-meter */
+  X0_Si_amorph = 9.370E+04;
+  X0_C_amorph = 21.35E+04;
+  X0_C_gem = 12.13E+04;
+  X0_Mimosa = 9.370E+04;
+  X0_He = 5.671E+09;
+  X0_air = 3.039E+08;
+  X0_Ta = 0.4094E+04;
+  X0_tape = 19.63E+04;
+  X0_Mylar =  28.54E+04;
 
   /* Prepare vectors for photon, particle and mimosa data */
   particles.resize(Nevents);
@@ -196,42 +216,41 @@ void simulator::print_energy(string name) {
 /* Generate a beam-profile using measured data and store hits in Events */
 void simulator::generate_beam(void) {
 
-  vector<double> x, y, xw, yw, a, xaw, yaw;
-  string xdata_coords = "../beamParameters/xdat_" + beam_spatial_distro,
-         ydata_coords = "../beamParameters/ydat_" + beam_spatial_distro,
-         xdata_weights = "../beamParameters/xweight_" + beam_spatial_distro,
-         ydata_weights = "../beamParameters/yweight_" + beam_spatial_distro,
-         xangles_weights = "../beamParameters/angles_xweight_" + beam_spatial_distro,
-         yangles_weights = "../beamParameters/angles_yweight_" + beam_spatial_distro,
-         beam_angles = "../beamParameters/angles.txt";
+  /* A collection of points structures + decleration of variables for temporarily storing poins */
+  vector<point> beam_params;
+  double angx, angy, posx, posy;
 
-  load_doubles(xdata_coords, x);
-  load_doubles(xdata_weights, xw);
-  load_doubles(ydata_coords, y);
-  load_doubles(ydata_weights, yw);
-  load_doubles(xangles_weights, xaw);
-  load_doubles(yangles_weights, yaw);
-  load_doubles(beam_angles, a);
+  /* Open the text file for reading */
+  string filename = "/home/christian/Dropbox/speciale/code/beamParameters/angles_pos_" + beam_spatial_distro;
+  ifstream file(filename);
 
-  uniform_int_distribution<int> hits_per_event(2, 3);
+  /* Read all data from the file */
+  while (file >> angx >> angy >> posx >> posy) {
 
-  int nohits = 3;
+      beam_params.push_back(point{angx, angy, posx, posy});
+
+  }
+
+  /* Make distribution for picking out point */
+  uniform_int_distribution<int> indices(0, beam_params.size() - 1);
+
+  int nohits = 1;
+
   for (int i = 0; i < Nevents; i++) {
 
-    nohits = hits_per_event(generator);
+    // nohits = hits_per_event(generator);
     particles[i].resize(nohits);
 
     for (int j = 0; j < nohits; j++) {
 
-      int xindx = select_member(x, xw);
-      int yindx = select_member(y, yw);
-      int xangleindx = select_member(a, xaw);
-      int yangleindx = select_member(a, yaw);
-      double xcoord = x[xindx];
-      double ycoord = y[yindx];
-      double xslope = a[xangleindx];
-      double yslope = a[yangleindx];
+      int indx = indices(generator);
+
+      double xcoord = beam_params[indx].posx;
+      double ycoord = beam_params[indx].posy;
+      double xslope = beam_params[indx].angx;
+      double yslope = beam_params[indx].angy;
       vector<double> hitdata = {xcoord, ycoord, zplanes[0], 0, q, E, xslope, yslope};  // x, y, z, plane, charge, energy of particle, xslope, yslope
+
       particles[i][j] = hitdata;
 
     }
@@ -246,58 +265,45 @@ void simulator::propagate_particles(void) {
   generate_beam();
   int total_emitted = 0, total_detected = 0;
 
-  /* Radiation length of different materials. Used to calculate SAMS of particle. Units micro-meter */
-  double X0_Si_amorph = 425400,// 9.370E+04,
-         X0_C_amorph = 21.35E+04,
-         X0_C_gem = 12.13E+04,
-         X0_Mimosa = 9.370E+04,
-         X0_He = 5.671E+09,
-         X0_air = 3.039E+08,
-         X0_Ta = 0.4094E+04,
-         X0_tape = 19.63E+04,
-         X0_Mylar =  28.54E+04;
-
-
-
   double d_f = 200.0; // thickness of Tantalum foil (micro-meter)
 
   double start_time = omp_get_wtime();
   double T = 0;
 
-  // #pragma omp parallel for // doesn't work due to lambda-function used in Simplex call
+
   for (int i = 0; i < Nevents; i++) {
 
     int emitted = 0;
-    // amorph_crystal(i, emitted, X0_Mimosa, 2.5E+03, 300);
+    amorph_crystal(i, emitted, X0_Si_amorph, 0.1E+03);
 
     /* First Mylar window. No multiple scattering since we take the beam profile from the data, where multiple scattering is intrisincly included */
     // amorph_crystal(i, emitted, X0_Mylar, 50.0);
     // pair_production(i, 50.0, X0_Mylar);
 
     /* MIMOSA 1 detector */
-    // amorph_material(i, emitted, X0_tape, 50.0, 50.0, 1);
+    amorph_material(i, emitted, X0_tape, 50.0, 50.0, 1);
     SA_mult_scat(0, i, X0_tape, 50.0);
     mimosa_detector(0, i, total_detected);
-    // amorph_material(i, emitted, X0_Mimosa, 100.0, 50.0, 1);
+    amorph_material(i, emitted, X0_Mimosa, 100.0, 50.0, 1);
     SA_mult_scat(0.003, i, X0_Mimosa, 100.0);
 
     /* Helium between M1 and M2 */
-    // amorph_material(i, emitted, X0_He, zplanes[1] - 50.0, zplanes[1] - 150.0);
+    amorph_material(i, emitted, X0_He, zplanes[1] - 50.0, zplanes[1] - 150.0);
     SA_mult_scat(zplanes[1] - zplanes[0], i,  X0_He, zplanes[1] - 50.0);
 
     /* MIMOSA 2 detector */
-    // amorph_material(i, emitted, X0_tape, zplanes[1], 50.0, 1);
+    amorph_material(i, emitted, X0_tape, zplanes[1], 50.0, 1);
     SA_mult_scat(50.0, i, X0_tape, zplanes[1]);
     mimosa_detector(1, i, total_detected);
-    // amorph_material(i, emitted, X0_Mimosa, zplanes[1] + 50.0, 50.0, 1);
+    amorph_material(i, emitted, X0_Mimosa, zplanes[1] + 50.0, 50.0, 1);
     SA_mult_scat(0.003, i, X0_Mimosa, zplanes[1] + 50.0);
 
     /* Last mylar window He encasing */
-    // amorph_material(i, emitted, X0_Mylar, zplanes[1] + 100.0, 50.0, 1);
+    amorph_material(i, emitted, X0_Mylar, zplanes[1] + 100.0, 50.0, 1);
     SA_mult_scat(50.0, i, X0_Mylar, zplanes[1] + 100.0);
 
     /* Air */
-    // amorph_material(i, emitted, X0_air, 2060E+03, 227600);
+    amorph_material(i, emitted, X0_air, 2060E+03, 227600);
     SA_mult_scat(200.0, i, X0_air, 2060E+03);
 
     /* Traverse crystal */
@@ -314,35 +320,35 @@ void simulator::propagate_particles(void) {
     }
 
     /* Air */
-    // amorph_material(i, emitted, X0_air, 2310E+03, 250.0E+03);
+    amorph_material(i, emitted, X0_air, 2310E+03, 250.0E+03);
     SA_mult_scat(1, i, X0_air, 2310.0E+03);
 
     /* Traverse Scintilators */
-    // amorph_material(i, emitted, X0_Si_amorph, 2310E+03 + 1.0E+03, 1.0E+03, 1);
+    amorph_material(i, emitted, X0_Si_amorph, 2310E+03 + 1.0E+03, 1.0E+03, 1);
     SA_mult_scat(1.0E+03, i, X0_Si_amorph, 2310E+03 + 1.0E+03);
 
     /* Air between S2 and vacuum tube */
-    // amorph_material(i, emitted, X0_air, 2311E+03  + 2.0E+06, 1.5E+06);
-    SA_mult_scat(1.5E+06, i, X0_air, 2310E+03  + 2.0E+06);
+    amorph_material(i, emitted, X0_air, 2310E+03 + 1.0E+03 + 2.0E+06, 2.0E+06);
+    SA_mult_scat(1.5E+06, i, X0_air,  2310E+03 + 1.0E+03 + 2.0E+06);
 
     /* 1st vacuum tube window */
-    // amorph_material(i, emitted, X0_Mylar, 2310E+03  + 2.0E+06 + 120.0, 120.0, 1);
-    SA_mult_scat(120.0, i, X0_Mylar, 2310E+03  + 2.0E+06+ 120.0);
-    // amorph_material(i, emitted, X0_tape, 2310E+03 + 2.0E+06 + 120.0 + 100.0, 100.0, 1);
-    SA_mult_scat(100.0, i, X0_tape, 2310E+03 + 2.0E+06 + 120.0 + 100.0);
+    amorph_material(i, emitted, X0_Mylar, 2310E+03 + 1.0E+03  + 2.0E+06 + 120.0, 120.0, 1);
+    SA_mult_scat(120.0, i, X0_Mylar, 2310E+03 + 1.0E+03  + 2.0E+06 + 120.0);
+    amorph_material(i, emitted, X0_tape, 2310E+03 + 1.0E+03  + 2.0E+06 + 120.0 + 100.0, 100.0, 1);
+    SA_mult_scat(100.0, i, X0_tape,  2310E+03 + 1.0E+03  + 2.0E+06 + 120.0 + 100.0);
 
     MBPL_magnet(i);
 
     /* 2nd vacuum tube window */
-    project_particle(photons, zplanes[2] - d_f - 2.0E+06 - 100.0 - 120.0, i);
-    pair_production(i, 120.0, X0_Mylar, 100);
+    // project_particle(photons, zplanes[2] - d_f - 2.0E+06 - 100.0 - 120.0, i);
+    // pair_production(i, 120.0, X0_Mylar, 100);
     // SA_mult_scat(120.0, i, X0_Mylar, zplanes[2] - d_f - 2.0E+06 - 100.0);
-    amorph_material(i, emitted, X0_tape, zplanes[2] - d_f - 2.0E+06, 100.0);
-    SA_mult_scat(50.0, i, X0_tape, zplanes[2] - d_f - 2.0E+06);
+    // amorph_material(i, emitted, X0_tape, zplanes[2] - d_f - 2.0E+06, 100.0);
+    // SA_mult_scat(50.0, i, X0_tape, zplanes[2] - d_f - 2.0E+06);
 
     /* Air between vacuum tube and M3 */
     // amorph_material(i, emitted, X0_air, zplanes[2] - d_f, 2.0E+06);
-    SA_mult_scat(100.0, i, X0_air, zplanes[2] - d_f);
+    // SA_mult_scat(100.0, i, X0_air, zplanes[2] - d_f);
 
     /* Traverse converter foil */
     project_particle(photons, zplanes[2] - d_f, i);
@@ -350,47 +356,47 @@ void simulator::propagate_particles(void) {
     SA_mult_scat(d_f, i, X0_Ta, zplanes[2]);
 
     /* MIMOSA 3 detector */
-    // amorph_material(i, emitted, X0_tape, zplanes[2] + 50.0, 50.0, 1);
+    amorph_material(i, emitted, X0_tape, zplanes[2] + 50.0, 50.0, 1);
     SA_mult_scat(50.0, i, X0_tape, zplanes[2] + 50.0);
     mimosa_detector(2, i, total_detected);
-    // amorph_material(i, emitted, X0_Mimosa, zplanes[2] + 100.0, 50.0, 1);
+    amorph_material(i, emitted, X0_Mimosa, zplanes[2] + 100.0, 50.0, 1);
     SA_mult_scat(0.003, i, X0_Mimosa , zplanes[2] + 100.0);
 
     /* Air between M3 and M4 */
-    // amorph_material(i, emitted, X0_air, zplanes[3], zplanes[3] - zplanes[2]);
+    amorph_material(i, emitted, X0_air, zplanes[3], zplanes[3] - zplanes[2]);
     SA_mult_scat(zplanes[3] - zplanes[2], i, X0_air, zplanes[3]);
 
     /* MIMOSA 4 detector */
-    // amorph_material(i, emitted, X0_tape, zplanes[3] + 50.0, 50.0, 1);
+    amorph_material(i, emitted, X0_tape, zplanes[3] + 50.0, 50.0, 1);
     SA_mult_scat(50.0, i, X0_tape, zplanes[3] + 50.0);
     mimosa_detector(3, i, total_detected);
-    // amorph_material(i, emitted, X0_Mimosa, zplanes[3] + 100.0, 50.0, 1);
+    amorph_material(i, emitted, X0_Mimosa, zplanes[3] + 100.0, 50.0, 1);
     SA_mult_scat(0.003, i, X0_Mimosa, zplanes[3] + 100.0);
 
     /* Air between M4 and middle of MIMOSA magnet */
-    // amorph_material(i, emitted, X0_air, (zplanes[4] + zplanes[3])/2.0,(zplanes[4] - zplanes[3] - 100.0)/2.0);
+    amorph_material(i, emitted, X0_air, (zplanes[4] + zplanes[3])/2.0,(zplanes[4] - zplanes[3] - 100.0)/2.0);
     SA_mult_scat((zplanes[4] - zplanes[3])/2.0, i, X0_air, (zplanes[4] + zplanes[3])/2.0);
 
     /* MIMOSA magnet */
     mimosa_magnet(i);
 
     /* Air between middle of MIMOSA magnet and M5 */
-    // amorph_material(i, emitted, X0_air, zplanes[4], (zplanes[4] - zplanes[3])/2.0);
+    amorph_material(i, emitted, X0_air, zplanes[4], (zplanes[4] - zplanes[3])/2.0);
     SA_mult_scat((zplanes[4] - zplanes[3])/2.0, i, X0_air, zplanes[4]);
 
     /* MIMOSA 5 detector */
-    // amorph_material(i, emitted, X0_tape, zplanes[4] + 50.0, 50.0, 1);
+    amorph_material(i, emitted, X0_tape, zplanes[4] + 50.0, 50.0, 1);
     SA_mult_scat(50.0, i, X0_tape, zplanes[4] + 50.0);
     mimosa_detector(4, i, total_detected);
-    // amorph_material(i, emitted, X0_Mimosa, zplanes[4] + 100.0, 50.0, 1);
+    amorph_material(i, emitted, X0_Mimosa, zplanes[4] + 100.0, 50.0, 1);
     SA_mult_scat(0.003, i, X0_Mimosa, zplanes[4] + 100.0);
 
     /* Air between MIMOSA 5 and MIMOSA 6 detectors */
-    // amorph_material(i, emitted, X0_air, zplanes[5], zplanes[5] - zplanes[4]);
+    amorph_material(i, emitted, X0_air, zplanes[5], zplanes[5] - zplanes[4]);
     SA_mult_scat(zplanes[5] - zplanes[4], i, X0_air, zplanes[5]);
 
     /* MIMOSA 6 detector */
-    // amorph_material(i, emitted, X0_tape, zplanes[5] + 50.0, 50.0, 1);
+    amorph_material(i, emitted, X0_tape, zplanes[5] + 50.0, 50.0, 1);
     SA_mult_scat(50.0, i, X0_tape, zplanes[5] + 50.0);
     mimosa_detector(5, i, total_detected);
 
@@ -409,6 +415,7 @@ void simulator::propagate_particles(void) {
 
   /* Report progress to terminal */
   cerr << "\nTotal photons emitted : " << total_emitted << "\n";
+  cerr << "Total photons incident on foil : " << no_photons << "\n";
   cerr << "Total conversions : " << conversions << "\n";
 
 }
@@ -422,9 +429,9 @@ void simulator::amorph_material(int eventno, int &emitted, double X0, double z, 
 
   if (d_c == 1.0E+03) {
 
-    xcrystal = {-5500.0, -400.0, 5600.0, 2500.0, -3200.0, -5400.0};
-    ycrystal = {-1500.0, 3700.0, -2000.0, -5000.0, -5000.0, -3300.0};
-    nvert = 6;
+    xcrystal = {-5704, -598, 5190, 3097, -3590};
+    ycrystal = {-1700, 3312, -1788, -4646, -5134};
+    nvert = 5;
 
   }
 
@@ -439,12 +446,19 @@ void simulator::amorph_material(int eventno, int &emitted, double X0, double z, 
   double dl = L/(double)N_slices;
 
   for (size_t hitno = 0; hitno < particles[eventno].size(); hitno++) {
-
+    bool inside_bounds;
     double dldL = (z - particles[eventno][hitno][2])/L;
     int no_slices = dldL * N_slices;
-    bool inside_bounds = isInside(nvert, xcrystal, ycrystal, particles[eventno][hitno][0], particles[eventno][hitno][1]);
 
-    if ((X0 == 21.35E+04 and inside_bounds) or X0 != 21.35E+04) {
+    if (X0 == X0_C_amorph || X0 == X0_C_gem) {
+
+      inside_bounds = isInside(nvert, xcrystal, ycrystal, particles[eventno][hitno][0], particles[eventno][hitno][1]);
+
+    } else inside_bounds = true;
+
+    inside_bounds = true;
+
+    if (inside_bounds) {
 
       for (int i = 0; i < no_slices; i++) {
 
@@ -464,22 +478,22 @@ void simulator::amorph_material(int eventno, int &emitted, double X0, double z, 
 
           if (E == 40.0) {
 
-            sc1 = {0.01};
-            sc2 = {5.0};
+            sc1 = {0.001};
+            sc2 = {30.0};
 
           }
 
           if (E == 20.0) {
 
             sc1 = {0.01};
-            sc2 = {5.0};
+            sc2 = {20.0};
 
           }
 
           if (E == 80.0) {
 
             sc1 = {0.01};
-            sc2 = {10.0};
+            sc2 = {20.0};
 
           }
 
@@ -519,7 +533,7 @@ void simulator::converter_foil(int eventno, double d_f, double X0, int no_slices
   double dl = d_f/(double)no_slices;
 
   for (size_t i = 0; i < photons[eventno].size(); i++) {
-
+    no_photons += 1;
     double dldL = (zplanes[2] - photons[eventno][i][2])/d_f;
     int N_slices = dldL * no_slices;  // remaining number of slices
 
@@ -527,10 +541,16 @@ void simulator::converter_foil(int eventno, double d_f, double X0, int no_slices
 
       /* Proceed only if a conversion happens */
       double randno = R(generator);
-
+      bool multiple_conversion = false;
       if (randno < d_f/(double)no_slices * (7.0)/(9.0*X0) and photons[eventno][i][5] > Emin) {
 
-        conversions++;
+        if (!multiple_conversion) {
+
+          conversions++;
+          multiple_conversion = true;
+
+        }
+
         /* Calculate energy gained by e+/e- pair */
         double photon_energy = photons[eventno][i][5];
         energies.push_back(photon_energy);
@@ -690,9 +710,9 @@ void simulator::aligned_crystal(int eventno, int &emitted, int no_slices) {
 
   if (d_c == 1.0E+03) {
 
-    xcrystal = {-5500.0, -400.0, 5600.0, 2500.0, -3200.0, -5400.0};
-    ycrystal = {-1500.0, 3700.0, -2000.0, -5000.0, -5000.0, -3300.0};
-    nvert = 6;
+      xcrystal = {-5704, -598, 5190, 3097, -2590};
+      ycrystal = {-1700, 3312, -1788, -4646, -3634};
+      nvert = 5;
 
   }
 
@@ -756,75 +776,86 @@ void simulator::mimosa_detector(int planeno, int eventno, int &detections) {
 
   switch (planeno) {
 
-    case 0: x1 = -1.059E+04;
-            x2 = -1.059E+04;
-            x3 = 1.059E+04;
+    case 0: x1 = -1.048E+04;
+            x2 = -1.052E+04;
+            x3 = 1.053E+04;
             x4 = 1.059E+04;
-            y1 = -0.5290E+04;
-            y2 = 0.5273E+04;
-            y3 = 0.5273E+04;
-            y4 = -0.5290E+04;
+
+            y1 = -0.5097E+04;
+            y2 = 0.5290E+04;
+            y3 = 0.5272E+04;
+            y4 = -0.5235E+04;
+
             break;
 
-    case 1: x1 = -1.059E+04;
-            x2 = -1.059E+04;
+    case 1: x1 = -1.042E+04;
+            x2 = -1.054E+04;
             x3 = 1.059E+04;
             x4 = 1.059E+04;
-            y1 = -0.5290E+04;
-            y2 = 0.5273E+04;
-            y3 = 0.5273E+04;
+
+            y1 = -0.5226E+04;
+            y2 = 0.5244E+04;
+            y3 = 0.5124E+04;
             y4 = -0.5290E+04;
+
             break;
 
-   case 2: x1 = -1.126E+04;
-           x2 = -1.136E+04;
-           x3 = 0.9363E+04;
-           x4 = 0.9399E+04;
-           y1 = -0.8661E+04;
-           y2 = 0.1654E+04;
-           y3 = 0.1924E+04;
-           y4 = -0.8373E+04;
+   case 2: x1 = -1.154E+04;
+           x2 =  -1.162E+04;
+           x3 = 0.9258E+04;
+           x4 = 0.9356E+04;
+
+           y1 = -0.6043E+04;
+           y2 = 0.4317E+04;
+           y3 = 0.4742E+04;
+           y4 = -0.5635E+04;
+
            break;
 
-   case 3: x1 = -1.100E+04;
-           x2 = -1.104E+04;
-           x3 = 0.9700E+04;
-           x4 = 0.9730E+04;
-           y1 = -0.8550E+04;
-           y2 = 0.1682E+04;
-           y3 = 0.1891E+04;
-           y4 = -0.8342E+04;
+   case 3: x1 = -1.129E+04;
+           x2 = -1.139E+04;
+           x3 = 0.9605E+04;
+           x4 = 0.9711E+04;
+
+           y1 = -0.6198E+04;
+           y2 = 0.4216E+04;
+           y3 = 0.4659E+04;
+           y4 = -0.5742E+04;
            break;
 
-   case 4: x1 = -1.142E+04;
-           x2 = -1.149E+04;
-           x3 = 0.9584E+04;
-           x4 = 0.9694E+04;
-           y1 = -0.8140E+04;
-           y2 = 0.2231E+04;
-           y3 = 0.2740E+04;
-           y4 = -0.7872E+04;
+   case 4: x1 = -1.177E+04;
+           x2 = -1.187E+04;
+           x3 = 0.9459E+04;
+           x4 = 0.9579E+04;
+
+           y1 = -0.5652E+04;
+           y2 = 0.4868E+04;
+           y3 = 0.5380E+04;
+           y4 = -0.5121E+04;
            break;
 
-   case 5: x1 = -1.245E+04;
-           x2 = -1.241E+04;
-           x3 = 0.8619E+04;
-           x4 = 0.8759E+04;
-           y1 = -0.7999E+04;
-           y2 = 0.2374E+04;
-           y3 = 0.2764E+04;
-           y4 = -0.7868E+04;
-           break;
+   case 5: x1 = -1.288E+04;
+           x2 = -1.29E+04;
+           x3 = 0.8563E+04;
+           x4 = 0.8601E+04;
 
+           y1 = -0.5410E+04;
+           y2 = 0.5137E+04;
+           y3 = 0.5446E+04;
+           y4 = -0.5064E+04;
+           break;
   }
 
   vector<double> xbounds = {x1, x2, x3, x4};  // xcoords of corners
   vector<double> ybounds = {y1, y2, y3, y4};  // ycoords of corners
-  mimosa_res = 50.0; // spatial resoultion of mimosa detector (micro-m) (smaller = better res.)
+
+  mimosa_res = 35.0; // spatial resoultion of mimosa detector (micro-m) (smaller = better res.)
+  // double fake_hit_prob = 0.4; // probability per. event of fake hit
 
   /* Take into account detector resoultion by adding a random (Dx, Dy) displacement between -4 -> 4 micro-meter */
-  normal_distribution<double> distribution(0.0, 4.0);
+  normal_distribution<double> distribution(0.0, 3.5);
 
+  /* Simulate real hit detection */
   for (size_t hitno = 0; hitno < particles[eventno].size(); hitno++) {
 
     double Dx = distribution(generator);
@@ -875,6 +906,22 @@ void simulator::mimosa_detector(int planeno, int eventno, int &detections) {
 
   }
 
+  /* Simulate fake hit detection */
+  // normal_distribution<double> fake_hit_x(x1, x4);
+  // normal_distribution<double> fake_hit_y(y1, y2);
+  //
+  // if (R(generator) < fake_hit_prob) {
+  //
+  //   double xcoord = fake_hit_x(generator);
+  //   double ycoord = fake_hit_y(generator);
+  //
+  //   vector<double> hit = {xcoord, ycoord};
+  //
+  //   mimosas[planeno][eventno].push_back(hit);
+  //
+  // }
+
+
 }
 
 double simulator::calc_dist(double x0, double y0, double x1,double y1) {
@@ -903,7 +950,6 @@ void simulator::SA_mult_scat(double d, int i, double X0, double zcoord) {
   for (size_t j = 0; j < particles[i].size(); j++){
 
     double l = zcoord - particles[i][j][2];
-
     for (int k = 0; k < 2; k++) {
 
       double z1 = R_normal(generator);
@@ -914,11 +960,10 @@ void simulator::SA_mult_scat(double d, int i, double X0, double zcoord) {
       double dtheta0 = z2 * theta0;
       particles[i][j][k] += dy + l*particles[i][j][6+k]; // total (x/y) displacement
       particles[i][j][6+k] += dtheta0; // xslope/yslope
-
+      // if (X0 ==  X0_Ta) cerr << dy << "\t" << dtheta0 << "\n";
     }
 
     particles[i][j][2] = zcoord;
-
   }
 
 }
@@ -1044,7 +1089,10 @@ double simulator::photonic_energy_distribution(vec x, double r, double Eb, doubl
 
   double Emin = 2.0 * 0.5109989461E-3; // 2 * electron mass GeV
 
-  return x(0) > 0 ? abs((4.0/3.0 * log(x(0)/Emin) - 4.0/3.0 * (x(0) - Emin)/Eb + 1.0/(2.0*Eb*Eb) * (x(0)*x(0) - Emin*Emin)) - r*norm) : abs((4.0/3.0 * log(abs(x(0))/Emin) - 4.0/3.0 * (abs(x(0)) - Emin)/Eb + 1.0/(2.0*Eb*Eb) * (x(0)*x(0) - Emin*Emin)) - r*norm);
+  // return x(0) > 0 ? abs((4.0/3.0 * log(x(0)/Emin) - 4.0/3.0 * (x(0) - Emin)/Eb + 1.0/(2.0*Eb*Eb) * (x(0)*x(0) - Emin*Emin)) - r*norm) : abs((4.0/3.0 * log(abs(x(0))/Emin) - 4.0/3.0 * (abs(x(0)) - Emin)/Eb + 1.0/(2.0*Eb*Eb) * (x(0)*x(0) - Emin*Emin)) - r*norm);
+
+  return x(0) > 0 ? abs((4.0/3.0 * log(x(0)/Emin) - 4.0/3.0 * (x(0) - Emin)/Eb + 1.0/(2.0*Eb*Eb) * (x(0)*x(0) - Emin*Emin)) - r*norm) : 1E+17;
+
 
 }
 
@@ -1072,9 +1120,11 @@ int simulator::isInside(int nvert, vector<double> vertx, vector<double> verty, d
 
   for (i = 0, j = nvert-1; i < nvert; j = i++) {
 
-    if ( ((verty[i]>testy) != (verty[j]>testy)) && (testx < (vertx[j]-vertx[i]) * (testy-verty[i]) / (verty[j]-verty[i]) + vertx[i]) )
+    if ( ((verty[i]>testy) != (verty[j]>testy)) && (testx < (vertx[j]-vertx[i]) * (testy-verty[i]) / (verty[j]-verty[i]) + vertx[i]) ) {
 
        c = !c;
+
+     }
 
   }
 
@@ -1097,25 +1147,25 @@ int simulator::select_member(vector<double> numbers, vector<double> weights) {
   int low = 0, high = numbers.size() - 1;
   while (high >= low) {
 
-      int guess = (low + high)/2;
+    int guess = (low + high)/2;
 
-      if (weights_cumsum[guess] < r) {
+    if (weights_cumsum[guess] < r) {
 
-          low = guess + 1;
+        low = guess + 1;
 
-        }
+      }
 
-      else if (weights_cumsum[guess] - weights[guess] > r) {
+    else if (weights_cumsum[guess] - weights[guess] > r) {
 
-          high = guess - 1;
+        high = guess - 1;
 
-        }
+      }
 
-      else {
+    else {
 
-          return guess;  // return the index for selected member in "numbers" array
+        return guess;  // return the index for selected member in "numbers" array
 
-        }
+      }
 
   }
 

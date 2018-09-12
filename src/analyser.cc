@@ -10,19 +10,19 @@ analyser::analyser(vector<double> z, char const *name, char const *run) {
   M1M2_z = {zplanes[0], zplanes[1], zplanes[2]};  // z-coords for M1-M3 PLANES
   M2M3_z = {zplanes[1], zplanes[2], zplanes[3]};  // z-coords for M2-M4 planes
   M3M4_z = {zplanes[2], zplanes[3], (zplanes[4]+zplanes[3])/2.0}; // z-coords of M3-MM planes
-  M6M5_z = {zplanes[4], zplanes[5], (zplanes[4]+zplanes[3])/2.0}; // z-coords for M5-MM planes
+  M6M5_z = {zplanes[5], zplanes[4], (zplanes[4]+zplanes[3])/2.0}; // z-coords for M5-MM planes
 
   /* Conditions for track construction + pairing */
-  M1M2_d_lim = 2500.0;  // acceptable distance between M1->M2 projected point and observed hit in M3 [micro-meter]
+  M1M2_d_lim = 1400.0;  // acceptable distance between M1->M2 projected point and observed hit in M3 [micro-meter]
   M2M3_d_lim = 1000.0; // acceptable distance between M2->M3 projected point and observed hit in M4 [micro-meter]
-  M6M5_d_lim = 500.0; // acceptable distance in MM bewteen M1->MM and M6->MM arm of track [micro-meter]
-  Match_d = 250.0; // matching ditance in MM between electron/positron paired track [micro-meter]
-  Match_d_foil = 50.0; // matching ditance in foil between electron/positron paired track [micro-meter]
-  yz_defl_lim = 5.0E-3; // angle of acceptable y-deflction [rad]
+  M6M5_d_lim = 400.0; // acceptable distance in MM bewteen M1->MM and M6->MM arm of track [micro-meter]
+  Match_d = 100.0; // matching ditance in MM between electron/positron paired track [micro-meter]
+  Match_d_foil = 55.0; // matching ditance in foil between electron/positron paired track [micro-meter]
+  yz_defl_lim = 3.0E-03; // angle of acceptable y-deflction [rad]
 
   /* Alignment conditions */
-  dr_crit_list = {3500, 2500, 1500, 500, 250, 150};  // radius for acceptable hits when aligning [micro-meter]
-  tol = 1E-6; // convergence tolerance
+  dr_crit_list = {5000, 1300, 600, 200, 60};  // radius for acceptable hits when aligning [micro-meter]
+  tol = 1E-9; // convergence tolerance
 
   /* Info for data storage on disk */
   runno = run;
@@ -53,6 +53,19 @@ void analyser::update_hitcoords(int plane, vector<vector<vector<double>>> hitcoo
 void analyser::update_hotpixels(int plane, vector<int> hotpixel) {
 
   hotpixels[plane] = hotpixel;
+
+}
+
+void analyser::save_vector(string name, vector<double> data) {
+
+  string filename = DATPATH + "/" + name + ".txt";
+  ofstream output (filename);
+
+  for (size_t i = 0; i < data.size(); i++) {
+
+    output << data[i] << "\n";
+
+  }
 
 }
 
@@ -92,7 +105,7 @@ void analyser::print_hotpixels(string name) {
 
 }
 
-void analyser::print_interdistance(string name){
+void analyser::print_interdistance(string name) {
 
   string filename = DATPATH + "/interdistance_data_" + name + ".txt";;
   ofstream output (filename);
@@ -143,7 +156,11 @@ void analyser::print_energy(string name) {
 
   for (size_t i = 0; i < energies.size(); i++) {
 
-    output << energies[i] << "\n";
+    for (size_t j = 0; j < energies[i].size(); j++) {
+
+      output << energies[i][j] << "\n";
+
+    }
 
   }
 
@@ -165,23 +182,23 @@ void analyser::print_slope(string name) {
 void analyser::print_M1M2_slope(string name) {
 
   string filename1 = DATPATH + "/angles_M1M2_" + name + ".txt";
-  string filename2 = DATPATH + "/beam_divergence_"  + name + ".txt";
+  // string filename2 = DATPATH + "/beam_divergence_"  + name + ".txt";
   ofstream output1 (filename1);
-  ofstream output2 (filename2);
+  // ofstream output2 (filename2);
 
   for (int i = 0; i < Nevents; i++) {
 
-    for (size_t j = 0; j < M1M2_slopes[i][0].size(); j++) {
+    for (size_t j = 0; j < M1M2_slopes[i].size(); j++) {
 
-      output1 << M1M2_slopes[i][0][j] << "\t" << M1M2_slopes[i][1][j] << "\n";
-
-    }
-
-    for (size_t j = 0; j < divergence[i][0].size(); j++) {
-
-      output2 << divergence[i][0][j] << "\t" << divergence[i][1][j] << "\n";
+      output1 << M1M2_slopes[i][j][0] << "\t" << M1M2_slopes[i][j][1]  << "\t" << M1M2_slopes[i][j][2] << "\t" << M1M2_slopes[i][j][3] << "\n";
 
     }
+
+    // for (size_t j = 0; j < divergence[i][0].size(); j++) {
+    //
+    //   output2 << divergence[i][0][j] << "\t" << divergence[i][1][j] << "\n";
+    //
+    // }
   }
 
 }
@@ -193,7 +210,11 @@ void analyser::print_zpos(string name) {
 
   for (size_t i = 0; i < zclosepos.size(); i++) {
 
-    output << zclosepos[i] << "\n";
+    for (size_t j = 0; j < zclosepos[i].size(); j++) {
+
+      output << zclosepos[i][j] << "\n";
+
+    }
 
   }
 
@@ -236,7 +257,11 @@ void analyser::image_crystal(string name) {
 
   for (size_t i = 0; i < paired_tracks.size(); i++) {
 
-    output << paired_tracks[i][0][1][0] << "\t" << paired_tracks[i][0][1][1] << "\n" << paired_tracks[i][1][1][0] << "\t" << paired_tracks[i][1][1][1] << "\n";
+    for (size_t j = 0; j < paired_tracks[i].size(); j++) {
+
+      output << paired_tracks[i][j][0][1][0] << "\t" << paired_tracks[i][j][0][1][1] << "\n" << paired_tracks[i][j][1][1][0] << "\t" << paired_tracks[i][j][1][1][1] << "\n";
+
+    }
 
   }
 
@@ -246,7 +271,7 @@ void analyser::image_crystal(string name) {
 void analyser::print_planar_dist(int plane, string name) {
 
   string plane_str = to_string(plane);
-  string filename = DATPATH + "/plane_" + plane_str + "_" + name + "_dist.txt";
+  string filename = DATPATH + "/plane" + plane_str + "_" + name + "_dist.txt";
   ofstream output (filename);
 
   double x1, x2, y1, y2;
@@ -255,17 +280,14 @@ void analyser::print_planar_dist(int plane, string name) {
 
     for (size_t j = 0; j < hitcoords[plane][i].size(); j++) {
 
-      for (size_t k = 0; k < hitcoords[plane][i].size(); k++) {
-
-        if (j != k) {
+      for (size_t k = j+1; k < hitcoords[plane][i].size(); k++) {
 
           x1 = hitcoords[plane][i][j][0];
           x2 = hitcoords[plane][i][k][0];
           y1 = hitcoords[plane][i][j][1];
           y2 = hitcoords[plane][i][k][1];
-          output << sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2)) << "\n";
 
-        }
+          output << sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2)) << "\n";
 
       }
 
@@ -308,48 +330,66 @@ double analyser::calc_pair_energy(vector<vector<vector<double>>> pairedtracks) {
 
 /* Pair tracks determined by "construct_tracks" method */
 void analyser::pair_tracks(void) {
-  int pairs = 0, matchedtrack = 0, tot_matched_tracks = 0, erased_tracks = 0;
+  int pairs = 0, matchedtrack = 0;
+  int discarded_photons = 0;
 
-  paired_tracks.resize(tracks.size()*200);
-  energies.resize(tracks.size()*200);
-  zclosepos.resize(tracks.size()*200);
+  paired_tracks.resize(tracks.size());
+  energies.resize(tracks.size());
+  zclosepos.resize(tracks.size());
+  vector<int> bad_events;
 
   /*
   Here we find pairs. We only want a track to pair exactly one other track.
   To ensure this we iterate first from i = 0 -> number of tracks, then j = i + 1 -> number of tracks.
   If multiple pairs are found we erase them from the tracks array.
   */
+  vector<double> Match_d_MM;
+  vector<double> Match_dist_foil;
 
-  for (size_t i = 0; i < tracks.size(); i++) {
+  int N_photons = 0;
 
-    int matchedtracks = 0;
+  for (size_t i = 0; i < tracks.size(); i++) {  // no. of events
 
-    for (size_t j = i+1; j < tracks.size(); j++) {
+    int no_photons = 0;
 
-      if (tracks[i][8][0] == tracks[j][8][0]) {
+    for (size_t j = 0; j < tracks[i].size(); j++) { // tracks in event
 
-        double dist = calc_dist(tracks[i][4][0], tracks[i][4][1], tracks[j][4][0], tracks[j][4][1]);
+      int matchedtracks = 0;
 
-        if (dist < Match_d) {
+      for (size_t k = j+1; k < tracks[i].size(); k++) {
 
-          double M3_dist = calc_dist(tracks[i][2][0], tracks[i][2][1], tracks[j][2][0], tracks[j][2][1]);
+        double dist = calc_dist(tracks[i][j][4][0], tracks[i][j][4][1], tracks[i][k][4][0], tracks[i][k][4][1]);
+        Match_d_MM.push_back(dist);
+
+        if (1/*dist < Match_d*/) {
+
+          double M3_dist = calc_dist(tracks[i][j][2][0], tracks[i][j][2][1], tracks[i][k][2][0], tracks[i][k][2][1]);
+          Match_dist_foil.push_back(M3_dist);
 
           if (M3_dist < Match_d_foil) {
 
-            matchedtracks++;
-            tot_matched_tracks++;
+            vec P1 = {tracks[i][j][6][0], tracks[i][j][6][1], M6M5_z[0]}, Q1 = {tracks[i][j][7][0], tracks[i][j][7][1], M6M5_z[1]};
+            vec P2 = {tracks[i][k][2][0], tracks[i][k][2][1], M3M4_z[0]}, Q2 = {tracks[i][k][3][0], tracks[i][k][3][1], M6M5_z[1]};
+            mat closepos = lines3d_nearestpoints(P1, Q1, P2, Q2);
+            double zclosepospair = (closepos(2, 0) + closepos(2, 1))/2;
+            // zclosepos[i].push_back(zclosepospair);
 
-            if (matchedtracks > 1) {
+            if (/*zclosepospair > 8e6 && zclosepospair < 1e7*/1) {
 
-              tracks.erase(tracks.begin() + j);
-              erased_tracks++;
-              j--;
+              no_photons++;
+              matchedtracks++;
+              pairs++;
 
-            }
+              // paired_tracks[i].push_back({tracks[i][j], tracks[i][k]});
+              energies[i].push_back(calc_pair_energy({tracks[i][j], tracks[i][k]}));
 
-            else if (matchedtracks == 1) {
+              /* Remove additional matched track since we do not want it to potentially match any other track */
+              if (matchedtracks > 1) {
 
-              matchedtrack = j;
+                tracks[i].erase(tracks[i].begin() + k);
+                k--;
+
+              }
 
             }
 
@@ -361,37 +401,45 @@ void analyser::pair_tracks(void) {
 
     }
 
-    /* Only save pair if there is a single match */
-    if (matchedtracks == 1) {
+    if (no_photons > 1) {
 
-      vec P1 = {tracks[i][6][0], tracks[i][6][1], M6M5_z[0]}, Q1 = {tracks[i][7][0], tracks[i][7][1], M6M5_z[1]};
-      vec P2 = {tracks[matchedtrack][2][0], tracks[matchedtrack][2][1], M3M4_z[0]}, Q2 = {tracks[matchedtrack][3][0], tracks[matchedtrack][3][1], M6M5_z[1]};
-      mat closepos = lines3d_nearestpoints(P1, Q1, P2, Q2);
-      double zclosepospair = (closepos(2, 0) + closepos(2, 1))/2;
-
-      if (zclosepospair > 8e6 && zclosepospair < 1e7) {
-
-        paired_tracks[pairs] = {tracks[i], tracks[matchedtrack]};
-        energies[pairs] = calc_pair_energy(paired_tracks[pairs]);
-        zclosepos[pairs] = zclosepospair;
-        pairs++;
-
-      }
+      N_photons++;
+      bad_events.push_back(i);
 
     }
 
   }
 
-  paired_tracks.resize(pairs);
-  energies.resize(pairs);
-  zclosepos.resize(pairs);
+  /* Discard photons from bad events */
+  int erased_events = 0;
+  int photons_removed = 0;
+  for (size_t i = 0; i < bad_events.size(); i++) {
 
-  cerr << "Number of paired tracks : " << pairs << "\n";
+    photons_removed += energies[bad_events[i] - erased_events].size();
+    energies.erase(energies.begin() + bad_events[i] - erased_events);
+    erased_events++;
+
+  }
+
+  int N_photons_usable = 0;
+  for (size_t i = 0; i < energies.size(); i++) {
+
+    N_photons_usable += energies[i].size();
+
+  }
+
+  string name0 = (string)filename + "match_d_MM";
+  string name1 = (string)filename + "Match_d_foil";
+  save_vector(name0, Match_d_MM);
+  save_vector(name1, Match_dist_foil);
+
+  cerr << "no. of events removed :\t\t\t" << erased_events << "\n";
+  cerr << "no. of photons before removal :\t\t" << pairs <<  "\nno. of photons after removal :\t\t" << N_photons_usable << "\n";
 }
 
 void analyser::beam_divergence(int eventno, int hit_indx_0, int hit_indx_1, string name) {
-  string str1 = "partial";
-  string str2 = "full";
+  string str1 = "full";
+  string str2 = "partial";
 
   vec M1M2_x = {hitcoords[0][eventno][hit_indx_0][0], hitcoords[1][eventno][hit_indx_1][0]};
   vec M1M2_y = {hitcoords[0][eventno][hit_indx_0][1], hitcoords[1][eventno][hit_indx_1][1]};
@@ -400,38 +448,52 @@ void analyser::beam_divergence(int eventno, int hit_indx_0, int hit_indx_1, stri
   double ang_x = calc_slope(vec_M1M2_z, M1M2_x);
   double ang_y = calc_slope(vec_M1M2_z, M1M2_y);
 
+  // if (name.compare(str1) == 0) {
+  //
+  //   divergence[eventno][0].push_back(ang_x);
+  //   divergence[eventno][1].push_back(ang_y);
+  //
+  // }
+
   if (name.compare(str2) == 0) {
 
-    divergence[eventno][0].push_back(ang_x);
-    divergence[eventno][1].push_back(ang_y);
-
-  }
-
-  if (name.compare(str1) == 0) {
-
-    M1M2_slopes[eventno][0].push_back(ang_x);
-    M1M2_slopes[eventno][1].push_back(ang_y);
+    vector<double> ang_pos = {ang_x, ang_y, hitcoords[0][eventno][hit_indx_0][0], hitcoords[0][eventno][hit_indx_0][1]};
+    M1M2_slopes[eventno].push_back(ang_pos);
 
   }
 
 }
 
 /* Construct particle tracks from M1 -> M6 */
-void analyser::construct_tracks(double M1M2_slope_lb, double M1M2_slope_ub) {
-  int M1_MM_tot_tracks = 0, M1_M6_tot_tracks = 0;
+void analyser::construct_tracks(double M1M2_slope_lb_x, double M1M2_slope_ub_x, double M1M2_slope_lb_y, double M1M2_slope_ub_y) {
+  int M1_M4_tot_tracks = 0, M1_M6_tot_tracks = 0, M1_M3_tot_tracks = 0, M5_M6_tot_tracks = 0;
+
+  int Nevents_within_cut = 0;
 
   M1M2_slopes.resize(Nevents);
-  divergence.resize(Nevents);
 
   string str1 = "full", str2 = "partial";
 
+  int Nevents_temp = hitcoords[0].size();
+
   tracks.clear();
+  tracks.resize(Nevents);
 
-  for (int i = 0; i < Nevents; i++) {
+  vector<double> M1M2_dist;
+  vector<double> M2M3_dist;
+  vector<double> M5M6_dist;
+  vector<double> yz_defl;
+
+  int count = 0;
+  double start_time = omp_get_wtime();
+  double T = 0;
+
+  // #pragma omp parallel for default(none) shared(count, M1M2_dist, M2M3_dist, M5M6_dist, yz_defl, M1_MM_tot_tracks, M1_M6_tot_tracks, M1_M3_tot_tracks, M5_M6_tot_tracks, str1, str2, Nevents_within_cut, Nevents_temp, cerr, start_time, T)
+  for (int i = 0; i < Nevents_temp; i++) {
+
+    vector<vector<vector<double>>> M1_MM_tracks;
     vector<vector<double>> M1_M6_track;
-
-    M1M2_slopes[i].resize(2);
-    divergence[i].resize(2);
+    bool included = false;
 
     /*
     Here we construct tracks. Each loop iterates over hits in a mimosa detector (0 -> 5).
@@ -444,88 +506,135 @@ void analyser::construct_tracks(double M1M2_slope_lb, double M1M2_slope_ub) {
       for (size_t k = 0; k < hitcoords[1][i].size(); k++) {
 
         vector<double> M1M2_Proj = rect_project(hitcoords[0][i][j], hitcoords[1][i][k], M1M2_z);
-        beam_divergence(i, j, k, str1);
 
-        for (size_t l = 0; l < hitcoords[2][i].size(); l++) {
+          /* Only pick out certain angles of entry into crystal */
+          if (1/*divergence[i][0][j] > M1M2_slope_lb_x and divergence[i][0][j] < M1M2_slope_ub_x and divergence[i][1][j] > M1M2_slope_lb_y and divergence[i][1][j] < M1M2_slope_ub_y*/) {
 
-          double M1M2_d = calc_dist(M1M2_Proj[0], M1M2_Proj[1], hitcoords[2][i][l][0], hitcoords[2][i][l][1]);
+            if (!included) {
+              Nevents_within_cut++;
+              included = true;
+            }
 
-          if (M1M2_d < M1M2_d_lim) {
+            for (size_t l = 0; l < hitcoords[2][i].size(); l++) {
 
-            vector<double> M2M3_Proj = rect_project(hitcoords[1][i][k], hitcoords[2][i][l], M2M3_z);
+              double M1M2_d = calc_dist(M1M2_Proj[0], M1M2_Proj[1], hitcoords[2][i][l][0], hitcoords[2][i][l][1]);
+              M1M2_dist.push_back(M1M2_d);
 
-            for (size_t m = 0; m < hitcoords[3][i].size(); m++) {
+              if (M1M2_d < M1M2_d_lim) {
 
-              double M2M3_d = calc_dist(M2M3_Proj[0], M2M3_Proj[1], hitcoords[3][i][m][0], hitcoords[3][i][m][1]);
-              vec vec_M3M4_z = {M3M4_z[0], M3M4_z[1]};
-              vec M3M4_y = {hitcoords[2][i][l][1], hitcoords[3][i][m][1]};
-              double M3M4_slope = calc_slope(vec_M3M4_z, M3M4_y);
-              beam_divergence(i, j, k, str2);
+                vector<double> M2M3_Proj = rect_project(hitcoords[1][i][k], hitcoords[2][i][l], M2M3_z);
+                M1_M3_tot_tracks++;
 
-              /* Only pick out certain angles of entry into crystal */
-              if (M1M2_slopes[i][0][j] > M1M2_slope_lb and M1M2_slopes[i][0][j] < M1M2_slope_ub and M1M2_slopes[i][1][j] > M1M2_slope_lb and M1M2_slopes[i][1][j] < M1M2_slope_ub) {
+                for (size_t m = 0; m < hitcoords[3][i].size(); m++) {
 
-                if (M2M3_d < M2M3_d_lim) {
+                  double M2M3_d = calc_dist(M2M3_Proj[0], M2M3_Proj[1], hitcoords[3][i][m][0], hitcoords[3][i][m][1]);
+                  M2M3_dist.push_back(M2M3_d);
+                  beam_divergence(i, j, k, str2);
 
-                  vector<double> M3M4_Proj = rect_project(hitcoords[2][i][l], hitcoords[3][i][m], M3M4_z);
-                  M1_MM_tot_tracks++;
+                  if (M2M3_d < M2M3_d_lim) {
 
-                  for (size_t n = 0; n < hitcoords[4][i].size(); n++) {
+                    vector<double> M3M4_Proj = rect_project(hitcoords[2][i][l], hitcoords[3][i][m], M3M4_z);
+                    M1_M4_tot_tracks++;
+                    M1_MM_tracks.push_back({hitcoords[0][i][j], hitcoords[1][i][k], hitcoords[2][i][l], hitcoords[3][i][m], M3M4_Proj});
 
-                    double shortdist = INFINITY;
-                    bool trackfound = false;
+                  } // if statement for check of M2M3 limit done
 
-                    for (size_t o = 0; o < hitcoords[5][i].size(); o++) {
+                } // hits in M4 done
 
-                      vector<double> M6M5_Proj = rect_project(hitcoords[4][i][n], hitcoords[5][i][o], M6M5_z);
-                      double M6M5_d = calc_dist(M6M5_Proj[0], M6M5_Proj[1], M3M4_Proj[0], M3M4_Proj[1]);
+              } // if statement for check of M1M2 limit done
 
-                      if (M6M5_d < shortdist and M6M5_d < M6M5_d_lim) {
+            } // hits in M3 done
 
-                        vec vec_M5M6_z = {M6M5_z[0], M6M5_z[1]};
-                        vec M5M6_y = {hitcoords[4][i][n][1], hitcoords[5][i][o][1]};
-                        double M5M6_slope = calc_slope(vec_M5M6_z, M5M6_y);
-
-                        if (abs(M5M6_slope - M3M4_slope) < yz_defl_lim) {
-
-                          shortdist = M6M5_d;
-                          trackfound = true;
-                          M1_M6_track = {hitcoords[0][i][j], hitcoords[1][i][k], hitcoords[2][i][l], hitcoords[3][i][m], M3M4_Proj, M6M5_Proj, hitcoords[4][i][n], hitcoords[5][i][o], {(double)i}};
-
-                        }
-
-                      }
-
-                    } // hits in M6 done
-
-                    if (trackfound) {
-
-                      tracks.push_back(M1_M6_track);
-                      M1_M6_tot_tracks++;
-
-                    }
-
-                  } // hits in M5 done
-
-                }
-
-              }
-
-            } // hits in M4 done
-
-          }
-
-        } // hits in M3 done
+          } // end cut
 
       } // hits in M2 done
 
     } // hits in M1 done
 
+    /* Iterate over M6 -> M6 tracks */
+    for (size_t n = 0; n < hitcoords[5][i].size(); n++) {
+
+      vector<vector<double>> M1_M6_track;
+      double shortdist = INFINITY;
+      bool trackfound = false;
+
+      for (size_t o = 0; o < hitcoords[4][i].size(); o++) {
+
+        vector<double> M6M5_Proj = rect_project(hitcoords[5][i][n], hitcoords[4][i][o], M6M5_z);
+        M5_M6_tot_tracks++;
+
+        /* For every M5-M6 combination, pick an M3M4 projection */
+        for (size_t l = 0; l < M1_MM_tracks.size(); l++) {
+
+          vector<double> M3M4_Proj = M1_MM_tracks[l].back();
+          double M6M5_d = calc_dist(M6M5_Proj[0], M6M5_Proj[1], M3M4_Proj[0], M3M4_Proj[1]);
+          M5M6_dist.push_back(M6M5_d);
+
+          vec vec_M3M4_z = {M3M4_z[0], M3M4_z[1]};
+          vec M3M4_y = {M1_MM_tracks[l][2][1], M1_MM_tracks[l][3][1]};
+          double M3M4_slope = calc_slope(vec_M3M4_z, M3M4_y);
+
+          if (M6M5_d < shortdist and M6M5_d < M6M5_d_lim) {
+
+            shortdist = M6M5_d;
+            vec vec_M5M6_z = {M6M5_z[0], M6M5_z[1]};
+            vec M5M6_y = {hitcoords[5][i][n][1], hitcoords[4][i][o][1]};
+            double M5M6_slope = calc_slope(vec_M5M6_z, M5M6_y);
+            yz_defl.push_back(M5M6_slope - M3M4_slope);
+
+            if (1/*abs(M5M6_slope - M3M4_slope) < yz_defl_lim*/) {
+
+              trackfound = true;
+              M1_M6_track = {M1_MM_tracks[l][0], M1_MM_tracks[l][1], M1_MM_tracks[l][2], M1_MM_tracks[l][3], M3M4_Proj, M6M5_Proj, hitcoords[4][i][o], hitcoords[5][i][n]};
+
+            }
+
+          }
+
+        }
+
+      } // hits in M6 done
+
+      if (trackfound) {
+
+        tracks[i].push_back(M1_M6_track);
+        M1_M6_tot_tracks++;
+
+      } // if statement for push_back of tracks
+
+    } // hits in M5 done
+
+    if ( (count + 1) % 100001 == 0) {
+
+      double dt = omp_get_wtime() - start_time;
+      T += dt;
+      cerr << "Progress :\t" << floor(100 * double(i)/(double)Nevents) << "%" << "\ttime used :\t" << dt << "\ttotal time elapsed :\t" << T << "\ttime remaining :\t" << dt * (double)Nevents/100001.00 - T << "\n";
+      start_time = omp_get_wtime();
+
+    }
+
   } // events done
 
-  cerr << "\nTotal tracks from M1 -> MM : " << M1_MM_tot_tracks << "\n";
-  cerr << "Total tracks from M1 -> M6 : " << M1_M6_tot_tracks << "\n";
+  string eventfile_name = "events_run_cuts.txt";
+  fstream event_number_stream(eventfile_name, fstream::in | fstream::out | fstream::app);
 
+  if (event_number_stream.is_open()) {
+
+      event_number_stream << runno << "\t" << Nevents_within_cut << "\n";
+      event_number_stream.close();
+
+    } else cerr << "Cannot open file:\t" << eventfile_name << "\n\n";
+
+  save_vector("M1M2_dist_sim", M1M2_dist);
+  save_vector("M2M3_dist_sim", M2M3_dist);
+  save_vector("M5M6_dist_sim", M5M6_dist);
+  save_vector("yz_defl", yz_defl);
+
+  cerr << "\n\nTotal tracks from M1 -> M3 : " << M1_M3_tot_tracks << "\n";
+  cerr << "Total tracks from M1 -> M4 : " << M1_M4_tot_tracks << "\n";
+  cerr << "Total tracks from M6 -> M5 : " << M5_M6_tot_tracks << "\n";
+  cerr << "Total tracks from M1 -> M6 : " << M1_M6_tot_tracks << "\n";
+  cerr << "Number of events within cut : " << Nevents_within_cut << "\n\n";
 }
 
 /* Calculate distances between projected and observes hits */
@@ -562,17 +671,18 @@ vector<double> analyser::calc_interdistance(vector<vector<vector<double>>> Hits0
 
 }
 
-double analyser::calc_dist(double x0, double y0, double x1,double y1) {
+double analyser::calc_dist(double x0, double y0, double x1, double y1) {
 
-  return sqrt(pow(x1 - x0, 2) + pow(y1 - y0, 2)); // pythagoras
+  return sqrt((x1 - x0)*(x1 - x0) + (y1 - y0)*(y1 - y0)); // pythagoras
 
 }
 
 vector<double> analyser::rect_project(vector<double> hit0, vector<double> hit1, vector<double> z) {
 
   vector<double> proj(2);
-  proj[0] = ((hit0[0]-hit1[0])/(z[0]-z[1]))*(z[2]-z[0]) + hit0[0];
-  proj[1] = ((hit0[1]-hit1[1])/(z[0]-z[1]))*(z[2]-z[0]) + hit0[1];
+
+  proj[0] = (z[2] - z[0]) * (hit0[0] - hit1[0]) / (z[0] - z[1]) + hit0[0];
+  proj[1] = (z[2] - z[0]) * (hit0[1] - hit1[1]) / (z[0] - z[1]) + hit0[1];
 
   return proj;
 
@@ -581,9 +691,17 @@ vector<double> analyser::rect_project(vector<double> hit0, vector<double> hit1, 
 /* Align detector relative to M1-M2 */
 void analyser::align_plane(mat &mat_Tot, vector<vector<vector<double>>>  Hits0, vector<vector<vector<double>>>  Hits1, vector<vector<vector<double>>>  &Hits2, vector<double> z) {
 
-  for (size_t j = 0; j < dr_crit_list.size(); j++) {
+  vector<double> dr;
 
-    double dr_crit = dr_crit_list[j];
+  if (z.back() == zplanes[2] or z.back() == zplanes[3]) {
+
+    dr = {dr_crit_list[0], dr_crit_list[1], dr_crit_list[2]};
+
+  } else dr = dr_crit_list;
+
+  for (size_t j = 0; j < dr.size(); j++) {
+
+    double dr_crit = dr[j];
     bool convergence;
     mat mat_temp_T = zeros<mat>(3,3);
 
@@ -869,10 +987,6 @@ void analyser::remove_hot_pixels(vector<vector<vector<double>>> &hitcoord, vecto
 /* Extract raw data from root file, do pre-processing and save usable data in std::vectors */
 void analyser::extract_root_data(void) {
 
-  int N_hits_tot = 0;
-  int N_hits_max = 0;
-  int N_hits_min = 100;
-
   /* Open root file and obtain relevant data */
   TFile *f = TFile::Open(filename);
   TTree* T1 = (TTree *)f->Get("T");
@@ -888,42 +1002,23 @@ void analyser::extract_root_data(void) {
   /* Extract data from each event */
   for (int i  = 0; i < N_events; i++) {
 
+    bool included = false;
     T1->GetEntry(i);
     int N_hits = fAHitsN->GetValue();
     int N_triggers = ENumberOfTriggers->GetValue();
 
-    if (N_triggers == 2 and N_hits > 0) {
+    if (N_triggers == 2 && N_hits > 0) {
 
-      vector<vector<double>> EventData(N_hits);
+      vector<vector<double>> EventData; EventData.resize(N_hits);
       int N_hits_0 = 0;
 
       for (int j = 0; j < N_hits; j++) {
 
-        vector<double> HitData(4);
-        HitData[0] = Hu->GetValue(j);
-        HitData[1] = Hv->GetValue(j);
-        HitData[2] = 1.0;
-        HitData[3] = static_cast<double>(Hpk->GetValue(j) -1);
-
-        if (HitData[3] == 0) {
-
-          N_hits_tot += 1;
-          N_hits_0 += 1;
-
-          if (N_hits_0 > N_hits_max) {
-
-            N_hits_max = N_hits_0;
-
-          }
-
-          if (N_hits_0 < N_hits_min) {
-
-            N_hits_min = N_hits_0;
-
-          }
-
-        }
-
+        vector<double> HitData; HitData.resize(4);
+        HitData[0] = Hu->GetValue(j); // xcoord
+        HitData[1] = Hv->GetValue(j); // ycoord
+        HitData[2] = 1.0; // dummy zcoord
+        HitData[3] = static_cast<double>(Hpk->GetValue(j) -1); // plane
         EventData[j] = HitData;
 
       }
@@ -936,7 +1031,7 @@ void analyser::extract_root_data(void) {
 
   Nevents = Events.size();
 
-  cerr << "Number of usable events :\t" << Nevents << "\t average hits pr. event in plane0 :\t" << (double)N_hits_tot/(double)Nevents << "\t max hits :\t" << N_hits_max << "\t min hits :\t" << N_hits_min << "\n\n";
+  cerr << "Number of usable events :\t" << Nevents << "\n\n";
 
   string eventfile_name = "events_run.txt";
   fstream event_number_stream(eventfile_name, fstream::in | fstream::out | fstream::app);
@@ -946,6 +1041,6 @@ void analyser::extract_root_data(void) {
       event_number_stream << runno << "\t" << Nevents << "\n";
       event_number_stream.close();
 
-    } else cerr << "Cannot open event number file\n\n";
+    } else cerr << "Cannot open file:\t" << eventfile_name << "\n\n";
 
 }

@@ -52,8 +52,18 @@ class simulator {
     double c; // speed of light in vac. in m/s
     double m; // mass of electron/positron in kg
     double d_f; // thickness of converter foil
+    double X0_Si_amorph; // 9.370E+04,
+    double X0_C_amorph;
+    double X0_C_gem;
+    double X0_Mimosa;
+    double X0_He;
+    double X0_air;
+    double X0_Ta;
+    double X0_tape;
+    double X0_Mylar;
     double I_integral;
     double mimosa_res;
+    int no_photons;
     int conversions;
     int Nevents;  // number of simulated events
     string DATPATH; // directory to store data

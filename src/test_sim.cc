@@ -5,8 +5,10 @@
 int main(int argc, char const *argv[]) {
 
   /* Define parameters for constructor */
-  int N = 1E+06; // number of events to simulate
+  int N = 5E+06; // number of events to simulate
   vector<double> z = {0, 1832.3E+03, 8913E+03, 8989E+03, 9196.2E+03, 9273.7E+03}; // z-coordinates for planes (micro-meters)
+
+
 
   char const *name = "";
   char const *sim_type = argv[1];
@@ -36,7 +38,7 @@ int main(int argc, char const *argv[]) {
 
     } else cout << "Unable to open file containing angles for data cuts";
 
-  } else cuts = {-INFINITY, INFINITY};
+  } else cuts = {-INFINITY, INFINITY, -INFINITY, INFINITY};
 
   /* Load beam-parameters from file */
   vector<double> params;
@@ -73,39 +75,42 @@ int main(int argc, char const *argv[]) {
   analyse.hitcoords = simulate.mimosas;
   analyse.Nevents = N;
 
-  for (size_t i = 0; i < cuts.size()/2; i++) {
+  double cut_lb_x = cuts[0];
+  double cut_ub_x = cuts[1];
+  double cut_lb_y = cuts[2];
+  double cut_ub_y = cuts[3];
 
-    double cut_ub = cuts[2*i];
-    double cut_lb = cuts[2*i + 1];
+  string Name;
+  if (argc == 5) {
 
-    string name;
+    Name = (string)argv[2] + "_cuts_halfSumPeak";
 
-    if (argc == 5) name = (string)argv[2] + "_cut_" + to_string(cut_ub);
-    else name = argv[2];
+  } else  Name = argv[2];
 
-    cerr << "\nEntry angles : {" << cut_ub << ", " << cut_lb << "} rad";
-    analyse.construct_tracks(cut_ub, cut_lb);
-    analyse.pair_tracks();
-    /* Save data to txt-files */
-    analyse.image_crystal(name);
-    analyse.print_energy(name);
-    analyse.print_hits(name);
-    analyse.print_hotpixels(name);
-    analyse.print_interdistance(name);
-    analyse.print_slope(name);
-    analyse.print_pixels(name);
-    analyse.print_zpos(name);
-    analyse.print_M1M2_slope(name);
+  cerr << "\nEntry angles x: {" << cut_lb_x << ", " << cut_ub_x << "} rad";
+  cerr << "\nEntry angles y: {" << cut_lb_y << ", " << cut_ub_y << "} rad";
 
-    for (int i = 0; i < 6; i++) {
+  analyse.construct_tracks(cut_lb_x, cut_ub_x, cut_lb_y, cut_ub_y);
+  analyse.pair_tracks();
+  analyse.construct_distarray();
 
-      analyse.print_planar_dist(i, "sim");
+  /* Save data to txt-files */
+  for (int i = 0; i < 6; i++) {
 
-    }
-
-    simulate.print_energy(name);
+    analyse.print_planar_dist(i, Name);
 
   }
+  
+  analyse.image_crystal(Name);
+  analyse.print_energy(Name);
+  analyse.print_hits(Name);
+  analyse.print_hotpixels(Name);
+  analyse.print_interdistance(Name);
+  analyse.print_slope(Name);
+  analyse.print_pixels(Name);
+  analyse.print_zpos(Name);
+  analyse.print_M1M2_slope(Name);
+  simulate.print_energy(name);
 
   return 0;
 
