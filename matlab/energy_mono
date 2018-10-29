@@ -1,0 +1,13 @@
+filepath1 = strcat(datpath,'energy_sim_amorphous1_40GeV_no_background.txt');
+
+nrg_40GeV_sim1 = load(filepath1) * 6.2415091E9;
+
+[counts_sim_40GeV_amorph, ~] = hist(nrg_40GeV_sim1(nrg_40GeV_sim1 < 40 & nrg_40GeV_sim1 > 0), energy);
+counts_sim_40GeV_amorph_norm = energy .* counts_sim_40GeV_amorph/5E+06;
+
+f = figure;
+hold on
+box on
+title('40GeV e- ; 1mm C','fontsize',22,'interpreter','latex')
+plot(energy, eff_40*counts_sim_40GeV_amorph_norm, 'k-','linewidth',2.5)
+

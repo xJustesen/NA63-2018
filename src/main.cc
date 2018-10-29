@@ -31,7 +31,11 @@ int main(int argc, char const *argv[]) {
   vector<double> cuts;
   string name;
 
-  if (argc == 4) {
+  cerr << "\nmain has " << argc << " arguments :\n";
+  for (int i = 0; i < argc; i++) cerr << argv[i] << "\n";
+  cerr << "\n";
+
+  if (argc > 4) {
 
     string filename = argv[3];
     load_doubles(argv[3], cuts);
@@ -49,13 +53,12 @@ int main(int argc, char const *argv[]) {
   double cut_lb_y = cuts[2];
   double cut_ub_y = cuts[3];
 
-
   /* Initialise class "analyser" */
-  analyser Data(z, argv[1], argv[2]);
+  analyser* Data = new analyser(z, argv[1], argv[2], argv[3]);
 
   /* Extract data from root file */
   cerr << "\n \t\t Inconsequential ROOT warnings: \n\n";
-  Data.extract_root_data();
+  Data->extract_root_data();
   cerr << "Root data extracted, remvoing hot pixels\n\n";
 
   /* Analyse data for each plane */
@@ -69,33 +72,33 @@ int main(int argc, char const *argv[]) {
     vector<double> xgrid, ygrid;
 
     /* Make (x, y) coordinates for grid of pixels */
-    Data.make_grid(pixelgrid, xgrid, ygrid);
+    Data->make_grid(pixelgrid, xgrid, ygrid);
 
     /* Construct and fill pixelgrids & extract coordinates of hit */
-    Data.extract_hit_data(hitcoord, pixelgrid, i);
-    Data.count_hits(nhits0, hitcoord);
+    Data->extract_hit_data(hitcoord, pixelgrid, i);
+    Data->count_hits(nhits0, hitcoord);
 
     /* Identify and remove hot pixels */
-    Data.locate_hot_pixels(pixelgrid, hotpixel, nhits0);
-    Data.remove_hot_pixels(hitcoord, pixelgrid, hotpixel);
-    Data.count_hits(nhits1, hitcoord);
+    Data->locate_hot_pixels(pixelgrid, hotpixel, nhits0);
+    Data->remove_hot_pixels(hitcoord, pixelgrid, hotpixel);
+    Data->count_hits(nhits1, hitcoord);
 
     /* Update variables */
-    Data.update_hitcoords(i, hitcoord);
-    Data.update_pixelgrids(i, pixelgrid);
-    Data.update_hotpixels(i, hotpixel);
+    Data->update_hitcoords(i, hitcoord);
+    Data->update_pixelgrids(i, pixelgrid);
+    Data->update_hotpixels(i, hotpixel);
 
-    Data.print_planar_dist(i, name);
+    Data->print_planar_dist(i, name);
 
-    cerr << "Plane " << i << ": Hits before removal: " << nhits0 <<  ";\thits after removal: " << nhits1 << ";\thits removed: " << nhits0 - nhits1 << ";\tPixels removed: " << hotpixel.size() << ";\tmax hits allowed per pixel: " << floor(4e-4 * Data.Nevents) <<"\n";
+    cerr << "Plane " << i << ": Hits before removal: " << nhits0 <<  ";\thits after removal: " << nhits1 << ";\thits removed: " << nhits0 - nhits1 << ";\tPixels removed: " << hotpixel.size() << ";\tmax hits allowed per pixel: " << floor(4e-4 * Data->Nevents) <<"\n";
 
   }
 
   cerr << "\nHot pixels removed, beginning alignment\n\n";
 
   /* Align planes with T-matrices already determined */
-  Data.T.load("/home/christian/Dropbox/speciale/data/Align/alignment_matrix.txt", arma_ascii);
-  Data.align_w_T();
+  Data->T.load("/home/christian/Dropbox/speciale/data/Align/alignment_matrix.txt", arma_ascii);
+  Data->align_w_T();
   //
   /* Determine T-matrices & align planes */
   // Data.align_wo_T(); // only use this for alignment run
@@ -106,26 +109,28 @@ int main(int argc, char const *argv[]) {
   cerr << "Entry angles x: {" << cut_lb_x << ", " << cut_ub_x << "} rad\n";
   cerr << "Entry angles y: {" << cut_lb_y << ", " << cut_ub_y << "} rad\n\n";
 
-  Data.construct_tracks(cut_lb_x, cut_ub_x, cut_lb_y, cut_ub_y);
-  Data.pair_tracks();
+  Data->find_axis_alt();
 
-  /* Save data to txt-files */
-  Data.image_crystal(name);
-  Data.print_energy(name);
-  Data.print_hits(name);
-  Data.print_hotpixels(name);
-  Data.print_interdistance(name);
-  Data.print_slope(name);
-  Data.print_pixels(name);
-  Data.print_zpos(name);
-  Data.print_M1M2_slope(name);
-
-  for (int i = 0; i < 6; i++) {
-
-    Data.print_planar_dist(i, "data");
-
-  }
-
+  // Data->construct_tracks(cut_lb_x, cut_ub_x, cut_lb_y, cut_ub_y);
+  // Data->pair_tracks();
+  // Data->construct_distarray();
+  // /* Save data to txt-files */
+  // Data->image_crystal(name);
+  // Data->print_energy(name);
+  // Data->print_hits(name);
+  // Data->print_hotpixels(name);
+  // Data->print_interdistance(name);
+  // Data->print_slope(name);
+  // Data->print_pixels(name);
+  // Data->print_zpos(name);
+  // Data->print_M1M2_slope(name);
+  //
+  // for (int i = 0; i < 6; i++) {
+  //
+  //   Data->print_planar_dist(i, "data");
+  //
+  // }
+  //
   return 0;
 
 }

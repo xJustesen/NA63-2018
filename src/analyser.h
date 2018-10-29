@@ -47,7 +47,7 @@ class analyser {
     vector<vector<vector<double>>> Events;  // containts root data
     vector<vector<vector<vector<double>>>> hitcoords;
 
-    analyser(vector<double> z, char const *name, char const *runno);  // constructor
+    analyser(vector<double> z, char const *name, char const *runno, char const *beamparams);  // constructor
     void make_grid(vector<vector<double>> &pixelgrid, vector<double> &xgrid, vector<double> &ygrid);  // constructs a vector with pixeldata, except number of hits in pixel
     void extract_root_data(void); // extracts data from from root file and saves in a vector "Events"
     void extract_hit_data(vector<vector<vector<double>>> &hitcoord, vector<vector<double>> &pixelgrid, int plane);  // extracts and stores data for each hit in hitcoord, and fills pixelgrid with no. of hits in pixel
@@ -72,6 +72,8 @@ class analyser {
     void construct_distarray(void);
     void image_crystal(string name);
     void print_planar_dist(int plane, string name);
+    void find_axis(void);
+    void find_axis_alt(void);
 
   private:
 
@@ -80,6 +82,7 @@ class analyser {
     int ncols, nrows; // pixel columns/rows of Mimosa-26
     double xmin, xmax, ymin, ymax; // maximum x,y coordinates in detector
     char const *filename; // name of alignment file
+    char const *paramsfile; // name of alignment file
     double tol; // tolerance for convergence of T matrix
     double M1M2_d_lim;
     double M2M3_d_lim;
@@ -103,6 +106,7 @@ class analyser {
     vector<vector<double>> energies;
     vector<vector<double>> zclosepos;
     vector<double> zplanes;
+    vector<vector<vector<double>>> angle_energy;
 
     static bool sortFunc(const vector<double> &p1, const vector<double> &p2); // sort a vector<vector<>>, descending
     int coord2pixel(double xhit, double yhit);  // converts coordinates to pixelno
@@ -120,6 +124,10 @@ class analyser {
     mat lines3d_nearestpoints(vec A, vec B, vec C, vec D); // determine the 2 closest points on 2 lines
     void beam_divergence(int, int, int, string);
     void save_vector(string name, vector<double> data);
+    void save_vector(string name, vector<vector<double>> data);
+    void save_vector(string name, vector<vector<vector<double>>> data);
+    vector<double> linspace(double min, double max, int N);
+
 
 };
 

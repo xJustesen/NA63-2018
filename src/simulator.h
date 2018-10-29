@@ -26,7 +26,7 @@ class simulator {
     vector<vector<vector<vector<double>>>> mimosas; // equivalent to the "hitcoords" vector in "analyser" class
 
     /* Public methods */
-    simulator(int N, vector<double> z, char const *run, vector<double> params, char const *filename);
+    simulator(int N, vector<double> z, char const *run, vector<double> params, char const *filename, char const *s1, char const *s2);
     void propagate_particles(void);  // propaget particles through the experiment
     void print_hits(void);
     void print_energy(string name);
@@ -37,6 +37,7 @@ class simulator {
     vector<vector<vector<double>>> particles; // stores particles data
     vector<vector<double>> intensities;  // intensity at different points in space
     vector<vector<double>> angles;  // angles used to determine emission angle of photon
+    vector<vector<double>> photon_angles;
     vector<vector<int>> hotpixels;
     vector<double> energies;  // photon energies used in simulation. Perfect detection should yield exactly these energies
     vector<double> zplanes; // z-coordinates of detectors
@@ -67,12 +68,14 @@ class simulator {
     int conversions;
     int Nevents;  // number of simulated events
     string DATPATH; // directory to store data
-    char const *name;
+    string angle_spec;
+    string initial_spec;
     string beam_spatial_distro;
+    char const *name;
 
     /* Physics methods */
     void generate_beam(void);  // generates beam profile
-    void SA_mult_scat(double x, int i, double X0, double z); // projection taking multiple scattering into account
+    void SA_mult_scat(int i, double X0, double z); // projection taking multiple scattering into account
     void mimosa_magnet(int eventno);  // used to caluclate deflection in mimosa magnet
     void converter_foil(int eventno, double d_f, double X0, int N_slices = 1);
     void mimosa_detector(int planeno, int eventno, int&); // adds a MIMOSA detector, ie simulates a detection
@@ -102,16 +105,103 @@ class simulator {
     vec simplex_expand(vec highest, vec centroid);
     vec simplex_reflect(vec highest, vec centroid);
     vec simplex_contract(vec highest, vec centroid);
-    void simplex_initiate(vector<vec> simplex, function<double(vec)> F, vec &fs);
-    vec simplex_NM(function<double(vec)> F, vector<vec> simplex, double simplex_size_goal = 1e-6);
+    // void simplex_initiate(vector<vec> simplex, function<double(vec)> F, vec &fs);
+    // vec simplex_NM(function<double(vec)> F, vector<vec> simplex, double simplex_size_goal = 1e-6);
     double VoseAliasMethod_draw(vector<int> Alias, vector<double> Prob);
     void VoseAliasMethod_table(vector<double> distro, vector<int> &Alias, vector<double> &Prob);
     int select_member(vector<double> numbers, vector<double> weigths); // makes a random draw from a weighted list of numbers
-    vector<double> linspace(double min, double max, int N); // similar to matlabs "linspace"
+    vector<double> linspace(double min, double max, int N);
     void linterp(vector<double> x, vector<double> y, vector<double> xi, vector<double> &yi);
     int isInside(int nvert, vector<double> vertx, vector<double> verty, double testx, double testy); // check if point (testx, testy) is inside boundaries of polygon defined by verticecs (vertx, verty)
     double calc_dist(double x0, double y0, double x1,double y1);
     void project_particle(vector<vector<vector<double>>> &particletype, double zcoord, int eventno); // rectilinear-projection hit into plane
+    void save_vector(string name, vector<vector<double>> data);
+
+    template<typename lambda>
+    void simplex_initiate(vector<vec> simplex, lambda F, vec &fs) {
+
+      for (size_t i = 0; i < simplex.size(); i++) {
+
+        fs(i) = F(simplex[i]);
+
+      }
+
+    }
+
+    /* Nelder-Mead simplex algorithm. Tested on Himmelblau's function and Rosenbrock function. In principle able to optimize n-dimensional problems. */
+    template<typename lambda>
+    vec simplex_NM(lambda F, vector<vec> simplex, double simplex_size_goal) {
+
+      vec fs; fs.resize(simplex.size());
+      vec centroid = zeros<vec>(simplex.size() - 1);
+      simplex_initiate(simplex, F, fs);
+      int ilow, ihigh;
+
+      while (simplex_size(simplex) > simplex_size_goal) {
+
+        simplex_update(simplex, fs, centroid, ihigh, ilow); // update simplex with new fs values, this updates centroid, ihigh, ilow.
+        vec r = simplex_reflect(simplex[ihigh], centroid);  // reflection
+        double fr = F(r);
+
+        /* try expansion */
+        if (fr < fs(ilow)) {
+
+          vec e = simplex_expand(simplex[ihigh], centroid);
+          double fe = F(e);
+
+          if (fe < fr ){ // accept expansion
+
+            simplex[ihigh] = e;
+            fs(ihigh) = fe;
+
+          }
+
+          else { // reject expansion and accept reflection
+
+            simplex[ihigh] = r;
+            fs(ihigh) = fr;
+
+          }
+
+        }
+
+        else {
+
+           /*if reflection is too poor, reflect in other direction */
+          if (fr < fs(ihigh)) { // accept reflection
+
+            simplex[ihigh] = r;
+            fs(ihigh) = fr;
+
+          }
+
+          else { // reject reflection, try contraction
+
+            vec c = simplex_contract(simplex[ihigh], centroid);
+            double fc = F(c);
+
+            if (fc < fs(ihigh)){ // accept contraction
+
+              simplex[ihigh] = c;
+              fs(ihigh) = fc;
+
+            }
+            else { // reject contraction and reduce
+
+              simplex_reduce(simplex, ilow);
+              simplex_initiate(simplex, F, fs);
+
+            }
+
+          }
+
+        }
+
+      } // end while
+
+      return simplex[ilow];
+
+    }
 
 };
 
