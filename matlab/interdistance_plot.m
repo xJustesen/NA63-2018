@@ -52,44 +52,46 @@ for i = 1:datblocks
         fig = figure(1);
         ax = gca;
         box on
+%         hold on
+%         subplot(1,2,1)
+%         hold on
+%         grid on
+%         box on
+%         p(indx) = plot(edges1(2:end),counts1/max(counts1),'-','linewidth',1.5,'color',colors(i,:));
+%         xlabel('Distance $[\mu m]$','fontsize',22,'interpreter','latex'); ylabel('Normalized counts','fontsize',22,'interpreter','latex')
+%         xlim([0, 5e3])
+%         ylim([0, 1.1])
+%         title('a) without alignment','fontsize',22,'interpreter','latex');
+%         set(gca, 'fontsize',18)
+%         subplot(1,2,2)
         hold on
-        subplot(1,2,1)
-        hold on
-        grid on
-        box on
-        p(indx) = plot(edges1(2:end),counts1/max(counts1),'-','linewidth',1.5,'color',colors(i,:));
-        xlabel('Distance $[\mu m]$','fontsize',22,'interpreter','latex'); ylabel('Normalized counts','fontsize',22,'interpreter','latex')
-        xlim([0, 5e3])
-        ylim([0, 1.1])
-        title('a) without alignment','fontsize',22,'interpreter','latex');
-        set(gca, 'fontsize',18)
-        subplot(1,2,2)
-        hold on
-        plot(edges(2:end),counts/max(counts),'o','linewidth',1.5,'color',colors(i,:));
+        p(indx) = plot(edges(2:end),counts/max(counts),'o','linewidth',1.5,'color',colors(i,:));
         plot(edges2(2:end),k * counts2/max(counts2),'-','linewidth',2.5,'color',colors(i,:));
-        title('b) with alignment','fontsize',22,'interpreter','latex');ylabel('Normalized counts','fontsize',22,'interpreter','latex')
+        title('Projected vs Observed hits','fontsize',22,'interpreter','latex');ylabel('Normalized counts','fontsize',22,'interpreter','latex')
         xlabel('Distance $[\mu m]$','fontsize',22,'interpreter','latex');% ylabel('Normalized counts','fontsize',22,'interpreter','latex')
         xlim([0, 100])
         ylim([0, 1.1])
         set(gca, 'fontsize',18)
         grid on
         box on
-        axes('position',[.71 .65 .15 .2])
-        box on
-        grid on
-        hold on
-        plot(d,c,'o','linewidth',1.5,'color',colors(1,:));
-        plot(d2,c2,'-','linewidth',2.5,'color',colors(1,:));
-        axis tight
-        set(gca, 'FontSize', 14)
 
-        set(fig, 'Units','centimeters','PaperUnits','centimeters', 'PaperSize',[36, 12],'PaperPosition',[0, 0, 36, 12],'Position',[0 0 36 12])
+        set(fig, 'Units','centimeters','PaperUnits','centimeters', 'PaperSize',[18, 12],'PaperPosition',[0, 0, 18, 12],'Position',[0 0 18 12])
         indx = indx + 1;
     end
 end
-legend(p(:),{'M3','M4','M5','M6'},'fontsize',22,'interpreter','latex')
 
-print(fig,'../../figures/alignment_comparison.pdf', '-dpdf','-r600','-painters')
+axes('position',[.40 .65 .25 .2])
+box on
+grid on
+hold on
+plot(d,c,'o','linewidth',1.5,'color',colors(1,:));
+plot(d2,c2,'-','linewidth',2.5,'color',colors(1,:));
+axis tight
+set(gca, 'FontSize', 14)
+
+legend(p(:),{'M3','M4','M5','M6'},'fontsize',22,'interpreter','latex','location','bestoutside')
+
+print(fig,'../../presentation/figures/dist-dat-v-sim.svg', '-dsvg','-r600','-painters')
 
 %% functions
 function hitdat = loaddat(fileID, formatSpec, datblocks)

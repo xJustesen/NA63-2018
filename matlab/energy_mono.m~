@@ -1,0 +1,52 @@
+clc; clear all; close all;
+datpath = '/home/christian/Documents/cern2018/simdata/';
+energy = linspace(0, 80, 80);
+
+filepath1 = strcat(datpath,'energy_sim_monochrome_80GeV_1.5mm_5GeV.txt');
+filepath2 = strcat(datpath,'energy_sim_monochrome_80GeV_1.5mm_15GeV.txt');
+filepath3 = strcat(datpath,'energy_sim_monochrome_80GeV_1.5mm_25GeV.txt');
+filepath4 = strcat(datpath,'energy_sim_monochrome_80GeV_1.5mm_35GeV.txt');
+filepath5 = strcat(datpath,'energy_sim_monochrome_80GeV_1.5mm_40GeV.txt');
+filepath6 = strcat(datpath,'energy_sim_monochrome_80GeV_1.5mm_40GeV.txt');
+
+nrg_80GeV_sim_5 = load(filepath1) * 6.2415091E9;
+nrg_80GeV_sim_15 = load(filepath2) * 6.2415091E9;
+nrg_80GeV_sim_25 = load(filepath3) * 6.2415091E9;
+nrg_80GeV_sim_35 = load(filepath4) * 6.2415091E9;
+nrg_80GeV_sim_40 = load(filepath5) * 6.2415091E9;
+
+[counts_sim_80GeV_mono_5, ~] = hist(nrg_80GeV_sim_5(nrg_80GeV_sim_5 < 80 & nrg_80GeV_sim_5 > 0), energy);
+counts_sim_80GeV_mono_5_norm = energy .* counts_sim_80GeV_mono_5/5E+05;
+
+[counts_sim_80GeV_mono_15, ~] = hist(nrg_80GeV_sim_15(nrg_80GeV_sim_15 < 80 & nrg_80GeV_sim_15 > 0), energy);
+counts_sim_80GeV_mono_15_norm = energy .* counts_sim_80GeV_mono_15/5E+05;
+
+[counts_sim_80GeV_mono_25, ~] = hist(nrg_80GeV_sim_25(nrg_80GeV_sim_25 < 80 & nrg_80GeV_sim_25 > 0), energy);
+counts_sim_80GeV_mono_25_norm = energy .* counts_sim_80GeV_mono_25/5E+05;
+
+[counts_sim_80GeV_mono_35, ~] = hist(nrg_80GeV_sim_35(nrg_80GeV_sim_35 < 80 & nrg_80GeV_sim_35 > 0), energy);
+counts_sim_80GeV_mono_35_norm = energy .* counts_sim_80GeV_mono_35/5E+05;
+
+[counts_sim_80GeV_mono_40, ~] = hist(nrg_80GeV_sim_40(nrg_80GeV_sim_40 < 80 & nrg_80GeV_sim_40 > 0), energy);
+counts_sim_80GeV_mono_40_norm = energy .* counts_sim_80GeV_mono_40/5E+05;
+
+
+f = figure;
+hold on
+box on
+title('80GeV e- ; 1.5mm C','fontsize',22,'interpreter','latex')
+
+plot(energy, counts_sim_80GeV_mono_5_norm, '-','linewidth',1.5)
+plot(energy, counts_sim_80GeV_mono_15_norm, '-','linewidth',1.5)
+plot(energy, counts_sim_80GeV_mono_25_norm, '-','linewidth',1.5)
+plot(energy, counts_sim_80GeV_mono_35_norm, '-','linewidth',1.5)
+plot(energy, counts_sim_80GeV_mono_40_norm, '-','linewidth',1.5)
+
+legend({'5 GeV','15 GeV','25 GeV','35 GeV','40 GeV'});
+set(gca, 'FontSize', 14)
+xlabel('Energy [GeV]','fontsize',22,'interpreter','latex');ylabel('dP/dE [1/mm]','fontsize',22,'interpreter','latex')
+box on
+grid on
+
+set(f, 'Units','centimeters','PaperUnits','centimeters', 'PaperSize',[18, 12],'PaperPosition',[0, 0, 18, 12],'Position',[0 0 18 12])
+% print('../../presentation/figures/tracking_res', '-dsvg','-r600','-painters')

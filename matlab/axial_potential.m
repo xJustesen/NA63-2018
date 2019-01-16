@@ -58,7 +58,7 @@ box on
 grid on
 set(gca, 'FontSize', 18)
 set(f, 'Units','centimeters','PaperUnits','centimeters', 'PaperSize',[36, 12],'PaperPosition',[0, 0, 36, 12],'Position',[0 0 36 12])
-print(f,'../../figures/axial_potential_field.pdf', '-dpdf','-r600','-painters')
+print(f,'../../presentation/figures/axial_potential_field.svg', '-dsvg','-r600','-painters')
 
 function U = potential(r, centroid)
     Z1 = 1; % electron/positron

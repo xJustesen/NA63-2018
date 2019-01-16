@@ -32,7 +32,7 @@ for i = 1:1
     grid on
     box on
     set(f, 'Units','centimeters','PaperUnits','centimeters', 'PaperSize',[18, 12],'PaperPosition',[0, 0, 18, 12],'Position',[0 0 18 12])
-    print('../../figures/hotpix_run54.pdf', '-dpdf','-r600','-painters')
+    print('../../presentation/figures/hotpix_run54.svg', '-dsvg','-r600','-painters')
 
 
 end

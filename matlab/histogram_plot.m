@@ -1,4 +1,4 @@
-clc; clear all; close all;
+sclc; clear all; close all;
 %% load data
 datpath = '/home/christian/Dropbox/speciale/data/';
 figpath = '/home/christian/Dropbox/speciale/figures/Align/';

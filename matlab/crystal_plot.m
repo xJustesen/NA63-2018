@@ -10,12 +10,12 @@ colors =    [       0    0.4470    0.7410
                 0.6350    0.0780    0.1840
             ];
 
-runs = [73, 75, 76, 77, 78];
+runs = [77];
 crystal_coords = [];
 sz = 0;
 for i = runs
-%     dat = load(strcat(datpath,'crystal_image_',num2str(i),'.txt'));
-    dat = load(strcat(datpath,'crystal_image_30.txt'));
+    dat = load(strcat(datpath,'crystal_image_',num2str(i),'.txt'));
+    dat = load(strcat(datpath,'crystal_image_46.txt'));
     crystal_coords = [crystal_coords; dat];
 end
 
@@ -34,8 +34,8 @@ set(gca, 'FontSize', 18)
 box on
 axis equal
 grid on
-set(f, 'Units','centimeters','PaperUnits','centimeters', 'PaperSize',[18, 12],'PaperPosition',[0, 0, 18, 12],'Position',[0 0 18 12])
-print('../../figures/crystal_plot.pdf', '-dpdf','-r600','-painters')
+% set(f, 'Units','centimeters','PaperUnits','centimeters', 'PaperSize',[18, 12],'PaperPosition',[0, 0, 18, 12],'Position',[0 0 18 12])
+% print('../../presentation/figures/crystal_plot.svg', '-dsvg','-r600','-painters')
 
 function hitdat = loaddat(fileID, formatSpec, datblocks)
     for i = 1:datblocks

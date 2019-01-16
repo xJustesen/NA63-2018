@@ -1,10 +1,13 @@
 clear all; close all; clear all;
-datpath = '/home/christian/Dropbox/speciale/data/';
+datpath = '/home/christian/Documents/cern2018/simdata/';
 
-runs_dat = [46];
+runs_dat = 44;
+sim = 1:1;
 angles = linspace(-2e-3, 2e-3, 200);
 angx_tot = [];
 angy_tot = [];
+angx_tot_sim = [];
+angy_tot_sim = [];
 posx_tot = [];
 posy_tot = [];
 
@@ -22,19 +25,33 @@ for i = runs_dat
     angy_tot = [angy_tot; angy];
 end
 
+for i = sim
+    filepath = strcat(datpath,['beam_divergence_sim_amorphous1_80GeV_04012019.txt']);
+    datsim = load(filepath);
+    
+    angxsim = datsim(:,1);
+    angysim = datsim(:,2);
+    
+    % Save angles and positions in matrix
+    angx_tot_sim = [angx_tot_sim; angxsim];
+    angy_tot_sim = [angy_tot_sim; angysim];
+end
+
 
 % fakerun = load(strcat(datpath,'angles_M1M2_',num2str(4),'.txt'));
 
 % Make histogram for combined runs
 [ang_counts_x_tot, ~] = hist(angx_tot(angx_tot > angles(1) & angx_tot < angles(end)), angles);
 [ang_counts_y_tot, ~] = hist(angy_tot(angy_tot > angles(1) & angy_tot < angles(end)), angles);
-
-
 ang_counts_x_tot = ang_counts_x_tot.';
 ang_counts_y_tot = ang_counts_y_tot.';
-angles = angles.';
 
-% save('../beamParameters/angles_pos_40GeV_beam_params_1.5mm.txt', 'dat','-ascii');
+[ang_counts_x_tot_sim, ~] = hist(angx_tot_sim(angx_tot_sim > angles(1) & angx_tot_sim < angles(end)), angles);
+[ang_counts_y_tot_sim, ~] = hist(angy_tot_sim(angy_tot_sim > angles(1) & angy_tot_sim < angles(end)), angles);
+ang_counts_x_tot_sim = ang_counts_x_tot_sim.';
+ang_counts_y_tot_sim = ang_counts_y_tot_sim.';
+
+angles = angles.';
 
 % 
 
@@ -87,41 +104,49 @@ disp(['left limit = ',num2str(lb_y),' ; right limit = ',num2str(ub_y)]);
 disp(['relative left limit = ', num2str(abs(lb_y - y(yfit(y) == max(yfit(y))))),' ; relative right limit = ', num2str(abs(ub_y - y(yfit(y) == max(yfit(y)))))])
 
 f = figure;
-subplot(1,2,1)
+subplot(2,1,1)
 hold on
 box on
 grid on
-plot(angles, ang_counts_x_tot/max(ang_counts_x_tot),'-','linewidth',1.5);
-plot(angles, ang_counts_y_tot/max(ang_counts_x_tot),'-','linewidth',1.5);
-xlabel('Angle [rad]','fontsize',22,'interpreter','latex');ylabel('Normalized counts','fontsize',22,'interpreter','latex');
-legend({'x','y'},'interpreter','latex');
+plot(angles, ang_counts_x_tot/max(ang_counts_x_tot),'-','linewidth',2.5);
+plot(angles, ang_counts_y_tot/max(ang_counts_x_tot),'-','linewidth',2.5);
+plot(angles, (ang_counts_x_tot_sim - xfit_fakes(angles))/max((ang_counts_x_tot_sim - xfit_fakes(angles))),'-','linewidth',2.5);
+plot(angles, (ang_counts_y_tot_sim - yfit_fakes(angles))/max((ang_counts_x_tot_sim - xfit_fakes(angles))),'-','linewidth',2.5);
+set(gca, 'FontSize', 24)
+xlabel('Angle [rad]','fontsize',36,'interpreter','latex');ylabel('Normalized counts','fontsize',36,'interpreter','latex');
+legend({'x','y'},'interpreter','latex','fontsize',36);
 ax = gca;
 ax.XAxis.Exponent = -6;
-set(gca, 'FontSize', 18)
-title('a) incl. fakes','fontsize',22,'interpreter','latex');
+title('a) incl. fakes','fontsize',36,'interpreter','latex');
 
-subplot(1,2,2)
+subplot(2,1,2)
 hold on
 box on
 grid on
-plot(angles, (ang_counts_x_tot - xfit_fakes(angles))/max((ang_counts_x_tot - xfit_fakes(angles))),'-','linewidth',1.5);
-plot(angles, (ang_counts_y_tot - yfit_fakes(angles))/max((ang_counts_x_tot - xfit_fakes(angles))),'-','linewidth',1.5);
-xlabel('Angle [rad]','fontsize',22,'interpreter','latex'); ylabel('Normalized counts','fontsize',22,'interpreter','latex');
-legend({'x','y'},'interpreter','latex');
-set(gca, 'FontSize', 18)
+plot(angles, (ang_counts_x_tot - xfit_fakes(angles))/max((ang_counts_x_tot - xfit_fakes(angles))),'-','linewidth',2.5);
+plot(angles, (ang_counts_y_tot - yfit_fakes(angles))/max((ang_counts_x_tot - xfit_fakes(angles))),'-','linewidth',2.5);
+plot(angles, (ang_counts_x_tot_sim - xfit_fakes(angles))/max((ang_counts_x_tot_sim - xfit_fakes(angles))),'-','linewidth',2.5);
+plot(angles, (ang_counts_y_tot_sim - yfit_fakes(angles))/max((ang_counts_x_tot_sim - xfit_fakes(angles))),'-','linewidth',2.5);
+set(gca, 'FontSize', 24)
+xlabel('Angle [rad]','fontsize',36,'interpreter','latex'); ylabel('Normalized counts','fontsize',36,'interpreter','latex');
+legend({'x','y'},'interpreter','latex','fontsize',36);
 ylim([0, 2]);
 ax = gca;
 ax.XAxis.Exponent = -6;
-title('b) excl. fakes','fontsize',22,'interpreter','latex');
+title('b) excl. fakes','fontsize',36,'interpreter','latex');
 
 % set(f, 'Units','centimeters','PaperUnits','centimeters', 'PaperSize',[18, 12],'PaperPosition',[0, 0, 18, 12],'Position',[0 0 18 12])
 % print(f, '../../figures/div_80GeV_1.5mm_nofakes.pdf', '-dpdf','-r600','-painters')
 
-set(f,'Units','centimeters','PaperUnits','centimeters', 'PaperSize',[36, 12],'PaperPosition',[0, 0, 36, 12],'Position',[0 0 36 12])
-% print(f, '../../figures/div_80GeV_1.5mm.pdf', '-dpdf','-r600','-painters')
+set(f,'Units','centimeters','PaperUnits','centimeters', 'PaperSize',[24, 36],'PaperPosition',[0, 0, 24, 36],'Position',[0 0 24 36])
+% print(f, '../../presentation/figures/div_80GeV.svg', '-dsvg','-r600','-painters')
 
-xw = ang_counts_x_tot - xfit_fakes(angles);
-yw = ang_counts_y_tot - yfit_fakes(angles);
-% save('../beamParameters/angle_xweight_alignment_beam_params.txt', 'xw','-ascii');
-% save('../beamParameters/angle_yweight_alignment_beam_params.txt', 'yw','-ascii');
+xw = (ang_counts_x_tot - xfit_fakes(angles))/max((ang_counts_x_tot - xfit_fakes(angles)));
+yw = (ang_counts_y_tot - yfit_fakes(angles))/max((ang_counts_x_tot - xfit_fakes(angles)));
+
+xw(xw < 1e-03) = 0;
+yw(yw < 1e-03) = 0;
+
+% save('../beamParameters/angle_xweight_80GeV_beam_params.txt', 'xw','-ascii');
+% save('../beamParameters/angle_yweight_80GeV_beam_params.txt', 'yw','-ascii');
 % save('../beamParameters/angles.txt', 'angles','-ascii');
