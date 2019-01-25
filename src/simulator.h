@@ -26,7 +26,7 @@ double d_c;         // size of crystal
 vector<vector<vector<vector<double> > > > mimosas;         // equivalent to the "hitcoords" vector in "analyser" class
 
 /* Public methods */
-simulator(int N, vector<double> z, char const *run, vector<double> params, char const *filename, char const *s2, int bg);
+simulator(int N, vector<double> z, string run, vector<double> params, char const *filename, char const *s2, int bg);
 void propagate_particles(void);         // propaget particles through the experiment
 void print_hits(void);
 void print_energy(string name);
@@ -74,7 +74,7 @@ string DATPATH;         // directory to store data
 string angle_spec;
 string initial_spec;
 string beam_spatial_distro;
-char const *name;
+string name;
 
 /* Physics methods */
 void generate_beam(void);         // generates beam profile

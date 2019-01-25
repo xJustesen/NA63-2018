@@ -13,14 +13,14 @@ struct point
         double posy;
 };
 
-simulator::simulator(int N, vector<double> z, char const *run, vector<double> params, char const *filename, char const* s1, int bg) {
+simulator::simulator(int N, vector<double> z, string run, vector<double> params, char const *filename, char const* s1, int bg) {
 
         /* Simulation paramters */
         Nevents = N; // number of simulated events
         zplanes = z; // z-coordinates of mimosa detectors
         name = run; // suffix for produced data-files
         beam_spatial_distro = (string) filename; // suffix of file containing beam's spaital distro.
-        assert (!strcmp("amorphous", name) or !strcmp("aligned", name) or !strcmp("background", name) or !strcmp("alignmentrun", name));
+        assert ("amorphous" == name or "aligned" == name or "background" == name or "alignmentrun" == name);
         E = params[0]; // energy of beam [GeV]
         d_c = params[1]; // thickness of crystal target [micrometer]
         conversions = 0;
@@ -56,7 +56,7 @@ simulator::simulator(int N, vector<double> z, char const *run, vector<double> pa
 
         }
 
-        if (!strcmp("aligned", name)) {
+        if (name == "aligned") {
 
                 angle_spec = s1;
 
@@ -348,11 +348,12 @@ void simulator::propagate_particles(void) {
         double T = 0;
         int prog = 0;
 
+        #pragma omp parallel for
         for (int i = 0; i < Nevents; i++) {
 
                 int emitted = 0;
 
-                add_photons(i, emitted, X0_Si_amorph, 3.0E+03); // add photons to match measured background spectrum
+                if (bg_include) add_photons(i, emitted, X0_Si_amorph, 3.0E+03); // add photons to match measured background spectrum
 
                 /* MIMOSA 1 detector */
                 if (bg_include) amorph_material(i, emitted, X0_tape, 50.0, 50.0);
@@ -381,12 +382,12 @@ void simulator::propagate_particles(void) {
                 SA_mult_scat(i, X0_air, 2060E+03);
 
                 /* Traverse crystal */
-                if (!strcmp("amorphous", name)) { // if amorphous
+                if ("amorphous" == name) { // if amorphous
 
                         amorph_material(i, emitted, X0_C_amorph, 2060E+03 + d_c, d_c, 300);
                         SA_mult_scat(i,  X0_C_amorph, 2060E+03 + d_c);
 
-                } else if (!strcmp("aligned", name)) { // if aligned
+                } else if ("aligned" == name) { // if aligned
 
                         aligned_crystal(i, emitted, d_c/1000.0 * 300);
                         // SA_mult_scat(i, X0_C_gem, 2060E+03);
@@ -412,7 +413,7 @@ void simulator::propagate_particles(void) {
                 SA_mult_scat(i, X0_tape,  2310E+03 + 1.0E+03  + 0.5E+06 + 120.0 + 100.0);
 
                 /* If not alignment run */
-                if (strcmp("alignmentrun", name) != 0) {
+                if ("alignmentrun" != name) {
 
                         MBPL_magnet(i);
 
@@ -458,7 +459,7 @@ void simulator::propagate_particles(void) {
                 mimosa_detector(3, i, total_detected);
 
                 /* If not alignment run */
-                if (strcmp("alignmentrun", name) != 0) {
+                if ("alignmentrun" != name) {
 
                         /* Air between M4 and middle of MIMOSA magnet */
                         if (bg_include) amorph_material(i, emitted, X0_air, (zplanes[4] + zplanes[3])/2.0, (zplanes[4] - zplanes[3] - 100.0)/2.0);
@@ -496,9 +497,11 @@ void simulator::propagate_particles(void) {
                 SA_mult_scat(i, X0_Mimosa, zplanes[5] + 100.0);
                 mimosa_detector(5, i, total_detected);
 
-                total_emitted += emitted;
-                prog++;
-
+                #pragma omp critical
+                {
+                        total_emitted += emitted;
+                        prog++;
+                }
                 /* Report progress in terminal */
                 if ( (prog+1) % (Nevents/10 + 1) == 0) {
 
@@ -580,6 +583,7 @@ void simulator::amorph_material(int eventno, int &emitted, double X0, double z, 
         double dl = L/(double)N_slices;
         vector<double> dy_part = {0.0, 0.0};
         vector<double> dtheta_part = {0.0, 0.0};
+        // bool inside;
 
         for (size_t hitno = 0; hitno < particles[eventno].size(); hitno++) {
 
@@ -589,7 +593,6 @@ void simulator::amorph_material(int eventno, int &emitted, double X0, double z, 
                 for (int i = 0; i < no_slices; i++) {
 
                         double Epart = particles[eventno][hitno][5];
-
 
                         /* Proceed only if photon is emitted */
                         bool emission = photon_emitted_amorph(dl, X0, Epart);
@@ -618,8 +621,8 @@ void simulator::amorph_material(int eventno, int &emitted, double X0, double z, 
                                 vector<double> photon = particles[eventno][hitno];
                                 photon[0] += dy_part[0];
                                 photon[1] += dy_part[1];
-                                photon[2] += (1 + i) * dl;         // z-val
-                                photon[4] = 0.0;         // charge
+                                photon[2] += (1 + i) * dl;           // z-val
+                                photon[4] = 0.0;           // charge
                                 photon[5] = photon_energy(0);
                                 double dx = defl_angle(generator);
                                 double dy = sqrt(1.0/(gamma*gamma) - dx*dx);
@@ -630,8 +633,7 @@ void simulator::amorph_material(int eventno, int &emitted, double X0, double z, 
 
                         }
 
-                }         // slices end
-
+                }           // slices end
 
         } // events end
 
@@ -976,6 +978,7 @@ void simulator::mimosa_detector(int planeno, int eventno, int &detections) {
                                                 mimosas[planeno][eventno][0][1] += dy/2.0;
 
                                         }
+
                                 } else {
 
                                         /* If there are no previous hits in detector simply add the hit to "mimoas" array */

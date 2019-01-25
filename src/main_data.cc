@@ -110,14 +110,15 @@ int main(int argc, char const *argv[]) {
         cerr << "Entry angles x: {" << cut_lb_x << ", " << cut_ub_x << "} rad\n";
         cerr << "Entry angles y: {" << cut_lb_y << ", " << cut_ub_y << "} rad\n\n";
 
-        // Data->find_axis_alt();
+        Data->find_axis_alt();
+        cerr << "Calculated mean deflection angle for various entry angles\n";
 
-        Data->construct_tracks(cut_lb_x, cut_ub_x, cut_lb_y, cut_ub_y);
-        Data->pair_tracks();
+        // Data->construct_tracks(cut_lb_x, cut_ub_x, cut_lb_y, cut_ub_y);
+        // Data->pair_tracks();
         // Data->construct_distarray();
         // /* Save data to txt-files */
         // Data->image_crystal(name);
-        Data->print_energy(name);
+        // Data->print_energy(name);
         // Data->print_hits(name);
         // Data->print_hotpixels(name);
         // Data->print_interdistance(name);

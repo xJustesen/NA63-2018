@@ -5,13 +5,13 @@
 int main(int argc, char const *argv[]) {
 
         /* Define parameters for constructor */
-        int N = 1E+06; // number of events to simulate
+        int N = 1e6; // number of events to simulate
         vector<double> z = {0, 1832.3E+03, 8913E+03, 8989E+03, 9196.2E+03, 9273.7E+03}; // z-coordinates for planes (micro-meters) 2018
         int bg = 1; // include background?
 
         char const *name = "";
         char const *sim_type = argv[1];
-        char const *runno = argv[2];
+        string runno = argv[2];
         char const *filename = argv[3];
         char const *spectrum1;
 
@@ -119,7 +119,7 @@ int main(int argc, char const *argv[]) {
         // }
 
         // analyse->image_crystal(Name);
-        // analyse->print_energy(Name);
+        analyse->print_energy(Name);
         // analyse->print_hits(Name);
         // analyse->print_hotpixels(Name);
         // analyse->print_interdistance(Name);

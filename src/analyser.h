@@ -47,7 +47,7 @@ int Nevents;      // total number of events
 vector<vector<vector<double> > > Events;    // containts root data
 vector<vector<vector<vector<double> > > > hitcoords;
 
-analyser(vector<double> z, char const *name, char const *runno, char const *beamparams);      // constructor
+analyser(vector<double> z, char const *name, string runno, char const *beamparams);      // constructor
 void make_grid(vector<vector<double> > &pixelgrid, vector<double> &xgrid, vector<double> &ygrid);     // constructs a vector with pixeldata, except number of hits in pixel
 void extract_root_data(void);     // extracts data from from root file and saves in a vector "Events"
 void extract_hit_data(vector<vector<vector<double> > > &hitcoord, vector<vector<double> > &pixelgrid, int plane);   // extracts and stores data for each hit in hitcoord, and fills pixelgrid with no. of hits in pixel
@@ -79,7 +79,7 @@ int isInside(int nvert, vector<double> vertx, vector<double> verty, double testx
 private:
 
 string DATPATH;     // directory to store data
-char const *runno;      // used to name output files
+string runno;      // used to name output files
 int ncols, nrows;     // pixel columns/rows of Mimosa-26
 double xmin, xmax, ymin, ymax;     // maximum x,y coordinates in detector
 char const *filename;     // name of alignment file

@@ -16,7 +16,7 @@ data_20GeV_1mm : main_data
 	# ./main_data $(DATPATH)/run115_01.root 115
 	#
 	# # 20 GeV ; Aligned ; 1mm C
-	# ./main_data $(DATPATH)/run103_01.root 103 $(PARAMPATH)/20GeV_beam_params.txt
+	./main_data $(DATPATH)/run103_01.root 103 $(PARAMPATH)/20GeV_beam_params.txt
 	# ./main_data $(DATPATH)/run104_01.root 104 $(PARAMPATH)/20GeV_beam_params.txt
 	# ./main_data $(DATPATH)/run112_01.root 112 $(PARAMPATH)/20GeV_beam_params.txt
 	# ./main_data $(DATPATH)/run113_01.root 113 $(PARAMPATH)/20GeV_beam_params.txt
@@ -32,58 +32,58 @@ data_20GeV_1mm : main_data
 
 data_20GeV_1.5mm : main_data
 	# 20 GeV ; Amorphous ; 1.5mm C
-	./main_data $(DATPATH)/run66_01.root 66
-	./main_data $(DATPATH)/run67_01.root 67
-	./main_data $(DATPATH)/run68_01.root 68
-	./main_data $(DATPATH)/run69_01.root 69
+	# ./main_data $(DATPATH)/run66_01.root 66
+	# ./main_data $(DATPATH)/run67_01.root 67
+	# ./main_data $(DATPATH)/run68_01.root 68
+	# ./main_data $(DATPATH)/run69_01.root 69
 
 	# 20 GeV ; Aligned ; 1.5mm C
 	./main_data $(DATPATH)/run61_01.root 61 $(PARAMPATH)/20GeV_beam_params_1.5mm.txt
-	./main_data $(DATPATH)/run62_01.root 62 $(PARAMPATH)/20GeV_beam_params_1.5mm.txt
-	./main_data $(DATPATH)/run63_01.root 63 $(PARAMPATH)/20GeV_beam_params_1.5mm.txt
-	./main_data $(DATPATH)/run64_01.root 64 $(PARAMPATH)/20GeV_beam_params_1.5mm.txt
+	# ./main_data $(DATPATH)/run62_01.root 62 $(PARAMPATH)/20GeV_beam_params_1.5mm.txt
+	# ./main_data $(DATPATH)/run63_01.root 63 $(PARAMPATH)/20GeV_beam_params_1.5mm.txt
+	# ./main_data $(DATPATH)/run64_01.root 64 $(PARAMPATH)/20GeV_beam_params_1.5mm.txt
 
 	# 20 GeV ; Background ; 1.5mm C
-	./main_data $(DATPATH)/run60_01.root 60
-	./main_data $(DATPATH)/run65_01.root 65
+	# ./main_data $(DATPATH)/run60_01.root 60
+	# ./main_data $(DATPATH)/run65_01.root 65
 
 data_40GeV_1mm : main_data
 	# 40 GeV ; Aligned ; 1mm C
-	./main_data $(DATPATH)/run71_01.root 71 $(PARAMPATH)/40GeV_beam_params.txt #$(PARAMPATH)/1mmC_cuts.txt
+	# ./main_data $(DATPATH)/run71_01.root 71 $(PARAMPATH)/40GeV_beam_params.txt #$(PARAMPATH)/1mmC_cuts.txt
 	./main_data $(DATPATH)/run72_01.root 72 $(PARAMPATH)/40GeV_beam_params.txt #$(PARAMPATH)/1mmC_cuts.txt
-	./main_data $(DATPATH)/run79_01.root 79 $(PARAMPATH)/40GeV_beam_params.txt #$(PARAMPATH)/1mmC_cuts.txt
-	./main_data $(DATPATH)/run80_01.root 80 $(PARAMPATH)/40GeV_beam_params.txt #$(PARAMPATH)/1mmC_cuts.txt
-	./main_data $(DATPATH)/run81_01.root 81 $(PARAMPATH)/40GeV_beam_params.txt #$(PARAMPATH)/1mmC_cuts.txt
+	# ./main_data $(DATPATH)/run79_01.root 79 $(PARAMPATH)/40GeV_beam_params.txt #$(PARAMPATH)/1mmC_cuts.txt
+	# ./main_data $(DATPATH)/run80_01.root 80 $(PARAMPATH)/40GeV_beam_params.txt #$(PARAMPATH)/1mmC_cuts.txt
+	# ./main_data $(DATPATH)/run81_01.root 81 $(PARAMPATH)/40GeV_beam_params.txt #$(PARAMPATH)/1mmC_cuts.txt
 
 	# 40 GeV ; Amorphous ; 1mm C
-	./main_data $(DATPATH)/run73_01.root 73
-	./main_data $(DATPATH)/run75_01.root 75
-	./main_data $(DATPATH)/run76_01.root 76
-	./main_data $(DATPATH)/run77_01.root 77
-	./main_data $(DATPATH)/run78_01.root 78
+	# ./main_data $(DATPATH)/run73_01.root 73
+	# ./main_data $(DATPATH)/run75_01.root 75
+	# ./main_data $(DATPATH)/run76_01.root 76
+	# ./main_data $(DATPATH)/run77_01.root 77
+	# ./main_data $(DATPATH)/run78_01.root 78
 
 	# 40 GeV ; Background ; 1mm C
-	./main_data $(DATPATH)/run74_01.root 74
+	# ./main_data $(DATPATH)/run74_01.root 74
 
 data_40GeV_1.5mm : main_data
 	# 40 GeV ; Aligned ; 1.5mm C
-	./main_data $(DATPATH)/run30_01.root 30  $(PARAMPATH)/40GeV_beam_params_1.5mm.txt
+	# ./main_data $(DATPATH)/run30_01.root 30  $(PARAMPATH)/40GeV_beam_params_1.5mm.txt
 	./main_data $(DATPATH)/run35_01.root 35  $(PARAMPATH)/40GeV_beam_params_1.5mm.txt
-	./main_data $(DATPATH)/run36_01.root 36  $(PARAMPATH)/40GeV_beam_params_1.5mm.txt
-	./main_data $(DATPATH)/run37_01.root 37  $(PARAMPATH)/40GeV_beam_params_1.5mm.txt
-	./main_data $(DATPATH)/run38_01.root 38  $(PARAMPATH)/40GeV_beam_params_1.5mm.txt
+	# ./main_data $(DATPATH)/run36_01.root 36  $(PARAMPATH)/40GeV_beam_params_1.5mm.txt
+	# ./main_data $(DATPATH)/run37_01.root 37  $(PARAMPATH)/40GeV_beam_params_1.5mm.txt
+	# ./main_data $(DATPATH)/run38_01.root 38  $(PARAMPATH)/40GeV_beam_params_1.5mm.txt
 
 	# 40 GeV ; Amorphous ; 1.5mm C
-	./main_data $(DATPATH)/run32_01.root 32
-	./main_data $(DATPATH)/run33_01.root 33
-	./main_data $(DATPATH)/run34_01.root 34
-	./main_data $(DATPATH)/run39_01.root 39
-	./main_data $(DATPATH)/run40_01.root 40
-	./main_data $(DATPATH)/run41_01.root 41
-	./main_data $(DATPATH)/run43_01.root 43
+	# ./main_data $(DATPATH)/run32_01.root 32
+	# ./main_data $(DATPATH)/run33_01.root 33
+	# ./main_data $(DATPATH)/run34_01.root 34
+	# ./main_data $(DATPATH)/run39_01.root 39
+	# ./main_data $(DATPATH)/run40_01.root 40
+	# ./main_data $(DATPATH)/run41_01.root 41
+	# ./main_data $(DATPATH)/run43_01.root 43
 
 	# 40 GeV ; Background ; 1.5mm C
-	./main_data $(DATPATH)/run31_01.root 31
+	# ./main_data $(DATPATH)/run31_01.root 31
 
 data_80GeV_1mm : main_data
 	# 80 GeV ; Amorphous ; 1mm C
@@ -93,35 +93,35 @@ data_80GeV_1mm : main_data
 	# ./main_data $(DATPATH)/run89_01.root 89
 
 	# 80 GeV ; Background ; 1mm C
-	./main_data $(DATPATH)/run85_01.root 85
-	./main_data $(DATPATH)/run90_01.root 90
-	./main_data $(DATPATH)/run91_01.root 91
+	# ./main_data $(DATPATH)/run85_01.root 85
+	# ./main_data $(DATPATH)/run90_01.root 90
+	# ./main_data $(DATPATH)/run91_01.root 91
 
 	# 80 GeV ; Aligned ; 1mm C
 	./main_data $(DATPATH)/run84_01.root 84 $(PARAMPATH)/80GeV_beam_params.txt
-	./main_data $(DATPATH)/run92_01.root 92 $(PARAMPATH)/80GeV_beam_params.txt
-	./main_data $(DATPATH)/run93_01.root 93 $(PARAMPATH)/80GeV_beam_params.txt
-	./main_data $(DATPATH)/run94_01.root 94 $(PARAMPATH)/80GeV_beam_params.txt
-	./main_data $(DATPATH)/run95_01.root 95 $(PARAMPATH)/80GeV_beam_params.txt
+	# ./main_data $(DATPATH)/run92_01.root 92 $(PARAMPATH)/80GeV_beam_params.txt
+	# ./main_data $(DATPATH)/run93_01.root 93 $(PARAMPATH)/80GeV_beam_params.txt
+	# ./main_data $(DATPATH)/run94_01.root 94 $(PARAMPATH)/80GeV_beam_params.txt
+	# ./main_data $(DATPATH)/run95_01.root 95 $(PARAMPATH)/80GeV_beam_params.txt
 
 data_80GeV_1.5mm : main_data
 	# 80 GeV ; Aligned ; 1.5mm C
 	./main_data $(DATPATH)/run46_01.root 46  $(PARAMPATH)/80GeV_beam_params_1.5mm.txt
-	./main_data $(DATPATH)/run47_01.root 47  $(PARAMPATH)/80GeV_beam_params_1.5mm.txt
+	# ./main_data $(DATPATH)/run47_01.root 47  $(PARAMPATH)/80GeV_beam_params_1.5mm.txt
 
 	# 80 GeV ; Amorphous ; 1.5mm C
-	./main_data $(DATPATH)/run49_01.root 49
-	./main_data $(DATPATH)/run50_01.root 50
-	./main_data $(DATPATH)/run51_01.root 51
-	./main_data $(DATPATH)/run52_01.root 52
-	./main_data $(DATPATH)/run53_01.root 53
-	./main_data $(DATPATH)/run56_01.root 56
-	./main_data $(DATPATH)/run57_01.root 57
+	# ./main_data $(DATPATH)/run49_01.root 49
+	# ./main_data $(DATPATH)/run50_01.root 50
+	# ./main_data $(DATPATH)/run51_01.root 51
+	# ./main_data $(DATPATH)/run52_01.root 52
+	# ./main_data $(DATPATH)/run53_01.root 53
+	# ./main_data $(DATPATH)/run56_01.root 56
+	# ./main_data $(DATPATH)/run57_01.root 57
 
 	# 80 GeV ; Background ; 1.5mm C
-	./main_data $(DATPATH)/run48_01.root 48
-	./main_data $(DATPATH)/run54_01.root 54
-	./main_data $(DATPATH)/run55_01.root 55
+	# ./main_data $(DATPATH)/run48_01.root 48
+	# ./main_data $(DATPATH)/run54_01.root 54
+	# ./main_data $(DATPATH)/run55_01.root 55
 
 data_2017 : main_data
 	./main_data /home/christian/Documents/cern2017/run44_01.root 44
@@ -137,30 +137,66 @@ data_fakehits : main_data
 
 main_data : main_data.cc analyser.cc
 
-sim_20GeV_1mm : main_sim
-	# ./main_sim amorphous sim_amorphous1_20GeV_no_background 20GeV_beam_params.txt
-	# ./main_sim amorphous sim_amorphous2_20GeV_no_background 20GeV_beam_params.txt
-	# ./main_sim amorphous sim_amorphous3_20GeV_no_background 20GeV_beam_params.txt
-	# ./main_sim amorphous sim_amorphous4_20GeV_no_background 20GeV_beam_params.txt
-	# ./main_sim amorphous sim_amorphous5_20GeV_no_background 20GeV_beam_params.txt
+test : main_sim
+	./main_sim amorphous parallel_test 80GeV_beam_params_1.5mm.txt
 
-	# ./main_sim amorphous sim_amorphous1_20GeV_16012019 20GeV_beam_params.txt
-	# ./main_sim amorphous sim_amorphous2_20GeV_16012019 20GeV_beam_params.txt
-	# ./main_sim amorphous sim_amorphous3_20GeV_16012019 20GeV_beam_params.txt
-	# ./main_sim amorphous sim_amorphous4_20GeV_16012019 20GeV_beam_params.txt
-	# ./main_sim amorphous sim_amorphous5_20GeV_16012019 20GeV_beam_params.txt
+billions : main_sim
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
+
+
+sim_20GeV_1mm : main_sim
+	./main_sim amorphous sim_amorphous6_20GeV_no_background 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous7_20GeV_no_background 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous8_20GeV_no_background 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous9_20GeV_no_background 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous10_20GeV_no_background 20GeV_beam_params.txt
+
+	./main_sim amorphous sim_amorphous6_20GeV_16012019 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous7_20GeV_16012019 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous8_20GeV_16012019 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous9_20GeV_16012019 20GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous10_20GeV_16012019 20GeV_beam_params.txt
 	#
 	# ./main_sim background sim_background1_20GeV_16012019 20GeV_beam_params.txt
 	# ./main_sim background sim_background2_20GeV_16012019 20GeV_beam_params.txt
 	# ./main_sim background sim_background3_20GeV_16012019 20GeV_beam_params.txt
 	# ./main_sim background sim_background4_20GeV_16012019 20GeV_beam_params.txt
 	# ./main_sim background sim_background5_20GeV_16012019 20GeV_beam_params.txt
-	#
-	# ./main_sim aligned sim_aligned1_20GeV_woshot 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaiernoSH.txt
-	# ./main_sim aligned sim_aligned2_20GeV_woshot 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaiernoSH.txt
-	# ./main_sim aligned sim_aligned3_20GeV_woshot 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaiernoSH.txt
-	# ./main_sim aligned sim_aligned4_20GeV_woshot 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaiernoSH.txt
-	# ./main_sim aligned sim_aligned5_20GeV_woshot 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaiernoSH.txt
+
+	# ./main_sim aligned sim_aligned1_20GeV_woshot 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaiernoSHbfac.txt
+	# ./main_sim aligned sim_aligned2_20GeV_woshot 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaiernoSHbfac.txt
+	# ./main_sim aligned sim_aligned3_20GeV_woshot 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaiernoSHbfac.txt
+	# ./main_sim aligned sim_aligned4_20GeV_woshot 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaiernoSHbfac.txt
+	# ./main_sim aligned sim_aligned5_20GeV_woshot 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaiernoSHbfac.txt
 	#
 	# ./main_sim aligned sim_aligned1_20GeV_worr 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaiernoRR.txt
 	# ./main_sim aligned sim_aligned2_20GeV_worr 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaiernoRR.txt
@@ -168,11 +204,11 @@ sim_20GeV_1mm : main_sim
 	# ./main_sim aligned sim_aligned4_20GeV_worr 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaiernoRR.txt
 	# ./main_sim aligned sim_aligned5_20GeV_worr 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaiernoRR.txt
 	#
-	# ./main_sim aligned sim_aligned1_20GeV 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaierRR.txt
-	# ./main_sim aligned sim_aligned2_20GeV 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaierRR.txt
-	# ./main_sim aligned sim_aligned3_20GeV 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaierRR.txt
-	# ./main_sim aligned sim_aligned4_20GeV 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaierRR.txt
-	# ./main_sim aligned sim_aligned5_20GeV 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaierRR.txt
+	# ./main_sim aligned sim_aligned1_20GeV 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaierRRbfac.txt
+	# ./main_sim aligned sim_aligned2_20GeV 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaierRRbfac.txt
+	# ./main_sim aligned sim_aligned3_20GeV 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaierRRbfac.txt
+	# ./main_sim aligned sim_aligned4_20GeV 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaierRRbfac.txt
+	# ./main_sim aligned sim_aligned5_20GeV 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaierRRbfac.txt
 
 sim_20GeV_1.5mm : main_sim
 	# ./main_sim amorphous sim_amorphous1_20GeV_1.5mm_no_background 20GeV_beam_params_1.5mm.txt
@@ -193,23 +229,23 @@ sim_20GeV_1.5mm : main_sim
 	# ./main_sim background sim_background4_20GeV_1.5mm_16012019 20GeV_beam_params_1.5mm.txt
 	# ./main_sim background sim_background5_20GeV_1.5mm_16012019 20GeV_beam_params_1.5mm.txt
 	#
-	./main_sim aligned sim_aligned1_20GeV_woshot_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaiernoSH.txt
-	./main_sim aligned sim_aligned2_20GeV_woshot_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaiernoSH.txt
-	./main_sim aligned sim_aligned3_20GeV_woshot_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaiernoSH.txt
-	./main_sim aligned sim_aligned4_20GeV_woshot_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaiernoSH.txt
-	./main_sim aligned sim_aligned5_20GeV_woshot_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaiernoSH.txt
-
-	./main_sim aligned sim_aligned1_20GeV_worr_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaiernoRR.txt
-	./main_sim aligned sim_aligned2_20GeV_worr_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaiernoRR.txt
-	./main_sim aligned sim_aligned3_20GeV_worr_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaiernoRR.txt
-	./main_sim aligned sim_aligned4_20GeV_worr_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaiernoRR.txt
-	./main_sim aligned sim_aligned5_20GeV_worr_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaiernoRR.txt
-
-	./main_sim aligned sim_aligned1_20GeV_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaierRR.txt
-	./main_sim aligned sim_aligned2_20GeV_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaierRR.txt
-	./main_sim aligned sim_aligned3_20GeV_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaierRR.txt
-	./main_sim aligned sim_aligned4_20GeV_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaierRR.txt
-	./main_sim aligned sim_aligned5_20GeV_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaierRR.txt
+	# ./main_sim aligned sim_aligned1_20GeV_woshot_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaiernoSHbfac.txt
+	# ./main_sim aligned sim_aligned2_20GeV_woshot_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaiernoSHbfac.txt
+	# ./main_sim aligned sim_aligned3_20GeV_woshot_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaiernoSHbfac.txt
+	# ./main_sim aligned sim_aligned4_20GeV_woshot_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaiernoSHbfac.txt
+	# ./main_sim aligned sim_aligned5_20GeV_woshot_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaiernoSHbfac.txt
+	#
+	# ./main_sim aligned sim_aligned1_20GeV_worr_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaiernoRR.txt
+	# ./main_sim aligned sim_aligned2_20GeV_worr_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaiernoRR.txt
+	# ./main_sim aligned sim_aligned3_20GeV_worr_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaiernoRR.txt
+	# ./main_sim aligned sim_aligned4_20GeV_worr_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaiernoRR.txt
+	# ./main_sim aligned sim_aligned5_20GeV_worr_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaiernoRR.txt
+	#
+	# ./main_sim aligned sim_aligned1_20GeV_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaierRRbfac.txt
+	# ./main_sim aligned sim_aligned2_20GeV_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaierRRbfac.txt
+	# ./main_sim aligned sim_aligned3_20GeV_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaierRRbfac.txt
+	# ./main_sim aligned sim_aligned4_20GeV_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaierRRbfac.txt
+	# ./main_sim aligned sim_aligned5_20GeV_1.5mm 20GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm20GeVbaierRRbfac.txt
 
 sim_40GeV_1mm : main_sim
 	# ./main_sim amorphous sim_amorphous1_40GeV_no_background 40GeV_beam_params.txt
@@ -217,36 +253,36 @@ sim_40GeV_1mm : main_sim
 	# ./main_sim amorphous sim_amorphous3_40GeV_no_background 40GeV_beam_params.txt
 	# ./main_sim amorphous sim_amorphous4_40GeV_no_background 40GeV_beam_params.txt
 	# ./main_sim amorphous sim_amorphous5_40GeV_no_background 40GeV_beam_params.txt
-
+	#
 	# ./main_sim amorphous sim_amorphous1_40GeV_16012019 40GeV_beam_params.txt
 	# ./main_sim amorphous sim_amorphous2_40GeV_16012019 40GeV_beam_params.txt
 	# ./main_sim amorphous sim_amorphous3_40GeV_16012019 40GeV_beam_params.txt
 	# ./main_sim amorphous sim_amorphous4_40GeV_16012019 40GeV_beam_params.txt
 	# ./main_sim amorphous sim_amorphous5_40GeV_16012019 40GeV_beam_params.txt
-	# #
+
 	# ./main_sim background sim_background1_40GeV_16012019 40GeV_beam_params.txt
 	# ./main_sim background sim_background2_40GeV_16012019 40GeV_beam_params.txt
 	# ./main_sim background sim_background3_40GeV_16012019 40GeV_beam_params.txt
 	# ./main_sim background sim_background4_40GeV_16012019 40GeV_beam_params.txt
 	# ./main_sim background sim_background5_40GeV_16012019 40GeV_beam_params.txt
-	#
-	./main_sim aligned sim_aligned1_40GeV_woshot 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaiernoSH.txt
-	./main_sim aligned sim_aligned2_40GeV_woshot 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaiernoSH.txt
-	./main_sim aligned sim_aligned3_40GeV_woshot 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaiernoSH.txt
-	./main_sim aligned sim_aligned4_40GeV_woshot 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaiernoSH.txt
-	./main_sim aligned sim_aligned5_40GeV_woshot 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaiernoSH.txt
 
+	./main_sim aligned sim_aligned1_40GeV_woshot 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaiernoSHbfac.txt
+	./main_sim aligned sim_aligned2_40GeV_woshot 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaiernoSHbfac.txt
+	./main_sim aligned sim_aligned3_40GeV_woshot 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaiernoSHbfac.txt
+	./main_sim aligned sim_aligned4_40GeV_woshot 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaiernoSHbfac.txt
+	./main_sim aligned sim_aligned5_40GeV_woshot 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaiernoSHbfac.txt
+	#
 	./main_sim aligned sim_aligned1_40GeV_worr 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaiernoRR.txt
 	./main_sim aligned sim_aligned2_40GeV_worr 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaiernoRR.txt
 	./main_sim aligned sim_aligned3_40GeV_worr 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaiernoRR.txt
 	./main_sim aligned sim_aligned4_40GeV_worr 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaiernoRR.txt
 	./main_sim aligned sim_aligned5_40GeV_worr 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaiernoRR.txt
 
-	./main_sim aligned sim_aligned1_40GeV 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaierRR.txt
-	./main_sim aligned sim_aligned2_40GeV 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaierRR.txt
-	./main_sim aligned sim_aligned3_40GeV 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaierRR.txt
-	./main_sim aligned sim_aligned4_40GeV 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaierRR.txt
-	./main_sim aligned sim_aligned5_40GeV 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaierRR.txt
+	./main_sim aligned sim_aligned1_40GeV 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaierRRbfac.txt
+	./main_sim aligned sim_aligned2_40GeV 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaierRRbfac.txt
+	./main_sim aligned sim_aligned3_40GeV 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaierRRbfac.txt
+	./main_sim aligned sim_aligned4_40GeV 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaierRRbfac.txt
+	./main_sim aligned sim_aligned5_40GeV 40GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm40GeVbaierRRbfac.txt
 
 sim_40GeV_1.5mm : main_sim
 	# ./main_sim amorphous sim_amorphous1_40GeV_1.5mm_no_background 40GeV_beam_params_1.5mm.txt
@@ -255,35 +291,35 @@ sim_40GeV_1.5mm : main_sim
 	# ./main_sim amorphous sim_amorphous4_40GeV_1.5mm_no_background 40GeV_beam_params_1.5mm.txt
 	# ./main_sim amorphous sim_amorphous5_40GeV_1.5mm_no_background 40GeV_beam_params_1.5mm.txt
 
-	# ./main_sim amorphous sim_amorphous1_40GeV_1.5mm_16012019 40GeV_beam_params_1.5mm.txt
-	# ./main_sim amorphous sim_amorphous2_40GeV_1.5mm_16012019 40GeV_beam_params_1.5mm.txt
-	# ./main_sim amorphous sim_amorphous3_40GeV_1.5mm_16012019 40GeV_beam_params_1.5mm.txt
-	# ./main_sim amorphous sim_amorphous4_40GeV_1.5mm_16012019 40GeV_beam_params_1.5mm.txt
-	# ./main_sim amorphous sim_amorphous5_40GeV_1.5mm_16012019 40GeV_beam_params_1.5mm.txt
+	./main_sim amorphous sim_amorphous1_40GeV_1.5mm_16012019 40GeV_beam_params_1.5mm.txt
+	./main_sim amorphous sim_amorphous2_40GeV_1.5mm_16012019 40GeV_beam_params_1.5mm.txt
+	./main_sim amorphous sim_amorphous3_40GeV_1.5mm_16012019 40GeV_beam_params_1.5mm.txt
+	./main_sim amorphous sim_amorphous4_40GeV_1.5mm_16012019 40GeV_beam_params_1.5mm.txt
+	./main_sim amorphous sim_amorphous5_40GeV_1.5mm_16012019 40GeV_beam_params_1.5mm.txt
+	#
+	./main_sim background sim_background1_40GeV_1.5mm_16012019 40GeV_beam_params_1.5mm.txt
+	./main_sim background sim_background2_40GeV_1.5mm_16012019 40GeV_beam_params_1.5mm.txt
+	./main_sim background sim_background3_40GeV_1.5mm_16012019 40GeV_beam_params_1.5mm.txt
+	./main_sim background sim_background4_40GeV_1.5mm_16012019 40GeV_beam_params_1.5mm.txt
+	./main_sim background sim_background5_40GeV_1.5mm_16012019 40GeV_beam_params_1.5mm.txt
+	#
+	# ./main_sim aligned sim_aligned1_40GeV_woshot_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaiernoSHbfac.txt
+	# ./main_sim aligned sim_aligned2_40GeV_woshot_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaiernoSHbfac.txt
+	# ./main_sim aligned sim_aligned3_40GeV_woshot_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaiernoSHbfac.txt
+	# ./main_sim aligned sim_aligned4_40GeV_woshot_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaiernoSHbfac.txt
+	# ./main_sim aligned sim_aligned5_40GeV_woshot_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaiernoSHbfac.txt
+	#
+	# ./main_sim aligned sim_aligned1_40GeV_worr_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaiernoRR.txt
+	# ./main_sim aligned sim_aligned2_40GeV_worr_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaiernoRR.txt
+	# ./main_sim aligned sim_aligned3_40GeV_worr_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaiernoRR.txt
+	# ./main_sim aligned sim_aligned4_40GeV_worr_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaiernoRR.txt
+	# ./main_sim aligned sim_aligned5_40GeV_worr_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaiernoRR.txt
 	# #
-	# ./main_sim background sim_background1_40GeV_1.5mm_16012019 40GeV_beam_params_1.5mm.txt
-	# ./main_sim background sim_background2_40GeV_1.5mm_16012019 40GeV_beam_params_1.5mm.txt
-	# ./main_sim background sim_background3_40GeV_1.5mm_16012019 40GeV_beam_params_1.5mm.txt
-	# ./main_sim background sim_background4_40GeV_1.5mm_16012019 40GeV_beam_params_1.5mm.txt
-	# ./main_sim background sim_background5_40GeV_1.5mm_16012019 40GeV_beam_params_1.5mm.txt
-	#
-	./main_sim aligned sim_aligned1_40GeV_woshot_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaiernoSH.txt
-	./main_sim aligned sim_aligned2_40GeV_woshot_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaiernoSH.txt
-	./main_sim aligned sim_aligned3_40GeV_woshot_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaiernoSH.txt
-	./main_sim aligned sim_aligned4_40GeV_woshot_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaiernoSH.txt
-	./main_sim aligned sim_aligned5_40GeV_woshot_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaiernoSH.txt
-
-	./main_sim aligned sim_aligned1_40GeV_worr_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaiernoRR.txt
-	./main_sim aligned sim_aligned2_40GeV_worr_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaiernoRR.txt
-	./main_sim aligned sim_aligned3_40GeV_worr_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaiernoRR.txt
-	./main_sim aligned sim_aligned4_40GeV_worr_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaiernoRR.txt
-	./main_sim aligned sim_aligned5_40GeV_worr_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaiernoRR.txt
-	#
-	./main_sim aligned sim_aligned1_40GeV_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaierRR.txt
-	./main_sim aligned sim_aligned2_40GeV_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaierRR.txt
-	./main_sim aligned sim_aligned3_40GeV_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaierRR.txt
-	./main_sim aligned sim_aligned4_40GeV_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaierRR.txt
-	./main_sim aligned sim_aligned5_40GeV_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaierRR.txt
+	# ./main_sim aligned sim_aligned1_40GeV_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaierRRbfac.txt
+	# ./main_sim aligned sim_aligned2_40GeV_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaierRRbfac.txt
+	# ./main_sim aligned sim_aligned3_40GeV_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaierRRbfac.txt
+	# ./main_sim aligned sim_aligned4_40GeV_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaierRRbfac.txt
+	# ./main_sim aligned sim_aligned5_40GeV_1.5mm 40GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm40GeVbaierRRbfac.txt
 
 sim_80GeV_1mm : main_sim
 	# ./main_sim amorphous sim_amorphous1_80GeV_no_background_04012019 80GeV_beam_params.txt
@@ -292,35 +328,45 @@ sim_80GeV_1mm : main_sim
 	# ./main_sim amorphous sim_amorphous4_80GeV_no_background_04012019 80GeV_beam_params.txt
 	# ./main_sim amorphous sim_amorphous5_80GeV_no_background_04012019 80GeV_beam_params.txt
 
-	# ./main_sim amorphous sim_amorphous1_80GeV_16012019 80GeV_beam_params.txt
-	# ./main_sim amorphous sim_amorphous2_80GeV_16012019 80GeV_beam_params.txt
-	# ./main_sim amorphous sim_amorphous3_80GeV_16012019 80GeV_beam_params.txt
-	# ./main_sim amorphous sim_amorphous4_80GeV_16012019 80GeV_beam_params.txt
-	# ./main_sim amorphous sim_amorphous5_80GeV_16012019 80GeV_beam_params.txt
-	# #
-	# ./main_sim background sim_background1_80GeV_16012019 80GeV_beam_params.txt
-	# ./main_sim background sim_background2_80GeV_16012019 80GeV_beam_params.txt
-	# ./main_sim background sim_background3_80GeV_16012019 80GeV_beam_params.txt
-	# ./main_sim background sim_background4_80GeV_16012019 80GeV_beam_params.txt
-	# ./main_sim background sim_background5_80GeV_16012019 80GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous1_80GeV_16012019 80GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous2_80GeV_16012019 80GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous3_80GeV_16012019 80GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous4_80GeV_16012019 80GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous5_80GeV_16012019 80GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous6_80GeV_16012019 80GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous7_80GeV_16012019 80GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous8_80GeV_16012019 80GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous9_80GeV_16012019 80GeV_beam_params.txt
+	./main_sim amorphous sim_amorphous10_80GeV_16012019 80GeV_beam_params.txt
+
+	./main_sim background sim_background1_80GeV_16012019 80GeV_beam_params.txt
+	./main_sim background sim_background2_80GeV_16012019 80GeV_beam_params.txt
+	./main_sim background sim_background3_80GeV_16012019 80GeV_beam_params.txt
+	./main_sim background sim_background4_80GeV_16012019 80GeV_beam_params.txt
+	./main_sim background sim_background5_80GeV_16012019 80GeV_beam_params.txt
+	./main_sim background sim_background6_80GeV_16012019 80GeV_beam_params.txt
+	./main_sim background sim_background7_80GeV_16012019 80GeV_beam_params.txt
+	./main_sim background sim_background8_80GeV_16012019 80GeV_beam_params.txt
+	./main_sim background sim_background9_80GeV_16012019 80GeV_beam_params.txt
+	./main_sim background sim_background10_80GeV_16012019 80GeV_beam_params.txt
+
+	# ./main_sim aligned sim_aligned1_80GeV_woshot 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaiernoSHbfac.txt
+	# ./main_sim aligned sim_aligned2_80GeV_woshot 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaiernoSHbfac.txt
+	# ./main_sim aligned sim_aligned3_80GeV_woshot 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaiernoSHbfac.txt
+	# ./main_sim aligned sim_aligned4_80GeV_woshot 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaiernoSHbfac.txt
+	# ./main_sim aligned sim_aligned5_80GeV_woshot 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaiernoSHbfac.txt
 	#
-	./main_sim aligned sim_aligned1_80GeV_woshot 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaiernoSH.txt
-	./main_sim aligned sim_aligned2_80GeV_woshot 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaiernoSH.txt
-	./main_sim aligned sim_aligned3_80GeV_woshot 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaiernoSH.txt
-	./main_sim aligned sim_aligned4_80GeV_woshot 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaiernoSH.txt
-	./main_sim aligned sim_aligned5_80GeV_woshot 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaiernoSH.txt
-
-	./main_sim aligned sim_aligned1_80GeV_worr 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaiernoRR.txt
-	./main_sim aligned sim_aligned2_80GeV_worr 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaiernoRR.txt
-	./main_sim aligned sim_aligned3_80GeV_worr 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaiernoRR.txt
-	./main_sim aligned sim_aligned4_80GeV_worr 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaiernoRR.txt
-	./main_sim aligned sim_aligned5_80GeV_worr 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaiernoRR.txt
-
-	./main_sim aligned sim_aligned1_80GeV 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaierRR.txt
-	./main_sim aligned sim_aligned2_80GeV 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaierRR.txt
-	./main_sim aligned sim_aligned3_80GeV 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaierRR.txt
-	./main_sim aligned sim_aligned4_80GeV 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaierRR.txt
-	./main_sim aligned sim_aligned5_80GeV 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaierRR.txt
+	# ./main_sim aligned sim_aligned1_80GeV_worr 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaiernoRR.txt
+	# ./main_sim aligned sim_aligned2_80GeV_worr 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaiernoRR.txt
+	# ./main_sim aligned sim_aligned3_80GeV_worr 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaiernoRR.txt
+	# ./main_sim aligned sim_aligned4_80GeV_worr 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaiernoRR.txt
+	# ./main_sim aligned sim_aligned5_80GeV_worr 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaiernoRR.txt
+	#
+	# ./main_sim aligned sim_aligned1_80GeV 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaierRRbfac.txt
+	# ./main_sim aligned sim_aligned2_80GeV 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaierRRbfac.txt
+	# ./main_sim aligned sim_aligned3_80GeV 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaierRRbfac.txt
+	# ./main_sim aligned sim_aligned4_80GeV 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaierRRbfac.txt
+	# ./main_sim aligned sim_aligned5_80GeV 80GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm80GeVbaierRRbfac.txt
 
 sim_80GeV_1.5mm : main_sim
 	# ./main_sim amorphous sim_amorphous1_80GeV_1.5mm_no_background 80GeV_beam_params_1.5mm.txt
@@ -329,35 +375,35 @@ sim_80GeV_1.5mm : main_sim
 	# ./main_sim amorphous sim_amorphous4_80GeV_1.5mm_no_background 80GeV_beam_params_1.5mm.txt
 	# ./main_sim amorphous sim_amorphous5_80GeV_1.5mm_no_background 80GeV_beam_params_1.5mm.txt
 
-	# ./main_sim amorphous sim_amorphous1_80GeV_1.5mm_16012019 80GeV_beam_params_1.5mm.txt
-	# ./main_sim amorphous sim_amorphous2_80GeV_1.5mm_16012019 80GeV_beam_params_1.5mm.txt
-	# ./main_sim amorphous sim_amorphous3_80GeV_1.5mm_16012019 80GeV_beam_params_1.5mm.txt
-	# ./main_sim amorphous sim_amorphous4_80GeV_1.5mm_16012019 80GeV_beam_params_1.5mm.txt
-	# ./main_sim amorphous sim_amorphous5_80GeV_1.5mm_16012019 80GeV_beam_params_1.5mm.txt
-	# #
-	# ./main_sim background sim_background1_80GeV_1.5mm_16012019 80GeV_beam_params_1.5mm.txt
-	# ./main_sim background sim_background2_80GeV_1.5mm_16012019 80GeV_beam_params_1.5mm.txt
-	# ./main_sim background sim_background3_80GeV_1.5mm_16012019 80GeV_beam_params_1.5mm.txt
-	# ./main_sim background sim_background4_80GeV_1.5mm_16012019 80GeV_beam_params_1.5mm.txt
-	# ./main_sim background sim_background5_80GeV_1.5mm_16012019 80GeV_beam_params_1.5mm.txt
+	./main_sim amorphous sim_amorphous1_80GeV_1.5mm_16012019 80GeV_beam_params_1.5mm.txt
+	./main_sim amorphous sim_amorphous2_80GeV_1.5mm_16012019 80GeV_beam_params_1.5mm.txt
+	./main_sim amorphous sim_amorphous3_80GeV_1.5mm_16012019 80GeV_beam_params_1.5mm.txt
+	./main_sim amorphous sim_amorphous4_80GeV_1.5mm_16012019 80GeV_beam_params_1.5mm.txt
+	./main_sim amorphous sim_amorphous5_80GeV_1.5mm_16012019 80GeV_beam_params_1.5mm.txt
+	#
+	./main_sim background sim_background1_80GeV_1.5mm_16012019 80GeV_beam_params_1.5mm.txt
+	./main_sim background sim_background2_80GeV_1.5mm_16012019 80GeV_beam_params_1.5mm.txt
+	./main_sim background sim_background3_80GeV_1.5mm_16012019 80GeV_beam_params_1.5mm.txt
+	./main_sim background sim_background4_80GeV_1.5mm_16012019 80GeV_beam_params_1.5mm.txt
+	./main_sim background sim_background5_80GeV_1.5mm_16012019 80GeV_beam_params_1.5mm.txt
 
-	./main_sim aligned sim_aligned1_80GeV_woshot_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaiernoSH.txt
-	./main_sim aligned sim_aligned2_80GeV_woshot_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaiernoSH.txt
-	./main_sim aligned sim_aligned3_80GeV_woshot_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaiernoSH.txt
-	./main_sim aligned sim_aligned4_80GeV_woshot_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaiernoSH.txt
-	./main_sim aligned sim_aligned5_80GeV_woshot_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaiernoSH.txt
-
-	./main_sim aligned sim_aligned1_80GeV_worr_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaiernoRR.txt
-	./main_sim aligned sim_aligned2_80GeV_worr_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaiernoRR.txt
-	./main_sim aligned sim_aligned3_80GeV_worr_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaiernoRR.txt
-	./main_sim aligned sim_aligned4_80GeV_worr_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaiernoRR.txt
-	./main_sim aligned sim_aligned5_80GeV_worr_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaiernoRR.txt
-
-	./main_sim aligned sim_aligned1_80GeV_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaierRR.txt
-	./main_sim aligned sim_aligned2_80GeV_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaierRR.txt
-	./main_sim aligned sim_aligned3_80GeV_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaierRR.txt
-	./main_sim aligned sim_aligned4_80GeV_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaierRR.txt
-	./main_sim aligned sim_aligned5_80GeV_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaierRR.txt
+	# ./main_sim aligned sim_aligned1_80GeV_woshot_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaiernoSHbfac.txt
+	# ./main_sim aligned sim_aligned2_80GeV_woshot_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaiernoSHbfac.txt
+	# ./main_sim aligned sim_aligned3_80GeV_woshot_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaiernoSHbfac.txt
+	# ./main_sim aligned sim_aligned4_80GeV_woshot_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaiernoSHbfac.txt
+	# ./main_sim aligned sim_aligned5_80GeV_woshot_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaiernoSHbfac.txt
+	#
+	# ./main_sim aligned sim_aligned1_80GeV_worr_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaiernoRR.txt
+	# ./main_sim aligned sim_aligned2_80GeV_worr_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaiernoRR.txt
+	# ./main_sim aligned sim_aligned3_80GeV_worr_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaiernoRR.txt
+	# ./main_sim aligned sim_aligned4_80GeV_worr_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaiernoRR.txt
+	# ./main_sim aligned sim_aligned5_80GeV_worr_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaiernoRR.txt
+	#
+	# ./main_sim aligned sim_aligned1_80GeV_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaierRRbfac.txt
+	# ./main_sim aligned sim_aligned2_80GeV_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaierRRbfac.txt
+	# ./main_sim aligned sim_aligned3_80GeV_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaierRRbfac.txt
+	# ./main_sim aligned sim_aligned4_80GeV_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaierRRbfac.txt
+	# ./main_sim aligned sim_aligned5_80GeV_1.5mm 80GeV_beam_params_1.5mm.txt $(SPECPATHINT)/sum_angles1.5mm80GeVbaierRRbfac.txt
 	#
 sim_alignment : main_sim
 	./main_sim alignmentrun sim_alignment alignment_beam_params.txt
