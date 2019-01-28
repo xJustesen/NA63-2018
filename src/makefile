@@ -140,38 +140,16 @@ main_data : main_data.cc analyser.cc
 test : main_sim
 	./main_sim amorphous parallel_test 80GeV_beam_params_1.5mm.txt
 
-billions : main_sim
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
-	./main_sim amorphous sim_amorphous_20GeV 20GeV_beam_params.txt
 
+n = 500
+billions : main_sim
+	n=$(n); \
+	while [ $${n} -gt 0 ] ; do \
+			echo $$n ; \
+			./main_sim amorphous sim_amorphous_40GeV 40GeV_beam_params.txt ; \
+			n=`expr $$n - 1`; \
+	done; \
+	true
 
 sim_20GeV_1mm : main_sim
 	./main_sim amorphous sim_amorphous6_20GeV_no_background 20GeV_beam_params.txt
