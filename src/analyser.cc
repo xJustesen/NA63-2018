@@ -389,6 +389,7 @@ void analyser::pair_tracks(void) {
         int Match_dist_foil_count = 0;
         int N_photons = 0;
 
+        #pragma omp parallel for
         for (int i = 0; i < Nevents; i++) { // no. of events
 
                 int no_photons = 0;
