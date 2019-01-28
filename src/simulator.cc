@@ -1,26 +1,13 @@
 #include "simulator.h"
-#include <fstream>
-/* Look up global variables (globalvars.h) */
-extern default_random_engine generator;
-extern normal_distribution<double> R_normal;
-extern uniform_real_distribution<double> R;
 
-struct point
-{
-        double angx;
-        double angy;
-        double posx;
-        double posy;
-};
-
-simulator::simulator(int N, vector<double> z, char const *run, vector<double> params, char const *filename, char const* s1, int bg) {
+simulator::simulator(int N, vector<double> z, string run, vector<double> params, char const *filename, char const* s1, int bg) {
 
         /* Simulation paramters */
         Nevents = N; // number of simulated events
         zplanes = z; // z-coordinates of mimosa detectors
         name = run; // suffix for produced data-files
         beam_spatial_distro = (string) filename; // suffix of file containing beam's spaital distro.
-        assert (!strcmp("amorphous", name) or !strcmp("aligned", name) or !strcmp("background", name) or !strcmp("alignmentrun", name));
+        assert ("amorphous" == name or "aligned" == name or "background" == name or "alignmentrun" == name);
         E = params[0]; // energy of beam [GeV]
         d_c = params[1]; // thickness of crystal target [micrometer]
         conversions = 0;
@@ -56,7 +43,7 @@ simulator::simulator(int N, vector<double> z, char const *run, vector<double> pa
 
         }
 
-        if (!strcmp("aligned", name)) {
+        if (name == "aligned") {
 
                 angle_spec = s1;
 
@@ -97,9 +84,10 @@ simulator::simulator(int N, vector<double> z, char const *run, vector<double> pa
 
 
         /* Make probability distributions and seed rng */
+        unsigned seed = chrono::system_clock::now().time_since_epoch().count();
         R.param(uniform_real_distribution<double>(0.0, 1.0).param());
         R_normal.param(normal_distribution<double>(0.0, 1.0).param());
-        generator.seed(random_device{} ());
+        global_generator.seed(seed);
 
         /* Report progress to terminal */
         cerr << "\nFinished initializing simulator class.\n";
@@ -287,13 +275,13 @@ void simulator::generate_beam(void) {
         vector<double> a;
 
         /* Open the text file for reading */
-        string filename1 = "../beamParameters/angle_xweight_" + beam_spatial_distro;
-        string filename2 = "../beamParameters/angle_yweight_" + beam_spatial_distro;
-        string filename3 = "../beamParameters/xweight_" + beam_spatial_distro;
-        string filename4 = "../beamParameters/yweight_" + beam_spatial_distro;
-        string filename5 = "../beamParameters/angles.txt";
-        string filename6 = "../beamParameters/xdat_" + beam_spatial_distro;
-        string filename7 = "../beamParameters/ydat_" + beam_spatial_distro;
+        string filename1 = "/home/christian/Dropbox/speciale/code/beamParameters/angle_xweight_" + beam_spatial_distro;
+        string filename2 = "/home/christian/Dropbox/speciale/code/beamParameters/angle_yweight_" + beam_spatial_distro;
+        string filename3 = "/home/christian/Dropbox/speciale/code/beamParameters/xweight_" + beam_spatial_distro;
+        string filename4 = "/home/christian/Dropbox/speciale/code/beamParameters/yweight_" + beam_spatial_distro;
+        string filename5 = "/home/christian/Dropbox/speciale/code/beamParameters/angles.txt";
+        string filename6 = "/home/christian/Dropbox/speciale/code/beamParameters/xdat_" + beam_spatial_distro;
+        string filename7 = "/home/christian/Dropbox/speciale/code/beamParameters/ydat_" + beam_spatial_distro;
 
         load_doubles(filename1, xaw);
         load_doubles(filename2, yaw);
@@ -351,47 +339,46 @@ void simulator::propagate_particles(void) {
         #pragma omp parallel for
         for (int i = 0; i < Nevents; i++) {
 
-                default_random_engine private_generator;
-                private_generator.seed(random_device{} ());
-
+                unsigned seed = chrono::system_clock::now().time_since_epoch().count();
+                default_random_engine private_generator (seed);
 
                 int emitted = 0;
 
-                if (bg_include) add_photons(i, emitted, X0_Si_amorph, 3.0E+03,1,private_generator); // add photons to match measured background spectrum
+                if (bg_include) add_photons(i, emitted, X0_Si_amorph, 3.0E+03, private_generator); // add photons to match measured background spectrum
 
                 /* MIMOSA 1 detector */
-                if (bg_include) amorph_material(i, emitted, X0_tape, 50.0, 50.0,1,private_generator);
+                if (bg_include) amorph_material(i, emitted, X0_tape, 50.0, 50.0,private_generator);
                 SA_mult_scat(i, X0_tape, 50.0,private_generator);
-                if (bg_include) amorph_material(i, emitted, X0_Mimosa, 100.0, 50.0,1,private_generator);
+                if (bg_include) amorph_material(i, emitted, X0_Mimosa, 100.0, 50.0,private_generator);
                 SA_mult_scat(i, X0_Mimosa, 100.0,private_generator);
                 mimosa_detector(0, i, total_detected,private_generator);
 
                 /* Helium between M1 and M2 */
-                if (bg_include) amorph_material(i, emitted, X0_He, zplanes[1] - 50.0, zplanes[1] - 150.0,1,private_generator);
+                if (bg_include) amorph_material(i, emitted, X0_He, zplanes[1] - 50.0, zplanes[1] - 150.0,private_generator);
                 SA_mult_scat(i,  X0_He, zplanes[1] - 50.0,private_generator);
 
                 /* MIMOSA 2 detector */
-                if (bg_include) amorph_material(i, emitted, X0_tape, zplanes[1], 50.0,1,private_generator);
+                if (bg_include) amorph_material(i, emitted, X0_tape, zplanes[1], 50.0,private_generator);
                 SA_mult_scat(i, X0_tape, zplanes[1],private_generator);
-                if (bg_include) amorph_material(i, emitted, X0_Mimosa, zplanes[1] + 50.0, 50.0,1,private_generator);
+                if (bg_include) amorph_material(i, emitted, X0_Mimosa, zplanes[1] + 50.0, 50.0,private_generator);
                 SA_mult_scat(i, X0_Mimosa, zplanes[1] + 50.0,private_generator);
                 mimosa_detector(1, i, total_detected,private_generator);
 
                 /* Last mylar window He encasing */
-                if (bg_include) amorph_material(i, emitted, X0_Mylar, zplanes[1] + 100.0, 50.0,1,private_generator);
+                if (bg_include) amorph_material(i, emitted, X0_Mylar, zplanes[1] + 100.0, 50.0,private_generator);
                 SA_mult_scat(i, X0_Mylar, zplanes[1] + 100.0,private_generator);
 
                 /* Air */
-                if (bg_include) amorph_material(i, emitted, X0_air, 2060E+03, 2060E+03 - (zplanes[1] + 100.0),1,private_generator);
+                if (bg_include) amorph_material(i, emitted, X0_air, 2060E+03, 2060E+03 - (zplanes[1] + 100.0),private_generator);
                 SA_mult_scat(i, X0_air, 2060E+03,private_generator);
 
                 /* Traverse crystal */
-                if (!strcmp("amorphous", name)) { // if amorphous
+                if ("amorphous" == name) { // if amorphous
 
-                        amorph_material(i, emitted, X0_C_amorph, 2060E+03 + d_c, d_c, 300,private_generator);
+                        amorph_material(i, emitted, X0_C_amorph, 2060E+03 + d_c, d_c,private_generator, 300);
                         SA_mult_scat(i,  X0_C_amorph, 2060E+03 + d_c,private_generator);
 
-                } else if (!strcmp("aligned", name)) { // if aligned
+                } else if ("aligned" == name) { // if aligned
 
                         aligned_crystal(i, emitted, d_c/1000.0 * 300,private_generator);
                         // SA_mult_scat(i, X0_C_gem, 2060E+03);
@@ -399,105 +386,105 @@ void simulator::propagate_particles(void) {
                 }
 
                 /* Air */
-                if (bg_include) amorph_material(i, emitted, X0_air, 2310E+03, 2310E+03 - (2060E+03 + d_c),1,private_generator);
+                if (bg_include) amorph_material(i, emitted, X0_air, 2310E+03, 2310E+03 - (2060E+03 + d_c),private_generator);
                 SA_mult_scat(i, X0_air, 2310.0E+03,private_generator);
 
                 /* Traverse Scintilators */
-                if (bg_include) amorph_material(i, emitted, X0_Si_amorph, 2310E+03 + 1.0E+03, 1.0E+03, 300,private_generator);
+                if (bg_include) amorph_material(i, emitted, X0_Si_amorph, 2310E+03 + 1.0E+03, 1.0E+03,private_generator, 300);
                 SA_mult_scat(i, X0_Si_amorph, 2310E+03 + 1.0E+03,private_generator);
 
                 /* Air between S2 and vacuum tube */
-                if (bg_include) amorph_material(i, emitted, X0_air, 2310E+03 + 1.0E+03 + 0.5E+06, 0.5E+06,1,private_generator);
+                if (bg_include) amorph_material(i, emitted, X0_air, 2310E+03 + 1.0E+03 + 0.5E+06, 0.5E+06,private_generator);
                 SA_mult_scat(i, X0_air,  2310E+03 + 1.0E+03 + 0.5E+06,private_generator);
 
                 /* 1st vacuum tube window */
-                if (bg_include) amorph_material(i, emitted, X0_Mylar, 2310E+03 + 1.0E+03  + 0.5E+06 + 120.0, 120.0,1,private_generator);
+                if (bg_include) amorph_material(i, emitted, X0_Mylar, 2310E+03 + 1.0E+03  + 0.5E+06 + 120.0, 120.0,private_generator);
                 SA_mult_scat(i, X0_Mylar, 2310E+03 + 1.0E+03  + 0.5E+06 + 120.0,private_generator);
-                if (bg_include) amorph_material(i, emitted, X0_tape, 2310E+03 + 1.0E+03  + 0.5E+06 + 120.0 + 100.0, 100.0,1,private_generator);
+                if (bg_include) amorph_material(i, emitted, X0_tape, 2310E+03 + 1.0E+03  + 0.5E+06 + 120.0 + 100.0, 100.0,private_generator);
                 SA_mult_scat(i, X0_tape,  2310E+03 + 1.0E+03  + 0.5E+06 + 120.0 + 100.0,private_generator);
 
                 /* If not alignment run */
-                if (strcmp("alignmentrun", name) != 0) {
+                if ("alignmentrun" != name) {
 
                         MBPL_magnet(i);
 
                 } else {
 
                         /* Air intead of vacuum? */
-                        if (bg_include) amorph_material(i, emitted, X0_air*1e14, 2.8112e+006 + 5.14e+006, 5.14e+006,1,private_generator);
+                        if (bg_include) amorph_material(i, emitted, X0_air*1e14, 2.8112e+006 + 5.14e+006, 5.14e+006,private_generator);
                         SA_mult_scat(i,  X0_air*1e14, 2.8112e+006 + 5.14e+006,private_generator);
 
                         /* 2nd vacuum tube window */
-                        if (bg_include) amorph_material(i, emitted, X0_Mylar, 2.8112e+006 + 5.14e+006 + 120.0, 120.0,1,private_generator);
+                        if (bg_include) amorph_material(i, emitted, X0_Mylar, 2.8112e+006 + 5.14e+006 + 120.0, 120.0,private_generator);
                         SA_mult_scat(i, X0_Mylar, 2.8112e+006 + 5.14e+006 + 120.0,private_generator);
-                        if (bg_include) amorph_material(i, emitted, X0_tape, 2.8112e+006 + 5.14e+006 + 120.0 + 100.0, 100.0,1,private_generator);
+                        if (bg_include) amorph_material(i, emitted, X0_tape, 2.8112e+006 + 5.14e+006 + 120.0 + 100.0, 100.0,private_generator);
                         SA_mult_scat(i, X0_tape, 2.8112e+006 + 5.14e+006 + 120.0 + 100.0,private_generator);
 
                         /* Air between vacuum tube and M3 */
-                        if (bg_include) amorph_material(i, emitted, X0_air, zplanes[2] - d_f, zplanes[2] - d_f - ( 2.8112e+006 + 5.14e+006 + 120.0 + 100.0),1,private_generator);
-                        SA_mult_scat(i, X0_air, zplanes[2] - d_f, private_generator);
+                        if (bg_include) amorph_material(i, emitted, X0_air, zplanes[2] - d_f, zplanes[2] - d_f - ( 2.8112e+006 + 5.14e+006 + 120.0 + 100.0),private_generator);
+                        SA_mult_scat(i, X0_air, zplanes[2] - d_f,private_generator);
 
                 }
 
                 /* Traverse converter foil */
                 project_particle(photons, zplanes[2] - d_f, i);
-                converter_foil(i, d_f, X0_Ta, 300,private_generator);
+                converter_foil(i, d_f, X0_Ta, private_generator, 300);
                 SA_mult_scat(i, X0_Ta, zplanes[2],private_generator);
 
                 /* MIMOSA 3 detector */
-                if (bg_include) amorph_material(i, emitted, X0_tape, zplanes[2] + 50.0, 50.0,1,private_generator);
+                if (bg_include) amorph_material(i, emitted, X0_tape, zplanes[2] + 50.0, 50.0,private_generator);
                 SA_mult_scat(i, X0_tape, zplanes[2] + 50.0,private_generator);
-                if (bg_include) amorph_material(i, emitted, X0_Mimosa, zplanes[2] + 100.0, 50.0,1,private_generator);
+                if (bg_include) amorph_material(i, emitted, X0_Mimosa, zplanes[2] + 100.0, 50.0,private_generator);
                 SA_mult_scat(i, X0_Mimosa, zplanes[2] + 100.0,private_generator);
                 mimosa_detector(2, i, total_detected,private_generator);
 
                 /* Air between M3 and M4 */
-                if (bg_include) amorph_material(i, emitted, X0_air, zplanes[3], zplanes[3] - zplanes[2] - 100.0,1,private_generator);
+                if (bg_include) amorph_material(i, emitted, X0_air, zplanes[3], zplanes[3] - zplanes[2] - 100.0,private_generator);
                 SA_mult_scat(i, X0_air, zplanes[3],private_generator);
 
                 /* MIMOSA 4 detector */
-                if (bg_include) amorph_material(i, emitted, X0_tape, zplanes[3] + 50.0, 50.0,1,private_generator);
+                if (bg_include) amorph_material(i, emitted, X0_tape, zplanes[3] + 50.0, 50.0,private_generator);
                 SA_mult_scat(i, X0_tape, zplanes[3] + 50.0,private_generator);
-                if (bg_include) amorph_material(i, emitted, X0_Mimosa, zplanes[3] + 100.0, 50.0,1,private_generator);
+                if (bg_include) amorph_material(i, emitted, X0_Mimosa, zplanes[3] + 100.0, 50.0,private_generator);
                 SA_mult_scat(i, X0_Mimosa, zplanes[3] + 100.0,private_generator);
                 mimosa_detector(3, i, total_detected,private_generator);
 
                 /* If not alignment run */
-                if (strcmp("alignmentrun", name) != 0) {
+                if ("alignmentrun" != name) {
 
                         /* Air between M4 and middle of MIMOSA magnet */
-                        if (bg_include) amorph_material(i, emitted, X0_air, (zplanes[4] + zplanes[3])/2.0, (zplanes[4] - zplanes[3] - 100.0)/2.0,1,private_generator);
+                        if (bg_include) amorph_material(i, emitted, X0_air, (zplanes[4] + zplanes[3])/2.0, (zplanes[4] - zplanes[3] - 100.0)/2.0,private_generator);
                         SA_mult_scat(i, X0_air, (zplanes[4] + zplanes[3])/2.0,private_generator);
 
                         /* MIMOSA magnet */
                         mimosa_magnet(i);
 
                         /* Air between middle of MIMOSA magnet and M5 */
-                        if (bg_include) amorph_material(i, emitted, X0_air, zplanes[4], (zplanes[4] - zplanes[3])/2.0,1,private_generator);
+                        if (bg_include) amorph_material(i, emitted, X0_air, zplanes[4], (zplanes[4] - zplanes[3])/2.0,private_generator);
                         SA_mult_scat(i, X0_air, zplanes[4],private_generator);
 
                 } else {
 
-                        if (bg_include) amorph_material(i, emitted, X0_air, zplanes[4], zplanes[4] - zplanes[3] - 100.0,1,private_generator);
+                        if (bg_include) amorph_material(i, emitted, X0_air, zplanes[4], zplanes[4] - zplanes[3] - 100.0,private_generator);
                         SA_mult_scat(i, X0_air, zplanes[4],private_generator);
 
                 }
 
                 /* MIMOSA 5 detector */
-                if (bg_include) amorph_material(i, emitted, X0_tape, zplanes[4] + 50.0, 50.0,1,private_generator);
+                if (bg_include) amorph_material(i, emitted, X0_tape, zplanes[4] + 50.0, 50.0,private_generator);
                 SA_mult_scat(i, X0_tape, zplanes[4] + 50.0,private_generator);
-                if (bg_include) amorph_material(i, emitted, X0_Mimosa, zplanes[4] + 100.0, 50.0,1,private_generator);
+                if (bg_include) amorph_material(i, emitted, X0_Mimosa, zplanes[4] + 100.0, 50.0,private_generator);
                 SA_mult_scat(i, X0_Mimosa, zplanes[4] + 100.0,private_generator);
                 mimosa_detector(4, i, total_detected,private_generator);
 
                 /* Air between MIMOSA 5 and MIMOSA 6 detectors */
-                if (bg_include) amorph_material(i, emitted, X0_air, zplanes[5], zplanes[5] - zplanes[4] - 100.0,1,private_generator);
-                SA_mult_scat(i, X0_air, zplanes[5], private_generator);
+                if (bg_include) amorph_material(i, emitted, X0_air, zplanes[5], zplanes[5] - zplanes[4] - 100.0,private_generator);
+                SA_mult_scat(i, X0_air, zplanes[5],private_generator);
 
                 /* MIMOSA 6 detector */
-                if (bg_include) amorph_material(i, emitted, X0_tape, zplanes[5] + 50.0, 50.0,1,private_generator);
+                if (bg_include) amorph_material(i, emitted, X0_tape, zplanes[5] + 50.0, 50.0,private_generator);
                 SA_mult_scat(i, X0_tape, zplanes[5] + 50.0,private_generator);
-                if (bg_include) amorph_material(i, emitted, X0_Mimosa, zplanes[5] + 100.0, 50.0,1,private_generator);
+                if (bg_include) amorph_material(i, emitted, X0_Mimosa, zplanes[5] + 100.0, 50.0,private_generator);
                 SA_mult_scat(i, X0_Mimosa, zplanes[5] + 100.0,private_generator);
                 mimosa_detector(5, i, total_detected,private_generator);
 
@@ -528,7 +515,7 @@ void simulator::propagate_particles(void) {
 }
 
 /* Simulate a particle travelling through an amorphous crystal. */
-void simulator::add_photons(int eventno, int &emitted, double X0, double d, int no_slices, default_random_engine generator) {
+void simulator::add_photons(int eventno, int &emitted, double X0, double d,default_random_engine generator, int no_slices) {
 
         normal_distribution<double> distribution(0.0, 1.0);
         double dl = d/(double)no_slices;
@@ -543,10 +530,11 @@ void simulator::add_photons(int eventno, int &emitted, double X0, double d, int 
                         if (Epart < Emin) break;
 
                         /* Determine if photon is emitted */
-                        bool emission = photon_emitted_amorph(dl, X0, Epart,generator);
+                        double randno = R(generator);         // random double between 0, 1 used to determine if a pair is produced
+                        double P = dl/X0 * ( (4.0/3.0) * log(E/Emin) - (4.0/3.0) * (E - Emin)/E  + (3.0/4.0) * (1.0 - Emin*Emin/(2.0*E*E)));        // BH-cross section * crystal length
 
                         /* If photon is emitted update "photons" array and particles array */
-                        if (emission) {
+                        if (randno < P) {
                                 emitted++;
 
                                 /* Determine photon energy */
@@ -581,13 +569,11 @@ void simulator::add_photons(int eventno, int &emitted, double X0, double d, int 
 
 }
 
-void simulator::amorph_material(int eventno, int &emitted, double X0, double z, double L, int N_slices, default_random_engine generator) {
+void simulator::amorph_material(int eventno, int &emitted, double X0, double z, double L,default_random_engine generator, int N_slices) {
         double Emin = 2.0*0.5109989461E-03;
-
         double dl = L/(double)N_slices;
         vector<double> dy_part = {0.0, 0.0};
         vector<double> dtheta_part = {0.0, 0.0};
-        // bool inside;
 
         for (size_t hitno = 0; hitno < particles[eventno].size(); hitno++) {
 
@@ -599,9 +585,10 @@ void simulator::amorph_material(int eventno, int &emitted, double X0, double z, 
                         double Epart = particles[eventno][hitno][5];
 
                         /* Proceed only if photon is emitted */
-                        bool emission = photon_emitted_amorph(dl, X0, Epart,generator);
+                        double randno = R(generator);             // random double between 0, 1
+                        double P = dl/X0 * ( (4.0/3.0) * log(E/Emin) - (4.0/3.0) * (E - Emin)/E  + (3.0/4.0) * (1.0 - Emin*Emin/(2.0*E*E)));// BH-cross section * crystal length
 
-                        if (emission and Epart > Emin) {
+                        if (randno < P and Epart > Emin) {
 
                                 emitted++;
                                 if (X0 == X0_C_amorph or X0 == X0_C_gem) emitted_crystal++;
@@ -643,7 +630,7 @@ void simulator::amorph_material(int eventno, int &emitted, double X0, double z, 
 
 }
 
-void simulator::converter_foil(int eventno, double d_f, double X0, int no_slices, default_random_engine generator) {
+void simulator::converter_foil(int eventno, double d_f, double X0,default_random_engine generator, int no_slices) {
 
         double Emin = 2*0.5109989461E-03; // 2 * electron mass in GeV
         double dl = d_f/(double)no_slices;
@@ -805,7 +792,7 @@ void simulator::aligned_crystal(int eventno, int &emitted, int no_slices, defaul
                         particles[eventno][hitno][2] += dl;
 
                         /* Proceed only if photon is emitted */
-                        bool emission = photon_emitted_aligned(no_slices,generator);
+                        bool emission = photon_emitted_aligned(no_slices, generator);
 
                         if (emission and Epart > Emin) {
 
@@ -1035,7 +1022,7 @@ void simulator::project_particle(vector<vector<vector<double> > > &particletype,
 }
 
 /* (i,j) : (eventno, hitno). The following formulae taken from PDG ch. 32, 2014 (particles through matter) */
-void simulator::SA_mult_scat(int i, double X0, double zcoord, default_random_engine generator) {
+void simulator::SA_mult_scat(int i, double X0, double zcoord,default_random_engine generator) {
 
         /* Iterate over paticles traversing medium */
         for (size_t j = 0; j < particles[i].size(); j++) {
@@ -1076,7 +1063,7 @@ void simulator::mimosa_magnet(int eventno) {
 }
 
 /* Approximated (SAA) Borsellino opening angle of produced electron (1) positron (2) pair */
-void simulator::Borsellino(double E1, double E2, double E_phot, double &phi1, double &phi2, default_random_engine generator) {
+void simulator::Borsellino(double E1, double E2, double E_phot, double &phi1, double &phi2,default_random_engine generator) {
 
         double u1 = R(generator), u2 = R(generator);
         double nu0 = E_phot*m*c/(E1*E2) * 1.6021766E+10;
@@ -1086,7 +1073,7 @@ void simulator::Borsellino(double E1, double E2, double E_phot, double &phi1, do
 
 }
 
-void simulator::pair_production(int eventno, double d_f, double X0, int N_slices, default_random_engine generator) {
+void simulator::pair_production(int eventno, double d_f, double X0, default_random_engine generator, int N_slices) {
 
         double dl = d_f/(double)N_slices;
 
@@ -1155,10 +1142,9 @@ bool simulator::pair_produced(double l, double X0_f, default_random_engine gener
 /* Calcualte wheter or not a photon is emitted when traveling through an amorphous crystal. */
 bool simulator::photon_emitted_amorph(double l, double X0, double E, default_random_engine generator) {
 
-        double randno = R(generator); // random double between 0, 1 used to determine if a pair is produced
+        double randno = R(global_generator); // random double between 0, 1 used to determine if a pair is produced
         double Emin = 2*0.5109989461E-03; // 2 * Electron mass in GeV must be the minimum energy of photon, since we cannot observe lower energy photons anyway
         double P = l/X0 * ( (4.0/3.0) * log(E/Emin) - (4.0/3.0) * (E - Emin)/E  + (3.0/4.0) * (1.0 - Emin*Emin/(2.0*E*E)));// BH-cross section * crystal length
-
         return randno < P;
 
 }
@@ -1231,7 +1217,7 @@ int simulator::select_member(vector<double> weights) {
         uniform_real_distribution<double> distribution(0.0, weights_cumsum.back());
 
         /* Generate random number, used to determine index */
-        double r = distribution(generator);
+        double r = distribution(global_generator);
 
         /* Binary search to find which number to pick based on weight */
         int low = 0, high = weights.size() - 1;
@@ -1309,87 +1295,6 @@ void simulator::linterp(vector<double> x, vector<double> y, vector<double> xi, v
                 /* Calculate slope and do interpolation */
                 double dydx = (y[low + 1] - y[low])/(x[low + 1] - x[low]);
                 yi[j] = y[low] + dydx * (xi[j] - x[low]);
-
-        }
-
-}
-
-/* Draw from Alias table */
-double simulator::VoseAliasMethod_draw(vector<int> Alias, vector<double> Prob) {
-
-        /* Make fair roll of n-sided die */
-        int n = Prob.size(); uniform_int_distribution<int> distribution(0, n);
-        int i = distribution(generator);
-
-        /* Draw double from uniform dist. on [0, 1] */
-        double r = R(generator);
-
-        /* Determine output based comparison between biasesd and fair coin-toss */
-        return r < Prob[i] ? i : Alias[i];
-
-}
-
-/* Construct Alias table */
-void simulator::VoseAliasMethod_table(vector<double> distro_in, vector<int> &Alias, vector<double> &Prob) {
-
-        /* Allocate space for Alias and Prob arrays */
-        vector<double> distro = distro_in;
-        int n = distro.size();
-        Alias.resize(n); Prob.resize(n);
-
-        /* average probability, used for comparison with distro. value */
-        double average = 1.0 / n;
-
-        /* Fill "Small" and "Large" array using distro. */
-        vector<double> Small, Large; // used to fill Alias and Prob
-
-        for (int i = 0; i < n; i++) {
-
-                if (distro[i] < average) {
-
-                        Small.push_back(i);
-
-                }
-                else {
-
-                        Large.push_back(i);
-
-                }
-
-        }
-
-        /* Large may be emptied first due to innacuracy of doubles so use both criteria here. Mathematically Small should always be emptied first. */
-        while (!Small.empty() and !Large.empty()) {
-
-                /* Obtain index of small (l) and large (g) prob, used to populate Alias and Prob arrays */
-                double l = Small.back(); Small.pop_back();
-                double g = Large.back(); Large.pop_back();
-
-                /* Populate the Prob and Alias arrays */
-                Prob[l] = distro[l] * n;
-                Alias[l] = g;
-                distro[g] += distro[l] - average;
-
-                /* Populate Large and Small array */
-                if (distro[g] < average) {
-
-                        Small.push_back(g);
-
-                } else Large.push_back(g);
-
-        } // end while
-
-        /* Now empty both lists setting probabilities to 1.0. Ensures numerical stability */
-        while (!Large.empty()) {
-
-                double g = Large.back(); Large.pop_back();
-                Prob[g] = 1.0;
-
-        }
-        while (!Small.empty()) {
-
-                double l = Small.back(); Small.pop_back();
-                Prob[l] = 1.0;
 
         }
 

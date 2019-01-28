@@ -173,7 +173,7 @@ void analyser::print_hits(string name){
 
         string filename = DATPATH + "/hits_coord_data_" + name + ".txt";
         ofstream output (filename);
-
+        cerr << hitcoords.size() << "\n";
         for (size_t i = 0; i < hitcoords.size(); i++) {
 
                 output << "## PLANE\t" << i << "\tHIT DATA\n";
@@ -389,7 +389,7 @@ void analyser::pair_tracks(void) {
         int Match_dist_foil_count = 0;
         int N_photons = 0;
 
-        #pragma omp parallel for
+        // #pragma omp parallel for
         for (int i = 0; i < Nevents; i++) { // no. of events
 
                 int no_photons = 0;
@@ -647,7 +647,7 @@ void analyser::construct_tracks(double M1M2_slope_lb_x, double M1M2_slope_ub_x, 
                         }         // if statement for push_back of tracks
                 }         // hits in M5 done
 
-                #pragma omp atomic
+                // #pragma omp atomic
                 prog++;
 
                 /* Report progress in terminal */

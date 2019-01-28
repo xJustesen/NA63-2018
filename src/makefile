@@ -141,12 +141,12 @@ test : main_sim
 	./main_sim amorphous parallel_test 80GeV_beam_params_1.5mm.txt
 
 
-n = 500
+n = 1
 billions : main_sim
 	n=$(n); \
 	while [ $${n} -gt 0 ] ; do \
 			echo $$n ; \
-			./main_sim amorphous sim_amorphous_40GeV 40GeV_beam_params.txt ; \
+			./main_sim amorphous test_sim_amorphous_20GeV 20GeV_beam_params.txt ; \
 			n=`expr $$n - 1`; \
 	done; \
 	true

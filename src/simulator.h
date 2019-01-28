@@ -13,6 +13,8 @@
 #include <functional>
 #include <numeric>
 #include <assert.h>
+#include <chrono>
+#include <fstream>
 
 using namespace std;
 using namespace arma;
@@ -26,7 +28,7 @@ double d_c;         // size of crystal
 vector<vector<vector<vector<double> > > > mimosas;         // equivalent to the "hitcoords" vector in "analyser" class
 
 /* Public methods */
-simulator(int N, vector<double> z, char const *run, vector<double> params, char const *filename, char const *s2, int bg);
+simulator(int N, vector<double> z, string run, vector<double> params, char const *filename, char const *s2, int bg);
 void propagate_particles(void);         // propaget particles through the experiment
 void print_hits(void);
 void print_energy(string name);
@@ -74,28 +76,31 @@ string DATPATH;         // directory to store data
 string angle_spec;
 string initial_spec;
 string beam_spatial_distro;
-char const *name;
+string name;
+default_random_engine global_generator;
+normal_distribution<double> R_normal;
+uniform_real_distribution<double> R;
 
 /* Physics methods */
 void generate_beam(void);         // generates beam profile
-void SA_mult_scat(int i, double X0, double z, default_random_engine);         // projection taking multiple scattering into account
+void SA_mult_scat(int i, double X0, double z,default_random_engine);         // projection taking multiple scattering into account
 void mimosa_magnet(int eventno);         // used to caluclate deflection in mimosa magnet
-void converter_foil(int eventno, double d_f, double X0, int N_slices, default_random_engine);
-void mimosa_detector(int planeno, int eventno, int&, default_random_engine);         // adds a MIMOSA detector, ie simulates a detection
-void pair_production(int eventno, double d_f, double X0, int N_slices, default_random_engine);         // adds a converter foil to calculate pair production
-bool pair_produced(double l, double X0_f, default_random_engine);         // determines whether a photon creates an electron/positron pair. R is a random double between 0 and 1
+void converter_foil(int eventno, double d_f, double X0, default_random_engine,int N_slices = 1);
+void mimosa_detector(int planeno, int eventno, int&,default_random_engine);         // adds a MIMOSA detector, ie simulates a detection
+void pair_production(int eventno, double d_f, double X0, default_random_engine, int N_slices = 1);         // adds a converter foil to calculate pair production
+bool pair_produced(double l, double X0_f,default_random_engine);         // determines whether a photon creates an electron/positron pair. R is a random double between 0 and 1
 void fractional_electron_energy(double &x);         // caluclates the fractional (in terms of photon energy) energy of a pair-produced electron/positron
 void electronic_energy_distribution(double &r);         // analytical solution to the equation CDF(x) = r, where CDF is the cumulative distribution function for the fractional energy distribution of a produced electron/positron pair
 void MBPL_magnet(int eventno);         // clears particle-vector
-void amorph_material(int eventno, int &emitted, double X0, double z, double L, int no_slices, default_random_engine);
-//void amorph_crystal(int eventno, int &emitted, double X0, double d_c, int no_slices = 1);         // simulate amorphous crystal
-bool photon_emitted_amorph(double l, double X0, double Epart, default_random_engine);         // calculate wether or not photon is emitted (false: no emission)
+void amorph_material(int eventno, int &emitted, double X0, double z, double L, default_random_engine,int no_slices = 1);
+void amorph_crystal(int eventno, int &emitted, double X0, double d_c, int no_slices = 1);         // simulate amorphous crystal
+bool photon_emitted_amorph(double, double, double,default_random_engine);            // calculate wether or not photon is emitted (false: no emission)
 static double photonic_energy_distribution(vec x, double randno, double E, double norm);
-void Borsellino(double E1, double E2, double E_phot, double &phi1, double &phi2, default_random_engine);         // the approximated Borsellino opening angle of e-/e+ pair
+void Borsellino(double E1, double E2, double E_phot, double &phi1, double &phi2,default_random_engine);         // the approximated Borsellino opening angle of e-/e+ pair
 void make_intensity_distro(vector<vector<double> > &intensity, vector<vector<double> > &angles);
-bool photon_emitted_aligned(double l, default_random_engine);
-void aligned_crystal(int eventno, int &emitted, int no_slices, default_random_engine);
-void add_photons(int eventno, int &emitted, double X0, double d, int no_slices, default_random_engine);
+bool photon_emitted_aligned(double no_slices, default_random_engine);
+void aligned_crystal(int eventno, int &emitted, int no_slices,default_random_engine);
+void add_photons(int eventno, int &emitted, double X0, double d, default_random_engine, int no_slices = 1);
 
 /* Numerical methods */
 int binarySearch(vector<int> numbers, int low, int high, int val);
