@@ -76,21 +76,37 @@ colors =    [       0    0.4470    0.7410
                 0.6350    0.0780    0.1840
             ];
 
+% f = figure;
+% hold on
+% box on
+% title('80GeV e- ; 1.5mm C | peaks unscaled','fontsize',22,'interpreter','latex')
+% 
+% plot(energy, counts_sim_80GeV_mono_5_norm, '-','linewidth',1.5)
+% plot(energy, counts_sim_80GeV_mono_15_norm, '-','linewidth',1.5)
+% plot(energy, counts_sim_80GeV_mono_25_norm, '-','linewidth',1.5)
+% plot(energy, counts_sim_80GeV_mono_40_norm, '-','linewidth',1.5)
+% plot(energy, counts_sim_80GeV_mono_5_norm_inf, '--','linewidth',1.5,'color',colors(1,:))
+% plot(energy, counts_sim_80GeV_mono_15_norm_inf, '--','linewidth',1.5,'color',colors(2,:))
+% plot(energy, counts_sim_80GeV_mono_25_norm_inf, '--','linewidth',1.5,'color',colors(3,:))
+% plot(energy, counts_sim_80GeV_mono_40_norm_inf, '--','linewidth',1.5,'color',colors(4,:))
+% 
+% 
+% legend({'5 GeV','15 GeV','25 GeV','40 GeV'});
+% set(gca, 'FontSize', 14)
+% xlabel('Energy [GeV]','fontsize',22,'interpreter','latex');ylabel('dP/dE [1/mm]','fontsize',22,'interpreter','latex')
+% box on
+% grid on
+% 
+% set(f, 'Units','centimeters','PaperUnits','centimeters', 'PaperSize',[18, 12],'PaperPosition',[0, 0, 18, 12],'Position',[0 0 18 12])
+% print('/home/christian/Dropbox/Cern2018Experiment/figures/monochrome_80GeV_1.5mm.pdf', '-dpdf','-r600','-painters')
+
 f = figure;
 hold on
 box on
-title('80GeV e- ; 1.5mm C | peaks unscaled','fontsize',22,'interpreter','latex')
-
-plot(energy, counts_sim_80GeV_mono_5_norm, '-','linewidth',1.5)
-plot(energy, counts_sim_80GeV_mono_15_norm, '-','linewidth',1.5)
-plot(energy, counts_sim_80GeV_mono_25_norm, '-','linewidth',1.5)
-plot(energy, counts_sim_80GeV_mono_40_norm, '-','linewidth',1.5)
-plot(energy, counts_sim_80GeV_mono_5_norm_inf, '--','linewidth',1.5,'color',colors(1,:))
-plot(energy, counts_sim_80GeV_mono_15_norm_inf, '--','linewidth',1.5,'color',colors(2,:))
-plot(energy, counts_sim_80GeV_mono_25_norm_inf, '--','linewidth',1.5,'color',colors(3,:))
-plot(energy, counts_sim_80GeV_mono_40_norm_inf, '--','linewidth',1.5,'color',colors(4,:))
-
-
+plot(energy, counts_sim_80GeV_mono_5_norm_inf, '-','linewidth',1.5)
+plot(energy, counts_sim_80GeV_mono_15_norm_inf, '-.','linewidth',1.5)
+plot(energy, counts_sim_80GeV_mono_25_norm_inf, '--','linewidth',1.5)
+plot(energy, counts_sim_80GeV_mono_40_norm_inf, ':','linewidth',1.5)
 legend({'5 GeV','15 GeV','25 GeV','40 GeV'});
 set(gca, 'FontSize', 14)
 xlabel('Energy [GeV]','fontsize',22,'interpreter','latex');ylabel('dP/dE [1/mm]','fontsize',22,'interpreter','latex')
@@ -98,27 +114,4 @@ box on
 grid on
 
 set(f, 'Units','centimeters','PaperUnits','centimeters', 'PaperSize',[18, 12],'PaperPosition',[0, 0, 18, 12],'Position',[0 0 18 12])
-% print('../../presentation/figures/tracking_res', '-dsvg','-r600','-painters')
-
-f = figure;
-hold on
-box on
-title('80GeV e- ; 1.5mm C | peaks scaled','fontsize',22,'interpreter','latex')
-
-plot(energy, counts_sim_80GeV_mono_5_norm, '-','linewidth',1.5)
-plot(energy, counts_sim_80GeV_mono_15_norm, '-','linewidth',1.5)
-plot(energy, counts_sim_80GeV_mono_25_norm, '-','linewidth',1.5)
-plot(energy, counts_sim_80GeV_mono_40_norm, '-','linewidth',1.5)
-plot(energy, counts_sim_80GeV_mono_5_norm_inf * max(counts_sim_80GeV_mono_5_norm)/max(counts_sim_80GeV_mono_5_norm_inf), '--','linewidth',1.5,'color',colors(1,:))
-plot(energy, counts_sim_80GeV_mono_15_norm_inf * max(counts_sim_80GeV_mono_15_norm)/max(counts_sim_80GeV_mono_15_norm_inf), '--','linewidth',1.5,'color',colors(2,:))
-plot(energy, counts_sim_80GeV_mono_25_norm_inf * max(counts_sim_80GeV_mono_25_norm)/max(counts_sim_80GeV_mono_25_norm_inf), '--','linewidth',1.5,'color',colors(3,:))
-plot(energy, counts_sim_80GeV_mono_40_norm_inf * max(counts_sim_80GeV_mono_40_norm)/max(counts_sim_80GeV_mono_40_norm_inf), '--','linewidth',1.5,'color',colors(4,:))
-
-
-legend({'5 GeV','15 GeV','25 GeV','40 GeV'});
-set(gca, 'FontSize', 14)
-xlabel('Energy [GeV]','fontsize',22,'interpreter','latex');ylabel('dP/dE [1/mm]','fontsize',22,'interpreter','latex')
-box on
-grid on
-
-set(f, 'Units','centimeters','PaperUnits','centimeters', 'PaperSize',[18, 12],'PaperPosition',[0, 0, 18, 12],'Position',[0 0 18 12])
+print('/home/christian/Dropbox/Cern2018Experiment/figures/monochrome_80GeV_1.5mm.pdf', '-dpdf','-r600','-painters')

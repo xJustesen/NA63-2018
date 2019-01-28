@@ -1,7 +1,7 @@
 clear all; close all; clear all;
 datpath = '/home/christian/Documents/cern2018/simdata/';
 
-runs_dat = 44;
+runs_dat = 84;
 sim = 1:1;
 angles = linspace(-2e-3, 2e-3, 200);
 angx_tot = [];
