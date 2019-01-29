@@ -140,14 +140,15 @@ main_data : main_data.cc analyser.cc
 test : main_sim
 	./main_sim amorphous parallel_test 80GeV_beam_params_1.5mm.txt
 
-
-n = 1
-billions : main_sim
+n = 10
+aligned_20GeV : main_sim
 	n=$(n); \
 	while [ $${n} -gt 0 ] ; do \
-			echo $$n ; \
-			./main_sim amorphous test_sim_amorphous_20GeV 20GeV_beam_params.txt ; \
-			n=`expr $$n - 1`; \
+		echo $$n ; \
+		./main_sim aligned sim_aligned_20GeV_worr 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaiernoRR.txt ; \
+		./main_sim aligned sim_aligned_20GeV_woshot 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaiernoSHbfac.txt ; \
+		./main_sim aligned sim_aligned_20GeV 20GeV_beam_params.txt $(SPECPATHINT)/sum_angles1.0mm20GeVbaierRRbfac.txt; \
+		n=`expr $$n - 1`; \
 	done; \
 	true
 
