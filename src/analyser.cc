@@ -173,7 +173,7 @@ void analyser::print_hits(string name){
 
         string filename = DATPATH + "/hits_coord_data_" + name + ".txt";
         ofstream output (filename);
-        cerr << hitcoords.size() << "\n";
+
         for (size_t i = 0; i < hitcoords.size(); i++) {
 
                 output << "## PLANE\t" << i << "\tHIT DATA\n";
@@ -476,12 +476,6 @@ void analyser::pair_tracks(void) {
 
         }
 
-        // string name0 = "Match_d_MM_" + (string)runno;
-        // string name1 = "Match_d_foil_" + (string)runno;
-        //
-        // save_vector(name0, Match_d_MM);
-        // save_vector(name1, Match_dist_foil);
-
         cerr << "no. of events removed :\t\t\t" << erased_events << "\n";
         cerr << "no. of photons before removal :\t\t" << pairs <<  "\nno. of photons after removal :\t\t" << N_photons_usable << "\n";
 }
@@ -542,13 +536,13 @@ void analyser::construct_tracks(double M1M2_slope_lb_x, double M1M2_slope_ub_x, 
         double start_time = omp_get_wtime();
         double T = 0;
 
-        // #pragma omp parallel for
+        #pragma omp parallel for
         for (int i = 0; i < Nevents; i++) {
+
                 vector<vector<vector<double> > > M1_MM_tracks(hitcoords[0][i].size() * hitcoords[1][i].size() * hitcoords[2][i].size() *  hitcoords[3][i].size());
                 int M1_M4_tracks = 0;
                 vector<vector<double> > M1_M6_track;
                 bool included = false;
-
                 M1M2_slopes[i].resize(hitcoords[0][i].size()*hitcoords[1][i].size());
 
                 /*
@@ -556,7 +550,6 @@ void analyser::construct_tracks(double M1M2_slope_lb_x, double M1M2_slope_ub_x, 
                    Conditions to find tracks checked periodically. All acceptable tracks are saved, which
                    means bad tracks are saved. These should later be discarded in "pair_tracks" function
                  */
-
                 for (size_t j = 0; j < hitcoords[0][i].size(); j++) {
                         for (size_t k = 0; k < hitcoords[1][i].size(); k++) {
 
@@ -647,7 +640,7 @@ void analyser::construct_tracks(double M1M2_slope_lb_x, double M1M2_slope_ub_x, 
                         }         // if statement for push_back of tracks
                 }         // hits in M5 done
 
-                // #pragma omp atomic
+                #pragma omp atomic
                 prog++;
 
                 /* Report progress in terminal */

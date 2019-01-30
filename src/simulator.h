@@ -48,6 +48,15 @@ vector<double> intensity_sum;
 vector<double> intensity_sum_interp;
 vector<double> energies_interp;         // interpolated values of "emitted_energies"
 vector<double> emitted_energies;         // summed distribution of simulated emitted energies for aligned crystal
+vector<double> xaw;
+vector<double> yaw;
+vector<double> xpw;
+vector<double> ypw;
+vector<double> ax;
+vector<double> ay;
+vector<double> x;
+vector<double> y;
+vector<double> a;
 double mean_entry_angle_x;         // mean entry angle of incoming particles
 double dev_entry_angle_x;         // standard deviation of entry angles of incoming particles
 double mean_entry_angle_y;         // mean entry angle of incoming particles
@@ -77,30 +86,29 @@ string angle_spec;
 string initial_spec;
 string beam_spatial_distro;
 string name;
-default_random_engine global_generator;
+mt19937_64 global_generator;
 normal_distribution<double> R_normal;
 uniform_real_distribution<double> R;
 
 /* Physics methods */
-void generate_beam(void);         // generates beam profile
-void SA_mult_scat(int i, double X0, double z,default_random_engine);         // projection taking multiple scattering into account
-void mimosa_magnet(int eventno);         // used to caluclate deflection in mimosa magnet
-void converter_foil(int eventno, double d_f, double X0, default_random_engine,int N_slices = 1);
-void mimosa_detector(int planeno, int eventno, int&,default_random_engine);         // adds a MIMOSA detector, ie simulates a detection
-void pair_production(int eventno, double d_f, double X0, default_random_engine, int N_slices = 1);         // adds a converter foil to calculate pair production
-bool pair_produced(double l, double X0_f,default_random_engine);         // determines whether a photon creates an electron/positron pair. R is a random double between 0 and 1
+void load_beam_parameters(void);         // generates beam profile
+void SA_mult_scat(double X0, double z,mt19937_64,vector<vector<double> > &);         // projection taking multiple scattering into account
+void mimosa_magnet(vector<vector<double> > &local_particles);         // used to caluclate deflection in mimosa magnet
+void converter_foil(int eventno, double d_f, double X0, mt19937_64,int N_slices, vector<vector<double> > &photons, vector<vector<double> > &particles, int);
+void mimosa_detector(int planeno, int eventno, int&,mt19937_64,vector<vector<double> >);         // adds a MIMOSA detector, ie simulates a detection
+void pair_production(int eventno, double d_f, double X0, mt19937_64, int N_slices = 1);         // adds a converter foil to calculate pair production
+bool pair_produced(double l, double X0_f,mt19937_64);         // determines whether a photon creates an electron/positron pair. R is a random double between 0 and 1
 void fractional_electron_energy(double &x);         // caluclates the fractional (in terms of photon energy) energy of a pair-produced electron/positron
 void electronic_energy_distribution(double &r);         // analytical solution to the equation CDF(x) = r, where CDF is the cumulative distribution function for the fractional energy distribution of a produced electron/positron pair
-void MBPL_magnet(int eventno);         // clears particle-vector
-void amorph_material(int eventno, int &emitted, double X0, double z, double L, default_random_engine,int no_slices = 1);
-void amorph_crystal(int eventno, int &emitted, double X0, double d_c, int no_slices = 1);         // simulate amorphous crystal
-bool photon_emitted_amorph(double, double, double,default_random_engine);            // calculate wether or not photon is emitted (false: no emission)
+void MBPL_magnet(vector<vector<double> > &);         // clears particle-vector
+void amorph_material(int eventno, int &emitted, double X0, double z, double L, mt19937_64, vector<vector<double> > &,vector<vector<double> > &, int no_slices = 1);
+bool photon_emitted_amorph(double, double, double,mt19937_64);            // calculate wether or not photon is emitted (false: no emission)
 static double photonic_energy_distribution(vec x, double randno, double E, double norm);
-void Borsellino(double E1, double E2, double E_phot, double &phi1, double &phi2,default_random_engine);         // the approximated Borsellino opening angle of e-/e+ pair
+void Borsellino(double E1, double E2, double E_phot, double &phi1, double &phi2,mt19937_64);         // the approximated Borsellino opening angle of e-/e+ pair
 void make_intensity_distro(vector<vector<double> > &intensity, vector<vector<double> > &angles);
-bool photon_emitted_aligned(double no_slices, default_random_engine);
-void aligned_crystal(int eventno, int &emitted, int no_slices,default_random_engine);
-void add_photons(int eventno, int &emitted, double X0, double d, default_random_engine, int no_slices = 1);
+bool photon_emitted_aligned(double no_slices, mt19937_64);
+void aligned_crystal(int &emitted, int no_slices,mt19937_64, vector<vector<double> > &local_photons, vector<vector<double> > &local_particles);
+void add_photons(int eventno, int &emitted, double X0, double d, mt19937_64, vector<vector<double> > &, vector<vector<double> >);
 
 /* Numerical methods */
 int binarySearch(vector<int> numbers, int low, int high, int val);
@@ -125,7 +133,7 @@ vector<double> linspace(double min, double max, int N);
 void linterp(vector<double> x, vector<double> y, vector<double> xi, vector<double> &yi);
 int isInside(int nvert, vector<double> vertx, vector<double> verty, double testx, double testy);                 // check if point (testx, testy) is inside boundaries of polygon defined by verticecs (vertx, verty)
 double calc_dist(double x0, double y0, double x1,double y1);
-void project_particle(vector<vector<vector<double> > > &particletype, double zcoord, int eventno);                 // rectilinear-projection hit into plane
+void project_photons(vector<vector<double> > &particletype, double zcoord, int);                 // rectilinear-projection hit into plane
 void save_vector(string name, vector<vector<double> > data);
 
 template<typename lambda>

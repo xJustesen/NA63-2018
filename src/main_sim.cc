@@ -107,8 +107,8 @@ int main(int argc, char const *argv[]) {
         delete simulate; // delete simulate instace since no longer needed
         analyse->Nevents = N;
         analyse->construct_tracks(cut_lb_x, cut_ub_x, cut_lb_y, cut_ub_y);
-        // analyse->hitcoords.clear();   // clears elements from vector (size = 0, capacity unchanged)
-        // analyse->hitcoords.shrink_to_fit(); // frees memory, capacity = 0
+        analyse->hitcoords.clear();   // clears elements from vector (size = 0, capacity unchanged)
+        analyse->hitcoords.shrink_to_fit(); // frees memory, capacity = 0
         analyse->pair_tracks();
         // analyse->construct_distarray();
         /* Save data to txt-files */
@@ -120,7 +120,7 @@ int main(int argc, char const *argv[]) {
 
         // analyse->image_crystal(Name);
         analyse->print_energy(Name);
-        analyse->print_hits(Name);
+        // analyse->print_hits(Name);
         // analyse->print_hotpixels(Name);
         // analyse->print_interdistance(Name);
         // analyse->print_slope(Name);
