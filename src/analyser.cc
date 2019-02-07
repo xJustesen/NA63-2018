@@ -14,11 +14,11 @@ analyser::analyser(vector<double> z, char const *name, string run, char const *b
 
         /* Conditions for track construction + pairing */
         M1M2_d_lim = 1400.0; // acceptable distance between M1->M2 projected point and observed hit in M3 [micro-meter]
-        M2M3_d_lim = 1000.0; // acceptable distance between M2->M3 projected point and observed hit in M4 [micro-meter]
-        M6M5_d_lim = 400.0; // acceptable distance in MM bewteen M1->MM and M6->MM arm of track [micro-meter]
-        Match_d = 200.0; // matching ditance in MM between electron/positron paired track [micro-meter]
+        M2M3_d_lim = 400.0; // acceptable distance between M2->M3 projected point and observed hit in M4 [micro-meter]
+        M6M5_d_lim = 200.0; // acceptable distance in MM bewteen M1->MM and M6->MM arm of track [micro-meter]
+        Match_d = 55.0e6; // matching ditance in MM between electron/positron paired track [micro-meter]
         Match_d_foil = 55.0; // matching ditance in foil between electron/positron paired track [micro-meter]
-        yz_defl_lim = 3.50E-3; // angle of acceptable y-deflction [rad]
+        yz_defl_lim = 3.50E-3 * 1e9; // angle of acceptable y-deflction [rad]
 
         /* Alignment conditions */
         dr_crit_list = {5000, 1300, 600, 200, 60}; // radius for acceptable hits when aligning [micro-meter]
@@ -37,6 +37,8 @@ analyser::analyser(vector<double> z, char const *name, string run, char const *b
         T.set_size(3, 3, 4);
         distarray.resize(4);
 
+        cout.setf(ios::fixed, ios::floatfield);
+        cout.precision(3);
 }
 
 void analyser::update_pixelgrids(int plane, vector<vector<double> > pixelgrid) {
@@ -373,7 +375,6 @@ void analyser::pair_tracks(void) {
 
         paired_tracks.resize(tracks.size());
         energies.resize(tracks.size());
-        angle_energy.resize(tracks.size());
         zclosepos.resize(tracks.size());
         vector<int> bad_events(tracks.size());
 
@@ -382,14 +383,9 @@ void analyser::pair_tracks(void) {
            To ensure this we iterate first from i = 0 -> number of tracks, then j = i + 1 -> number of tracks.
            If multiple pairs are found we erase them from the tracks array.
          */
-        vector<double> Match_d_MM(10 * Nevents);
-        vector<double> Match_dist_foil(10 * Nevents);
 
-        int Match_d_MM_count = 0;
-        int Match_dist_foil_count = 0;
         int N_photons = 0;
 
-        // #pragma omp parallel for
         for (int i = 0; i < Nevents; i++) { // no. of events
 
                 int no_photons = 0;
@@ -401,13 +397,10 @@ void analyser::pair_tracks(void) {
                         for (size_t k = j+1; k < tracks[i].size(); k++) {
 
                                 double dist = calc_dist(tracks[i][j][4][0], tracks[i][j][4][1], tracks[i][k][4][0], tracks[i][k][4][1]);
-                                Match_d_MM[Match_d_MM_count] = dist;
-                                Match_d_MM_count++;
 
                                 if (dist < Match_d) {
+
                                         double M3_dist = calc_dist(tracks[i][j][2][0], tracks[i][j][2][1], tracks[i][k][2][0], tracks[i][k][2][1]);
-                                        Match_dist_foil[Match_dist_foil_count] = M3_dist;
-                                        Match_dist_foil_count++;
 
                                         if (M3_dist < Match_d_foil) {
                                                 vec P1 = {tracks[i][j][6][0], tracks[i][j][6][1], M6M5_z[0]}, Q1 = {tracks[i][j][7][0], tracks[i][j][7][1], M6M5_z[1]};
@@ -444,17 +437,13 @@ void analyser::pair_tracks(void) {
                 } // tracks #1 done
 
                 if (no_photons > 1) {
-
                         bad_events[N_photons] = i;
                         N_photons++;
-
                 }
 
         } // events done
 
         bad_events.resize(N_photons);
-        Match_d_MM.resize(Match_d_MM_count);
-        Match_dist_foil.resize(Match_dist_foil_count);
 
         /* Discard photons from bad events */
         int erased_events = 0;
@@ -464,7 +453,6 @@ void analyser::pair_tracks(void) {
                 photons_removed += energies[bad_events[i] - erased_events].size();
                 energies.erase(energies.begin() + bad_events[i] - erased_events);
                 paired_tracks.erase(paired_tracks.begin() + bad_events[i] - erased_events);
-                angle_energy.erase(angle_energy.begin() + bad_events[i] - erased_events);
                 erased_events++;
 
         }
@@ -476,8 +464,8 @@ void analyser::pair_tracks(void) {
 
         }
 
-        cerr << "no. of events removed :\t\t\t" << erased_events << "\n";
-        cerr << "no. of photons before removal :\t\t" << pairs <<  "\nno. of photons after removal :\t\t" << N_photons_usable << "\n";
+        cout << "no. of events removed :\t\t\t" << erased_events << "\n";
+        cout << "no. of photons before removal :\t\t" << pairs <<  "\nno. of photons after removal :\t\t" << N_photons_usable << "\n";
 }
 
 void analyser::beam_divergence(int eventno, int hit_indx_0, int hit_indx_1, string name) {
@@ -648,7 +636,7 @@ void analyser::construct_tracks(double M1M2_slope_lb_x, double M1M2_slope_ub_x, 
 
                         double dt = omp_get_wtime() - start_time;
                         T += dt;
-                        cerr << "Progress :\t" << floor(100 * double(prog)/(double)Nevents) << "%" << "\ttime used :\t" << dt << "\ttotal time elapsed :\t" << T << "\ttime remaining :\t" << dt * (double)Nevents/(Nevents/10 + 1) - T << "\n";
+                        cout << "Progress :\t" << floor(100 * double(prog)/(double)Nevents) << "%" << "\ttime used :\t" << dt << "\ttotal time elapsed :\t" << T << "\ttime remaining :\t" << dt * (double)Nevents/(Nevents/10 + 1) - T << "\n";
                         start_time = omp_get_wtime();
 
                 }
@@ -676,17 +664,11 @@ void analyser::construct_tracks(double M1M2_slope_lb_x, double M1M2_slope_ub_x, 
         M5M6_dist.resize(M5M6_count);
         yz_defl.resize(yz_defl_count);
 
-        save_vector(name0, M1M2_dist);
-        save_vector(name1, M2M3_dist);
-        save_vector(name2, M5M6_dist);
-        save_vector(name3, yz_defl);
-        save_vector(name4, M1M2_slopes);
-
-        cerr << "\n\nTotal tracks from M1 -> M3 : " << M1_M3_tot_tracks << "\n";
-        cerr << "Total tracks from M1 -> M4 : " << M1_M4_tot_tracks << "\n";
-        cerr << "Total tracks from M6 -> M5 : " << M5_M6_tot_tracks << "\n";
-        cerr << "Total tracks from M1 -> M6 : " << M1_M6_tot_tracks << "\n";
-        cerr << "Number of events with tracks within cut : " << Nevents_within_cut << "\n\n";
+        cout << "\n\nTotal tracks from M1 -> M3:\t" << M1_M3_tot_tracks << "\n";
+        cout << "Total tracks from M1 -> M4:\t" << M1_M4_tot_tracks << "\n";
+        cout << "Total tracks from M6 -> M5:\t" << M5_M6_tot_tracks << "\n";
+        cout << "Total tracks from M1 -> M6:\t" << M1_M6_tot_tracks << "\n";
+        cout << "Number of events with tracks within cut:\t" << Nevents_within_cut << "\n\n";
 }
 
 void analyser::find_axis_alt (void) {
@@ -702,7 +684,7 @@ void analyser::find_axis_alt (void) {
                 while (true) {
 
                         paramters >> param;
-                        cerr << param << "\n";
+                        cout << param << "\n";
                         if (paramters.eof()) break;
 
                         params.push_back(param);
@@ -737,7 +719,7 @@ void analyser::find_axis_alt (void) {
 
         double M1M2_slope_lb_x, M1M2_slope_ub_x, M1M2_slope_lb_y, M1M2_slope_ub_y;
         vector<vector<double> > photons_in_cut_x; photons_in_cut_x.resize(no_cuts_x);
-        cerr << "y:\t" << 2 * deltay / dtheta << "\t x:\t" << 2 * deltax / dtheta << "\n";
+        cout << "y:\t" << 2 * deltay / dtheta << "\t x:\t" << 2 * deltax / dtheta << "\n";
         vector<vector<double> > photons_in_cut_y; photons_in_cut_y.resize(no_cuts_y);
 
         for (int dir = 0; dir < 2; dir++) {
@@ -940,7 +922,7 @@ void analyser::find_axis_alt (void) {
 
                         cutno++;
 
-                        if ( (cutno + 1) % (no_cuts/10 + 1) == 0) cerr << "Progress: \t" << 100 * cutno/no_cuts << "%\n";
+                        if ( (cutno + 1) % (no_cuts/10 + 1) == 0) cout << "Progress: \t" << 100 * cutno/no_cuts << "%\n";
 
                 } // cuts done
 
@@ -965,7 +947,7 @@ void analyser::find_axis(void) {
                 while (true) {
 
                         paramters >> param;
-                        cerr << param << "\n";
+                        cout << param << "\n";
                         if (paramters.eof()) break;
 
                         params.push_back(param);
@@ -1097,7 +1079,7 @@ void analyser::find_axis(void) {
 
                         cutno++;
 
-                        if ( (cutno + 1) % (no_cuts/10 + 1) == 0) cerr << "Progress: \t" << 100 * cutno/no_cuts << "%\n";
+                        if ( (cutno + 1) % (no_cuts/10 + 1) == 0) cout << "Progress: \t" << 100 * cutno/no_cuts << "%\n";
                 } // cuts done
 
                 if (dir == 0) save_vector(filename, mean_anglesx);
@@ -1294,7 +1276,7 @@ void analyser::align_w_T(void) {
                 }
 
                 distarray[i] = calc_interdistance(hitcoords[i], hitcoords[i+1], hitcoords[i+2], zproj);
-                cerr << "Aligned plane " << i+2 << "\n";
+                cout << "Aligned plane " << i+2 << "\n";
 
         }
 
@@ -1309,7 +1291,7 @@ void analyser::align_wo_T(void) {
                 vector<double> zproj = {zplanes[i], zplanes[i+1], zplanes[i+2]};
                 align_plane(mat_T, hitcoords[i], hitcoords[i+1], hitcoords[i+2], zproj);
                 distarray[i] = calc_interdistance(hitcoords[i], hitcoords[i+1], hitcoords[i+2], zproj);
-                cerr << "Aligned plane " << i+2 << "\n";
+                cout << "Aligned plane " << i+2 << "\n";
                 T.slice(i) = mat_T;
 
         }
@@ -1480,7 +1462,7 @@ void analyser::extract_root_data(void) {
         TLeaf *ENumberOfTriggers = (TLeaf *)T1->GetLeaf("fHeader.ENumberOfTriggers");
 
         int N_events = T1->GetEntries();
-        cerr << "\nTotal number of events :\t" << N_events << "\n";
+        cout << "\nTotal number of events :\t" << N_events << "\n";
 
         Events.resize(N_events);
         Nevents = 0;
@@ -1513,7 +1495,7 @@ void analyser::extract_root_data(void) {
         }
 
         Events.resize(Nevents);
-        cerr << "Number of usable events :\t" << Nevents << "\n\n";
+        cout << "Number of usable events :\t" << Nevents << "\n\n";
 
         /* Save no. of events in run on disk */
         string eventfile_name = "events_run.txt";

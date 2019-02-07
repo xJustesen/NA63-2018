@@ -26,7 +26,6 @@ void load_doubles(string filename, vector<double> &data) {
 int main(int argc, char const *argv[]) {
 
         vector<double> z = {0, 1832.3e3, 8913e3, 8989e3, 9196.2e3, 9273.7e3}; // (micro-meters) 2018 experiment
-        // vector<double> z = {0, 1757E+03, 9277E+03, 9355E+03, 9535E+03, 9613E+03}; // 2017 experiment
 
         vector<double> cuts;
         string name;
@@ -54,7 +53,7 @@ int main(int argc, char const *argv[]) {
         double cut_ub_y = cuts[3];
 
         /* Initialise class "analyser" */
-        analyser* Data = new analyser(z, argv[1], argv[2], argv[3]);
+        analyser * Data = new analyser(z, argv[1], argv[2], argv[3]);
 
         /* Extract data from root file */
         cerr << "\n \t\t Inconsequential ROOT warnings: \n\n";
@@ -98,7 +97,7 @@ int main(int argc, char const *argv[]) {
 
         /* Align planes with T-matrices already determined */
         Data->T.load("/home/christian/Documents/cern2018/alignment_matrix.txt", arma_ascii);
-        // Data->T.load("/home/christian/Dropbox/Cern2018Experiment/alignment_matrices_1.txt",arma_ascii);
+        // Data->T.load("/home/christian/Dropbox/Cern2018Experiment/alignment_matrices_1.txt",arma_ascii); // 2017
         Data->align_w_T();
         //
         /* Determine T-matrices & align planes */
@@ -110,15 +109,15 @@ int main(int argc, char const *argv[]) {
         cerr << "Entry angles x: {" << cut_lb_x << ", " << cut_ub_x << "} rad\n";
         cerr << "Entry angles y: {" << cut_lb_y << ", " << cut_ub_y << "} rad\n\n";
 
-        Data->find_axis_alt();
-        cerr << "Calculated mean deflection angle for various entry angles\n";
+        // Data->find_axis_alt();
+        // cerr << "Calculated mean deflection angle for various entry angles\n";
 
-        // Data->construct_tracks(cut_lb_x, cut_ub_x, cut_lb_y, cut_ub_y);
-        // Data->pair_tracks();
+        Data->construct_tracks(cut_lb_x, cut_ub_x, cut_lb_y, cut_ub_y);
+        Data->pair_tracks();
         // Data->construct_distarray();
         // /* Save data to txt-files */
         // Data->image_crystal(name);
-        // Data->print_energy(name);
+        Data->print_energy(name);
         // Data->print_hits(name);
         // Data->print_hotpixels(name);
         // Data->print_interdistance(name);

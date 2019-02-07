@@ -5,7 +5,7 @@
 int main(int argc, char const *argv[]) {
 
         /* Define parameters for constructor */
-        int N = 1e7; // number of events to simulate
+        int N = 1e6; // number of events to simulate
         vector<double> z = {0, 1832.3E+03, 8913E+03, 8989E+03, 9196.2E+03, 9273.7E+03}; // z-coordinates for planes (micro-meters) 2018
         int bg = 1; // include background?
 
@@ -19,8 +19,7 @@ int main(int argc, char const *argv[]) {
         vector<double> cuts;
 
         cerr << "\nArguments : " << argc << "\n";
-        for (int i = 0; i < argc; i++) cerr << argv[i] << "\n";
-        cerr << "\n";
+        for (int i = 0; i < argc; i++) cerr << i << " : " << argv[i] << "\n";
 
         if (argc < 4) {
 
@@ -50,9 +49,25 @@ int main(int argc, char const *argv[]) {
 
                         filename.close();
 
-                } else cout << "Unable to open file containing angles for data cuts";
+                } else cerr << "Unable to open file containing angles for data cuts";
 
         } else cuts = {-INFINITY, INFINITY, -INFINITY, INFINITY};
+
+        /* Set limits for data cut */
+        double cut_lb_x = cuts[0];
+        double cut_ub_x = cuts[1];
+        double cut_lb_y = cuts[2];
+        double cut_ub_y = cuts[3];
+
+        string Name;
+        if (argc > 6) {
+
+                Name = (string)argv[2] + "_cuts_halfSumPeak";
+
+        } else Name = argv[2];
+
+        cerr << "\nEntry angles x: {" << cut_lb_x << ", " << cut_ub_x << "} rad";
+        cerr << "\nEntry angles y: {" << cut_lb_y << ", " << cut_ub_y << "} rad\n";
 
         /* Load beam-parameters from file */
         vector<double> params;
@@ -76,23 +91,6 @@ int main(int argc, char const *argv[]) {
 
         } else cout << "Unable to open file containing beam parameters";
 
-        /* Set limits for data cut */
-        double cut_lb_x = cuts[0];
-        double cut_ub_x = cuts[1];
-        double cut_lb_y = cuts[2];
-        double cut_ub_y = cuts[3];
-
-        string Name;
-        if (argc > 6) {
-
-                Name = (string)argv[2] + "_cuts_halfSumPeak";
-
-        } else Name = argv[2];
-
-        cerr << "\nEntry angles x: {" << cut_lb_x << ", " << cut_ub_x << "} rad";
-        cerr << "\nEntry angles y: {" << cut_lb_y << ", " << cut_ub_y << "} rad";
-
-
         /* Initialise simulate classs */
         simulator* simulate = new simulator(N, z, sim_type, params, filename, spectrum1, bg);
 
@@ -106,12 +104,16 @@ int main(int argc, char const *argv[]) {
         analyse->hitcoords = simulate->mimosas;
         delete simulate; // delete simulate instace since no longer needed
         analyse->Nevents = N;
+        cerr << "Constructing tracks\n";
         analyse->construct_tracks(cut_lb_x, cut_ub_x, cut_lb_y, cut_ub_y);
         analyse->hitcoords.clear();   // clears elements from vector (size = 0, capacity unchanged)
         analyse->hitcoords.shrink_to_fit(); // frees memory, capacity = 0
+        cerr << "Pairing tracks\n";
         analyse->pair_tracks();
         // analyse->construct_distarray();
+
         /* Save data to txt-files */
+        cerr << "\nAnalysis finished, saving to file\n";
         // for (int i = 0; i < 6; i++) {
         //
         //   analyse->print_planar_dist(i, Name);
@@ -127,7 +129,7 @@ int main(int argc, char const *argv[]) {
         // analyse->print_pixels(Name);
         // analyse->print_zpos(Name);
         // analyse->print_M1M2_slope(Name);
-
+        cerr << "\nCompleted\n";
         return 0;
 
 }

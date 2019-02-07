@@ -57,6 +57,10 @@ vector<double> ay;
 vector<double> x;
 vector<double> y;
 vector<double> a;
+vector<double> randoms;
+vector<double> randoms2;
+vector<double> randoms3;
+cube alignment_matrix;
 double mean_entry_angle_x;         // mean entry angle of incoming particles
 double dev_entry_angle_x;         // standard deviation of entry angles of incoming particles
 double mean_entry_angle_y;         // mean entry angle of incoming particles
@@ -96,7 +100,6 @@ void SA_mult_scat(double X0, double z,mt19937_64,vector<vector<double> > &);    
 void mimosa_magnet(vector<vector<double> > &local_particles);         // used to caluclate deflection in mimosa magnet
 void converter_foil(int eventno, double d_f, double X0, mt19937_64,int N_slices, vector<vector<double> > &photons, vector<vector<double> > &particles, int);
 void mimosa_detector(int planeno, int eventno, int&,mt19937_64,vector<vector<double> >);         // adds a MIMOSA detector, ie simulates a detection
-void pair_production(int eventno, double d_f, double X0, mt19937_64, int N_slices = 1);         // adds a converter foil to calculate pair production
 bool pair_produced(double l, double X0_f,mt19937_64);         // determines whether a photon creates an electron/positron pair. R is a random double between 0 and 1
 void fractional_electron_energy(double &x);         // caluclates the fractional (in terms of photon energy) energy of a pair-produced electron/positron
 void electronic_energy_distribution(double &r);         // analytical solution to the equation CDF(x) = r, where CDF is the cumulative distribution function for the fractional energy distribution of a produced electron/positron pair
@@ -105,7 +108,6 @@ void amorph_material(int eventno, int &emitted, double X0, double z, double L, m
 bool photon_emitted_amorph(double, double, double,mt19937_64);            // calculate wether or not photon is emitted (false: no emission)
 static double photonic_energy_distribution(vec x, double randno, double E, double norm);
 void Borsellino(double E1, double E2, double E_phot, double &phi1, double &phi2,mt19937_64);         // the approximated Borsellino opening angle of e-/e+ pair
-void make_intensity_distro(vector<vector<double> > &intensity, vector<vector<double> > &angles);
 bool photon_emitted_aligned(double no_slices, mt19937_64);
 void aligned_crystal(int &emitted, int no_slices,mt19937_64, vector<vector<double> > &local_photons, vector<vector<double> > &local_particles);
 void add_photons(int eventno, int &emitted, double X0, double d, mt19937_64, vector<vector<double> > &, vector<vector<double> >);
@@ -124,8 +126,6 @@ void simplex_reduce(vector<vec> &simplex, int ilow);
 vec simplex_expand(vec highest, vec centroid);
 vec simplex_reflect(vec highest, vec centroid);
 vec simplex_contract(vec highest, vec centroid);
-// void simplex_initiate(vector<vec> simplex, function<double(vec)> F, vec &fs);
-// vec simplex_NM(function<double(vec)> F, vector<vec> simplex, double simplex_size_goal = 1e-6);
 double VoseAliasMethod_draw(vector<int> Alias, vector<double> Prob);
 void VoseAliasMethod_table(vector<double> distro, vector<int> &Alias, vector<double> &Prob);
 int select_member(vector<double> weigths);                 // makes a random draw from a weighted list of numbers
@@ -134,7 +134,10 @@ void linterp(vector<double> x, vector<double> y, vector<double> xi, vector<doubl
 int isInside(int nvert, vector<double> vertx, vector<double> verty, double testx, double testy);                 // check if point (testx, testy) is inside boundaries of polygon defined by verticecs (vertx, verty)
 double calc_dist(double x0, double y0, double x1,double y1);
 void project_photons(vector<vector<double> > &particletype, double zcoord, int);                 // rectilinear-projection hit into plane
+void save_vector(string name, vector<double> data);
 void save_vector(string name, vector<vector<double> > data);
+void save_vector(string name, vector<vector<vector<double> > > data);
+double trapz(vector<double> x, vector<double> y);
 
 template<typename lambda>
 void simplex_initiate(vector<vec> simplex, lambda F, vec &fs) {
