@@ -1,17 +1,15 @@
-close all; clear all
+clear all
 
-colors =    [       0    0.4470    0.7410
-    0.8500    0.3250    0.0980
-    0.9290    0.6940    0.1250
-    0.4940    0.1840    0.5560
-    0.4660    0.6740    0.1880
-    0.3010    0.7450    0.9330
-    0.6350    0.0780    0.1840
-    ];
+colors =    [   0         0.4470    0.7410
+                0.8500    0.3250    0.0980
+                0.9290    0.6940    0.1250
+                0.4940    0.1840    0.5560
+                0.4660    0.6740    0.1880
+                0.3010    0.7450    0.9330
+                0.6350    0.0780    0.1840
+            ];
 
 datpath = '/home/christian/Documents/cern2018/simdata/';
-
-
 
 % dat = load(strcat(datpath, 'M5M6_dist_115.txt'));
 % histogram(dat,200);
@@ -42,34 +40,30 @@ relaxisdir_1_5mm = beamdir.B - axisdir_1_5mm
 
 run_no = [103, 61, 72, 35, 84, 46];
 
-run_no = 35;
+run_no = '111_2017';
 
-
-for run = run_no
+run = 0;
+% for run = run_no
     
-    angles_x = load(strcat(datpath, 'angles_mean_x_',num2str(run),'.txt'));
+    angles_x = load(strcat(datpath, 'angles_mean_x_',run_no,'.txt'));
     [~,idx] = sort(angles_x(:,1));
     angles_x = angles_x(idx, :);
     angx = angles_x(:,1); angxc = angles_x(:,2);
     
-    angles_y = load(strcat(datpath, 'angles_mean_y_',num2str(run),'.txt'));
+    angles_y = load(strcat(datpath, 'angles_mean_y_',run_no,'.txt'));
     angy = angles_y(:,1); angyc = angles_y(:,2);
     [~,idx] = sort(angles_y(:,1));
     angles_y = angles_y(idx, :);
     
-    photonscountsx = load(strcat(datpath, 'no_photons_x_alt',num2str(run),'.txt'));
+    photonscountsx = load(strcat(datpath, 'no_photons_x_alt',run_no,'.txt'));
     [~,idx] = sort(photonscountsx(:,1));
     photonscountsx = photonscountsx(idx, :);
     angx_alt = photonscountsx(:,1); angxc_alt = photonscountsx(:,2);
     
-    photonscountsy = load(strcat(datpath, 'no_photons_y_alt',num2str(run),'.txt'));
+    photonscountsy = load(strcat(datpath, 'no_photons_y_alt',run_no,'.txt'));
     [~,idx] = sort(photonscountsy(:,1));
     photonscountsy = photonscountsy(idx, :);
     angy_alt = photonscountsy(:,1); angyc_alt = photonscountsy(:,2);
-    
-    
-    stdev_x = 0.00012242;
-    stdev_y = 7.9916e-05;
     
     if run == 103
         xdir = beamdir.A(1,1);
@@ -96,7 +90,7 @@ for run = run_no
         xfilter = angx < 3e-05 & angx > -8.7e-5;
         yfilter = angy < -3.73e-05 & angy > -0.0001813;
         E = 40; d = 1;
-    elseif run == 35
+    elseif run == 35 || run == 43 || run == 32
         xdir = beamdir.B(2,1);
         ydir = beamdir.B(2,2);
         stdev_x = stdev(2,3);
@@ -122,32 +116,31 @@ for run = run_no
         E = 80; d = 1.5;
     end
     
-    
-    fitx = fit(angx(xfilter), angxc(xfilter),'poly2');
-    fity = fit(angy(yfilter), angyc(yfilter),'poly2');
-    
-    axisx = -fitx.p2/(2*fitx.p1);
-    axisy = -fity.p2/(2*fity.p1);
-    beamx = xdir;
-    beamy = ydir;
-    relative_x_dir = xdir - axisx;
-    relative_y_dir = ydir - axisy;
-    
-    fitx_alt = fit(angx_alt(xfilter), angxc_alt(xfilter),'poly2');
-    fity_alt = fit(angy_alt(yfilter), angyc_alt(yfilter),'poly2');
-    
-    axisx_alt = -fitx_alt.p2/(2*fitx_alt.p1);
-    axisy_alt = -fity_alt.p2/(2*fity_alt.p1);
-    relative_x_dir_alt = xdir - axisx_alt;
-    relative_y_dir_alt = ydir - axisy_alt;
-    
-    formatSpec = ['\nrun %i\tEnergy %i GeV \td %f mm \n\tbeam x axis: %e\t crystal x axis (defl): %e\t crystal x axis (counts): %e\t rel. x dir (defl): %e\t rel. x. dir (counts): %e\n' ...
-        '\tbeam y axis: %e\t crystal y axis (defl):%e\t crystal y axis (counts): %e\t rel. y dir (defl): %e\t rel. y dir (counts): %e\n'
-        ];
-    fprintf(formatSpec, run, E, d, xdir, axisx, axisx_alt, relative_x_dir, relative_x_dir_alt, ydir, axisy, axisy_alt, relative_y_dir, relative_y_dir_alt)
-    
-    
+%     fitx = fit(angx(xfilter), angxc(xfilter),'poly2');
+%     fity = fit(angy(yfilter), angyc(yfilter),'poly2');
+%     
+%     axisx = -fitx.p2/(2*fitx.p1);
+%     axisy = -fity.p2/(2*fity.p1);
+%     beamx = xdir;
+%     beamy = ydir;
+%     relative_x_dir = xdir - axisx;
+%     relative_y_dir = ydir - axisy;
+%     
+%     fitx_alt = fit(angx_alt(xfilter), angxc_alt(xfilter),'poly2');
+%     fity_alt = fit(angy_alt(yfilter), angyc_alt(yfilter),'poly2');
+%     
+%     axisx_alt = -fitx_alt.p2/(2*fitx_alt.p1);
+%     axisy_alt = -fity_alt.p2/(2*fity_alt.p1);
+%     relative_x_dir_alt = xdir - axisx_alt;
+%     relative_y_dir_alt = ydir - axisy_alt;
+%     
+%     formatSpec = ['\nrun %i\tEnergy %i GeV \td %f mm \n\tbeam x axis: %e\t crystal x axis (defl): %e\t crystal x axis (counts): %e\t rel. x dir (defl): %e\t rel. x. dir (counts): %e\n' ...
+%         '\tbeam y axis: %e\t crystal y axis (defl):%e\t crystal y axis (counts): %e\t rel. y dir (defl): %e\t rel. y dir (counts): %e\n'
+%         ];
+%     fprintf(formatSpec, run, E, d, xdir, axisx, axisx_alt, relative_x_dir, relative_x_dir_alt, ydir, axisy, axisy_alt, relative_y_dir, relative_y_dir_alt)
+        
     f = figure;
+    
     subplot(2,2,1)
     grid on
     title('a)','fontsize',22,'interpreter','latex')
@@ -157,14 +150,15 @@ for run = run_no
     hold on
     ylim([20e-6, 120e-6]);
     yl = ylim;
-    fill([xdir + stdev_x/2, xdir + stdev_x/2, xdir - stdev_x/2, xdir - stdev_x/2],[yl(1), yl(2), yl(2), yl(1)],'g','FaceAlpha',0.2,'edgecolor','none')
+%     fill([xdir + stdev_x/2, xdir + stdev_x/2, xdir - stdev_x/2, xdir - stdev_x/2],[yl(1), yl(2), yl(2), yl(1)],'g','FaceAlpha',0.2,'edgecolor','none')
     p(1) = plot(angles_x(:,1), angles_x(:,2),'-','linewidth',2.5);
-    p(2) = plot([xdir, xdir], yl,'--','linewidth',2.5,'color',colors(1,:));
-    plot(axisx, fitx(axisx),'o','MarkerFaceColor',colors(3,:),'MarkerSize',7)
+%     p(2) = plot([xdir, xdir], yl,'--','linewidth',2.5,'color',colors(1,:));
+%     plot(axisx, fitx(axisx),'o','MarkerFaceColor',colors(3,:),'MarkerSize',7)
     legend(p,{'scan','$\mu_\mathrm{hor.}$'},'fontsize',22,'interpreter','latex')
     ylabel('$\langle d\phi_\mathrm{hor.} \rangle$ [rad]','fontsize',22,'interpreter','latex')
     box on
     set(gca, 'FontSize', 18)
+    
     subplot(2,2,2)
     grid on
     title('b)','fontsize',22,'interpreter','latex')
@@ -174,14 +168,15 @@ for run = run_no
     hold on
     ylim([0, max(angxc_alt)]);
     yl = ylim;
-    fill([xdir + stdev_x/2, xdir + stdev_x/2, xdir - stdev_x/2, xdir - stdev_x/2],[yl(1), yl(2), yl(2), yl(1)],'g','FaceAlpha',0.2,'edgecolor','none')
+%     fill([xdir + stdev_x/2, xdir + stdev_x/2, xdir - stdev_x/2, xdir - stdev_x/2],[yl(1), yl(2), yl(2), yl(1)],'g','FaceAlpha',0.2,'edgecolor','none')
     p(1) = plot(angx_alt, angxc_alt,'-','linewidth',2.5);
-    p(2) = plot([xdir, xdir], yl,'--','linewidth',2.5,'color',colors(1,:));
-    plot(axisx_alt, fitx_alt(axisx_alt),'o','MarkerFaceColor',colors(3,:),'MarkerSize',7)
+%     p(2) = plot([xdir, xdir], yl,'--','linewidth',2.5,'color',colors(1,:));
+%     plot(axisx_alt, fitx_alt(axisx_alt),'o','MarkerFaceColor',colors(3,:),'MarkerSize',7)
     legend(p,{'scan','$\mu_\mathrm{hor.}$'},'fontsize',22,'interpreter','latex')
     ylabel('$\left(\frac{N_\gamma}{N_E}\right)_\mathrm{cut}$','fontsize',22,'interpreter','latex')
     box on
     set(gca, 'FontSize', 18)
+    
     subplot(2,2,3)
     grid on
     title('c)','fontsize',22,'interpreter','latex')
@@ -191,15 +186,16 @@ for run = run_no
     hold on
     ylim([20e-6, 150e-6]);
     yl = ylim;
-    fill([ydir + stdev_y/2, ydir + stdev_y/2, ydir - stdev_y/2, ydir - stdev_y/2],[yl(1), yl(2), yl(2), yl(1)],'g','FaceAlpha',0.2,'edgecolor','none')
+%     fill([ydir + stdev_y/2, ydir + stdev_y/2, ydir - stdev_y/2, ydir - stdev_y/2],[yl(1), yl(2), yl(2), yl(1)],'g','FaceAlpha',0.2,'edgecolor','none')
     p(1) = plot(angles_y(:,1), angles_y(:,2),'-','linewidth',2.5);
-    p(2) = plot([ydir, ydir], yl,'--','linewidth',2.5,'color',colors(1,:));
-    plot(axisy, fity(axisy),'o','MarkerFaceColor',colors(3,:),'MarkerSize',7)
+%     p(2) = plot([ydir, ydir], yl,'--','linewidth',2.5,'color',colors(1,:));
+%     plot(axisy, fity(axisy),'o','MarkerFaceColor',colors(3,:),'MarkerSize',7)
     legend(p, {'scan','$\mu_\mathrm{vert.}$'},'fontsize',22,'interpreter','latex')
     xlabel('$\langle d\theta \rangle$ [rad]','fontsize',22,'interpreter','latex');
     ylabel('$\langle d\phi_\mathrm{vert.} \rangle$ [rad]','fontsize',22,'interpreter','latex')
     box on
     set(gca, 'FontSize', 18)
+    
     subplot(2,2,4)
     grid on
     title('d)','fontsize',22,'interpreter','latex')
@@ -209,19 +205,20 @@ for run = run_no
     hold on
     ylim([0, max(angyc_alt)]);
     yl = ylim;
-    fill([ydir + stdev_y/2, ydir + stdev_y/2, ydir - stdev_y/2, ydir - stdev_y/2],[yl(1), yl(2), yl(2), yl(1)],'g','FaceAlpha',0.2,'edgecolor','none')
+%     fill([ydir + stdev_y/2, ydir + stdev_y/2, ydir - stdev_y/2, ydir - stdev_y/2],[yl(1), yl(2), yl(2), yl(1)],'g','FaceAlpha',0.2,'edgecolor','none')
     p(1) = plot(angy_alt, angyc_alt,'-','linewidth',2.5);
-    p(2) = plot([ydir, ydir], yl,'--','linewidth',2.5,'color',colors(1,:));
-    plot(axisy_alt, fity_alt(axisy_alt),'o','MarkerFaceColor',colors(3,:),'MarkerSize',7)
+%     p(2) = plot([ydir, ydir], yl,'--','linewidth',2.5,'color',colors(1,:));
+%     plot(axisy_alt, fity_alt(axisy_alt),'o','MarkerFaceColor',colors(3,:),'MarkerSize',7)
     legend(p, {'scan','$\mu_\mathrm{vert.}$'},'fontsize',22,'interpreter','latex')
     xlabel('$\langle d\theta \rangle$ [rad]','fontsize',22,'interpreter','latex');
     ylabel('$\left(\frac{N_\gamma}{N_E}\right)_\mathrm{cut}$','fontsize',22,'interpreter','latex')
     box on
     set(gca, 'FontSize', 18)
-    set(f, 'Units','centimeters','PaperUnits','centimeters', 'PaperSize',[36, 18],'PaperPosition',[0, 0, 36, 18],'Position',[0 0 36 18])
-    print('/home/christian/Dropbox/Cern2018Experiment/figures/40GeV_1.5mm_axis_run35.pdf', '-dpdf','-r600','-painters')
     
-end
+    set(f, 'Units','centimeters','PaperUnits','centimeters', 'PaperSize',[36, 18],'PaperPosition',[0, 0, 36, 18],'Position',[0 0 36 18])
+%     print('/home/christian/Dropbox/Cern2018Experiment/figures/40GeV_1.5mm_axis_run35.pdf', '-dpdf','-r600','-painters')
+    
+% end
 %
 % histogram(defl, 1000);
 % [defl_c_sim, defl_sim] = histcounts(deflsim, 'numbins', 1000);

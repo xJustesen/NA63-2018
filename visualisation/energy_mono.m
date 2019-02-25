@@ -108,10 +108,10 @@ plot(energy, counts_sim_80GeV_mono_15_norm_inf, '-.','linewidth',1.5)
 plot(energy, counts_sim_80GeV_mono_25_norm_inf, '--','linewidth',1.5)
 plot(energy, counts_sim_80GeV_mono_40_norm_inf, ':','linewidth',1.5)
 legend({'5 GeV','15 GeV','25 GeV','40 GeV'});
-set(gca, 'FontSize', 14)
-xlabel('Energy [GeV]','fontsize',22,'interpreter','latex');ylabel('dP/dE [1/mm]','fontsize',22,'interpreter','latex')
+% set(gca, 'FontSize', 14)
+xlabel('Energy [GeV]','fontsize',14,'interpreter','latex');ylabel('dP/dE [1/mm]','fontsize',14,'interpreter','latex')
 box on
 grid on
 
 set(f, 'Units','centimeters','PaperUnits','centimeters', 'PaperSize',[18, 12],'PaperPosition',[0, 0, 18, 12],'Position',[0 0 18 12])
-print('/home/christian/Dropbox/Cern2018Experiment/figures/monochrome_80GeV_1.5mm.pdf', '-dpdf','-r600','-painters')
+% print('/home/christian/Dropbox/Cern2018Experiment/figures/monochrome_80GeV_1.5mm.pdf', '-dpdf','-r600','-painters')

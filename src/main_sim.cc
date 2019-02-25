@@ -1,11 +1,10 @@
 #include "simulator.h"
 #include "analyser.h"
-#include "globalvars.h"
 
 int main(int argc, char const *argv[]) {
 
         /* Define parameters for constructor */
-        int N = 1e6; // number of events to simulate
+        int N = 1e4; // number of events to simulate
         vector<double> z = {0, 1832.3E+03, 8913E+03, 8989E+03, 9196.2E+03, 9273.7E+03}; // z-coordinates for planes (micro-meters) 2018
         int bg = 1; // include background?
 
@@ -31,9 +30,9 @@ int main(int argc, char const *argv[]) {
 
         }
 
-        if (argc > 6) {
+        if (argc > 5) {
 
-                ifstream filename (argv[6]);
+                ifstream filename (argv[5]);
 
                 if (filename.is_open()) {
 
@@ -59,12 +58,7 @@ int main(int argc, char const *argv[]) {
         double cut_lb_y = cuts[2];
         double cut_ub_y = cuts[3];
 
-        string Name;
-        if (argc > 6) {
-
-                Name = (string)argv[2] + "_cuts_halfSumPeak";
-
-        } else Name = argv[2];
+        string Name = argv[2];
 
         cerr << "\nEntry angles x: {" << cut_lb_x << ", " << cut_ub_x << "} rad";
         cerr << "\nEntry angles y: {" << cut_lb_y << ", " << cut_ub_y << "} rad\n";

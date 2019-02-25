@@ -50,6 +50,7 @@ vector<vector<vector<vector<double> > > > hitcoords;
 analyser(vector<double> z, char const *name, string runno, char const *beamparams);      // constructor
 void make_grid(vector<vector<double> > &pixelgrid, vector<double> &xgrid, vector<double> &ygrid);     // constructs a vector with pixeldata, except number of hits in pixel
 void extract_root_data(void);     // extracts data from from root file and saves in a vector "Events"
+void extract_root_data2(void);     // extracts data from from root file and saves in a vector "Events"
 void extract_hit_data(vector<vector<vector<double> > > &hitcoord, vector<vector<double> > &pixelgrid, int plane);   // extracts and stores data for each hit in hitcoord, and fills pixelgrid with no. of hits in pixel
 void count_hits(int &count, vector<vector<vector<double> > > hitcoord);    // counts total number of hits in a plane
 void locate_hot_pixels(vector<vector<double> > pixelgrid, vector<int> &hotpixels, int i);    // locates hot pixels
@@ -91,6 +92,7 @@ double M6M5_d_lim;
 double Match_d;
 double Match_d_foil;
 double yz_defl_lim;
+bool data;
 vector<vector<vector<vector<vector<double> > > > > paired_tracks;
 vector<vector<vector<double> > > divergence;
 vector<vector<vector<double> > > M1M2_slopes;

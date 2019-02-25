@@ -1,6 +1,7 @@
 clear all; clc; close all
 %% load data
-filename = 'hits_coord_data_77';
+
+filename = 'hits_coord_data_parallel_test';
 filename1 = 'hits_coord_data_4'; % fake hits
 
 hitdat   = loaddat(filename);
@@ -8,73 +9,43 @@ fakehitdat  = loaddat(filename1);
 fakeevents = 130042
 events = 201678
 
-datpath = '/home/christian/Documents/cern2018/simdata/';
 
 %% load data
-input_pos   = load('/home/christian/Dropbox/Cern2018Experiment/kode/beam_position_4mm.txt');
 input_ang   = load('/home/christian/Dropbox/Cern2018Experiment/kode/beam_direction_4mm.txt'); 
 
-xpos = input_pos(:,3);
-ypos = input_pos(:,4);
-xang = input_ang(:,3);
-yang = input_ang(:,4);
+x = load('../beamParameters/xdat_80GeV_beam_params_1.5mm.txt');
+y = load('../beamParameters/ydat_80GeV_beam_params_1.5mm.txt');
+xw = load('../beamParameters/xweight_80GeV_beam_params_1.5mm.txt');
+yw = load('../beamParameters/yweight_80GeV_beam_params_1.5mm.txt');
 
 %% plot data
 for i = 1:numel(fieldnames(hitdat))
     field = strcat('plane',num2str(i-1));
-    disp(field);
-    disp('  ')
-    
+    fprintf(strcat(field,'\n'));
+
     titlestr = strcat('Plane ',num2str(i-1),' hits');
        
-    [xcounts, xbins] = hist(hitdat.(field)(:,1),1000);
-    [ycounts, ybins] = hist(hitdat.(field)(:,2),1000);
+    [xcounts, xbins] = hist(hitdat.(field)(:,1),100);
+    [ycounts, ybins] = hist(hitdat.(field)(:,2),100);
     
-    [fakexcounts, fakexbins] = hist(fakehitdat.(field)(:,1),1000);
-    [fakeycounts, fakeybins] = hist(fakehitdat.(field)(:,2),1000);
-
-    netcountsx = xcounts/events - fakexcounts/fakeevents;
-    netcountsy = ycounts/events - fakeycounts/fakeevents;
-    
-    netcountsx = netcountsx(netcountsx > 0);
-    netcountsy = netcountsy(netcountsy > 0);
-    netxbins = xbins(netcountsx > 0);
-    netybins = ybins(netcountsy > 0);
-
     f = figure;
     title(titlestr)
-    plot(hitdat.(field)(:,1), hitdat.(field)(:,2));
+    plot(hitdat.(field)(:,1), hitdat.(field)(:,2),'.');
+    axis equal
+    box on
     
-    if i == 1
-                
+    if i == 1             
         f = figure;
         title('x')
         hold on
-        plot(netxbins, netcountsx/max(netcountsx))
-        plot(xpos, input_pos(:,1)/max(input_pos(:,1)))
+        plot(xbins, xcounts/max(xcounts))
+        plot(x, xw/max(xw))
         
         figure
         title('y')
         hold on
-        plot(netybins, netcountsy/max(netcountsy))
-        plot(ypos, input_pos(:,2)/max(input_pos(:,2)))
-%         box on
-%         grid on
-%         legend({'x','y'},'interpreter','latex');
-%         set(gca, 'FontSize', 24)
-%         xlabel('position [$\mu$m]','fontsize',36,'interpreter','latex'); ylabel('Normalized counts','fontsize',36,'interpreter','latex');
-
-    end
-%     
-    if i == 1
-%         netcountsx = netcountsx.';
-%         netcountsy = netcountsy.';
-%         xbins = xbins.';
-%         ybins = ybins.';
-%         save('../beamParameters/xdat_alignment_beam_params.txt','xbins','-ascii');
-%         save('../beamParameters/ydat_alignment_beam_params.txt','ybins','-ascii');
-%         save('../beamParameters/xweight_alignment_beam_params.txt','netcountsx','-ascii');
-%         save('../beamParameters/yweight_alignment_beam_params.txt','netcountsy','-ascii');
+        plot(ybins, ycounts/max(ycounts))
+        plot(y, yw/max(yw))
     end
 end
 

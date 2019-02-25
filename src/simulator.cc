@@ -89,7 +89,7 @@ simulator::simulator(int N, vector<double> z, string run, vector<double> params,
         cout << "\nNumber of events:\t" << N;
         cout << "\nCrystal thickness: \t" << d_c << " micron ";
         cout << "\nBeam energy: \t\t" << E << " GeV";
-        if (name == "aligned") cout << "\nEmission % / slice: \t" << I_integral/3.0;
+        if (name == "aligned") cout << "\nEmission % / slice: \t" << I_integral/300.0;
         cout << "\nConversion rate: \t" << 200.0 * (7.0)/(9.0*X0_Ta) * 100 << "%\n\n";
 
 }
@@ -637,9 +637,6 @@ void simulator::converter_foil(int eventno, double d_f, double X0,mt19937_64 gen
 
                         if (randno < P) {
 
-                                #pragma omp atomic
-                                conversions++;
-
                                 /* Calculate energy gained by e+/e- pair */
                                 double photon_energy = local_photons[i][5];
                                 double electron_energy = (double)rand()/RAND_MAX; // random number for the inverse transform sampling in "electronic_energy_distribution"
@@ -673,6 +670,9 @@ void simulator::converter_foil(int eventno, double d_f, double X0,mt19937_64 gen
                                 local_particles.push_back(electron);
                                 local_particles.push_back(positron);
 
+                                #pragma omp atomic
+                                conversions++;
+
                                 break; // break since photon no longer exists
 
                         }
@@ -700,9 +700,7 @@ bool simulator::photon_emitted_aligned(double no_slices, mt19937_64 generator) {
 /* Simulate a particle travelling through an aligned crystal. Multiple scattering is taken into account in the "propagte particles" function. */
 void simulator::aligned_crystal(int &emitted, int no_slices, mt19937_64 generator, vector<vector<double> > &local_photons, vector<vector<double> > &local_particles) {
 
-        double Emin = 2*0.5109989461E-03; // 2 * electron mass in GeV
         double dl = d_c/(double)no_slices;
-
         for (size_t hitno = 0; hitno < local_particles.size(); hitno++) {
 
                 for (int i = 0; i < no_slices; i++) {
@@ -856,7 +854,7 @@ void simulator::mimosa_detector(int planeno, int eventno, int &detections, mt199
                 y3 = 0.5272E+04 +  alignment_matrix(1, 2, 3);
                 y4 = -0.5235E+04 +  alignment_matrix(1, 2, 3);
 
-                fakehitprob =0.52;
+                fakehitprob = 0.52;
 
                 break;
         }
@@ -866,14 +864,11 @@ void simulator::mimosa_detector(int planeno, int eventno, int &detections, mt199
 
         mimosa_res = 35.0; // spatial resoultion of mimosa detector (micro-m) (smaller = better res.)
 
-        /* Take into account detector resoultion by adding a random (Dx, Dy) displacement between -4 -> 4 micro-meter */
+        /* Take into account detector resoultion by adding a random (Dx, Dy) displacement drawn from gaussian distro with stdev = 3.5mu, mean = 0mu */
         normal_distribution<double> distribution(0.0, 3.5);
 
         /* Simulate real hit detection */
         for (size_t hitno = 0; hitno < local_particles.size(); hitno++) {
-
-                double Dx = distribution(generator);
-                double Dy = distribution(generator);
 
                 /* Check if particle is within physical boundaries of detector.*/
                 bool inside_bounds = isInside(4, xbounds, ybounds, local_particles[hitno][0], local_particles[hitno][1]);
@@ -887,6 +882,9 @@ void simulator::mimosa_detector(int planeno, int eventno, int &detections, mt199
                         int hotpix = binarySearch(hotpixels[planeno], low, high, pixel);
 
                         if (hotpix == -1) {
+
+                                double Dx = distribution(generator);
+                                double Dy = distribution(generator);
 
                                 /* Combine neighbor-hits into single hit if they are closer than detectors resoultion */
                                 if (mimosas[planeno][eventno].size() > 0) {
@@ -913,12 +911,8 @@ void simulator::mimosa_detector(int planeno, int eventno, int &detections, mt199
                                         mimosas[planeno][eventno].push_back({local_particles[hitno][0] + Dx, local_particles[hitno][1] + Dy});
 
                                 }
-
-
                         }
-
                 }
-
         }
 
         /* Simulate fake hit detection */

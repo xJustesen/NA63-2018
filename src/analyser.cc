@@ -29,6 +29,7 @@ analyser::analyser(vector<double> z, char const *name, string run, char const *b
         filename = name;
         paramsfile = beamparams;
         DATPATH = "/home/christian/Documents/cern2018/simdata";
+        data = false;
 
         /* Vectors for data storage in RAM */
         hitcoords.resize(6);
@@ -196,7 +197,7 @@ void analyser::print_hits(string name){
 
 void analyser::print_energy(string name) {
 
-        string filename = "/home/christian/Dropbox/Cern2018Experiment/spectre/energy_" + name + ".txt";
+        string filename = "/home/christian/Dropbox/Cern2018Experiment/spectre/cuts/energy_" + name + ".txt";
         ofstream output;
 
         output.open(filename,ios_base::app);
@@ -642,16 +643,43 @@ void analyser::construct_tracks(double M1M2_slope_lb_x, double M1M2_slope_ub_x, 
                 }
 
         } // events done
+        string eventfile_name;
+        if (data) {
 
-        string eventfile_name = "events_run_cuts.txt";
-        fstream event_number_stream(eventfile_name, fstream::in | fstream::out | fstream::app);
+                eventfile_name = "events_run_cuts.txt";
+                fstream event_number_stream(eventfile_name, fstream::in | fstream::out | fstream::app);
 
-        if (event_number_stream.is_open()) {
+                if (event_number_stream.is_open()) {
 
-                event_number_stream << runno << "\t" << Nevents_within_cut << "\n";
-                event_number_stream.close();
+                        event_number_stream << runno << "\t" << Nevents_within_cut << "\n";
+                        event_number_stream.close();
 
-        } else cerr << "Cannot open file:\t" << eventfile_name << "\n\n";
+                } else cerr << "Cannot open file:\t" << eventfile_name << "\n\n";
+
+        } else {
+
+                eventfile_name = "events_run_cuts_" + runno + ".txt";
+                ifstream input (eventfile_name);
+                int events = 0;
+
+                if (input.is_open()) {
+
+                        while (true) {
+
+                                input >> events;
+                                if (input.eof()) break;
+
+                        }
+
+                        input.close();
+
+                } else cerr << "Unable to open file containing no. of events\n";
+
+                ofstream output (eventfile_name);
+                output << Nevents_within_cut + events;
+                output.close();
+
+        }
 
         string name0 = "M1M2_dist_" + (string)runno;
         string name1 = "M2M3_dist_" + (string)runno;
@@ -672,7 +700,6 @@ void analyser::construct_tracks(double M1M2_slope_lb_x, double M1M2_slope_ub_x, 
 }
 
 void analyser::find_axis_alt (void) {
-
         /* Load beam-parameters from file */
         vector<double> params;
         double param;
@@ -701,17 +728,17 @@ void analyser::find_axis_alt (void) {
 
         double xmean = params[2];
         double ymean = params[3];
-        double deltax = params[4]; // FWHM x
-        double deltay = params[5]; // FWHM y
+        double deltax = 500e-6;
+        double deltay = 500e-6;
         double theta = 30E-6;
         double dtheta = 2.0E-6;
 
         double ycut_lb = ymean - deltay - theta;
-        double ycut_ub = ymean - deltay + theta;
+        double ycut_ub = ymean + deltay + theta;
         double xcut_lb = xmean - deltax - theta;
-        double xcut_ub = xmean - deltax + theta;
+        double xcut_ub = xmean + deltax + theta;
 
-        int no_cuts, no_cuts_x = 2 * deltax / dtheta, no_cuts_y = 4 * deltay / dtheta;
+        int no_cuts, no_cuts_x = 2 * deltax / dtheta, no_cuts_y = 2 * deltay / dtheta;
         string filename;
 
         vector<vector<vector<vector<double> > > > tracks_alt;
@@ -719,7 +746,7 @@ void analyser::find_axis_alt (void) {
 
         double M1M2_slope_lb_x, M1M2_slope_ub_x, M1M2_slope_lb_y, M1M2_slope_ub_y;
         vector<vector<double> > photons_in_cut_x; photons_in_cut_x.resize(no_cuts_x);
-        cout << "y:\t" << 2 * deltay / dtheta << "\t x:\t" << 2 * deltax / dtheta << "\n";
+        cout << "no_cuts_y:\t" <<no_cuts_y << "\tno_cuts_x:\t" <<no_cuts_x << "\n";
         vector<vector<double> > photons_in_cut_y; photons_in_cut_y.resize(no_cuts_y);
 
         for (int dir = 0; dir < 2; dir++) {
@@ -956,33 +983,31 @@ void analyser::find_axis(void) {
 
                 paramters.close();
 
-        } else cout << "Unable to open file containing beam parameters";
+        } else cout << "Unable to open file containing beam parameters" << endl;
 
         vec vec_M1M2_z = {M1M2_z[0], M1M2_z[1]};
         vec vec_M2M3_z = {M2M3_z[0], M2M3_z[1]};
 
         double xmean = params[2];
         double ymean = params[3];
-        double deltax = params[4]; // FWHM x
-        double deltay = params[5]; // FWHM y
+        double deltax = 500e-6;
+        double deltay = 500e-6;
         double theta = 30E-6;
         double dtheta = 2.0E-6;
 
         double ycut_lb = ymean - deltay - theta;
-        double ycut_ub = ymean - deltay + theta;
+        double ycut_ub = ymean + deltay + theta;
         double xcut_lb = xmean - deltax - theta;
-        double xcut_ub = xmean - deltax + theta;
+        double xcut_ub = xmean + deltax + theta;
 
-        int no_cuts_x, no_cuts_y, no_cuts;
+        int no_cuts, no_cuts_x = 2 * deltax / dtheta, no_cuts_y = 2 * deltay / dtheta;
         string filename;
-
-        no_cuts_x = 2 * deltax / dtheta;
-        no_cuts_y = 4 * deltay / dtheta;
 
         vector<vector<double> > mean_anglesx; mean_anglesx.resize(no_cuts_x);
         vector<vector<double> > mean_anglesy; mean_anglesy.resize(no_cuts_y);
+        cout << "no_cuts_y:\t" <<no_cuts_y << "\tno_cuts_x:\t" <<no_cuts_x << "\n";
 
-        int Nevents = hitcoords[0].size();
+        // int Nevents = hitcoords[0].size();
 
         double M1M2_slope_lb_x, M1M2_slope_ub_x, M1M2_slope_lb_y, M1M2_slope_ub_y, dv_x = 0, dv_y = 0;
 
@@ -1451,6 +1476,7 @@ vector<double> analyser::linspace(double min, double max, int N) {
 
 /* Extract raw data from root file, do pre-processing and save usable data in std::vectors */
 void analyser::extract_root_data(void) {
+        data = true;
 
         /* Open root file and obtain relevant data */
         TFile *f = TFile::Open(filename);
@@ -1507,7 +1533,90 @@ void analyser::extract_root_data(void) {
                 event_number_stream.close();
 
         } else cerr << "Cannot open file:\t" << eventfile_name << "\n\n";
+}
 
+void analyser::extract_root_data2(void) {
+        data = true;
+
+        /* Open root file and obtain relevant data */
+        TFile *f = TFile::Open(filename);
+        TTree* T1 = (TTree *)f->Get("T");
+        TLeaf *Hpk = (TLeaf *)T1->GetLeaf("fAHits.Hpk");
+        TLeaf *Hu = (TLeaf *)T1->GetLeaf("fAHits.Hu");
+        TLeaf *Hv = (TLeaf *)T1->GetLeaf("fAHits.Hv");
+        TLeaf *fAHitsN = (TLeaf *)T1->GetLeaf("fAHitsN");
+        TLeaf *ENumberOfTriggers = (TLeaf *)T1->GetLeaf("fHeader.ENumberOfTriggers");
+
+        int N_events = T1->GetEntries();
+        cout << "\nTotal number of events :\t" << N_events << "\n";
+
+        Events.resize(N_events);
+        Nevents = 0;
+
+        double x[50];
+        double y[50];
+        int plane[50];
+        int NHits;
+
+        /* Create new ROOT file to extracted data */
+        TFile *hfile = new TFile("test.root","RECREATE","Example");
+        TTree *tree = new TTree("T","Extracted data");
+        tree->Branch("x", &x, "x/d[50]");
+        tree->Branch("y", &y, "y/d[50]");
+        tree->Branch("plane", &plane, "plane/i[50]");
+        tree->Branch("NHits", &NHits);
+
+        /* Sort data into std::vector */
+        for (int i  = 0; i < N_events; i++) {
+
+                T1->GetEntry(i);
+                int N_hits = fAHitsN->GetValue();
+                int N_triggers = ENumberOfTriggers->GetValue();
+
+                if (N_triggers == 2 && N_hits > 0) {
+
+                        vector<vector<double> > EventData(N_hits);
+
+                        NHits = N_hits;
+
+                        for (int j = 0; j < N_hits; j++) {
+
+                                x[j] = (Hu->GetValue(j));
+                                y[j] = (Hv->GetValue(j));
+                                plane[j] = (Hpk->GetValue(j));
+
+                                vector<double> HitData(3);
+                                HitData[0] = Hu->GetValue(j); // xcoord
+                                HitData[1] = Hv->GetValue(j); // ycoord
+                                HitData[2] = static_cast<double>(Hpk->GetValue(j) -1 ); // plane
+                                EventData[j] = HitData;
+
+                        }
+
+                        Events[Nevents] = EventData;
+                        Nevents++;
+
+                        tree->Fill();
+                }
+
+        }
+
+        hfile->Write();
+        hfile->Close();
+
+        Events.resize(Nevents);
+        cout << "Number of usable events :\t" << Nevents << "\n\n";
+
+        /* Save no. of events in run on disk */
+        string eventfile_name = "events_run.txt";
+        fstream event_number_stream(eventfile_name, fstream::in | fstream::out | fstream::app);
+
+        if (event_number_stream.is_open()) {
+
+                event_number_stream << runno << "\t" << Nevents << "\n";
+                event_number_stream.close();
+
+        } else cerr << "Cannot open file:\t" << eventfile_name << "\n\n";
 }
 
 int analyser::isInside(int nvert, vector<double> vertx, vector<double> verty, double testx, double testy) {
