@@ -2,9 +2,7 @@ clear all; close all; clc;
 global datpath;
 datpath = '/home/christian/Dropbox/Cern2018Experiment/spectre/';
 
-E = 80000;  
 Em = 0.511;
-gamma = E/Em;
 Na = 6.022*10^23;
 alpha = 1/137;
 r0 = 2.8*10^-15;
@@ -25,36 +23,40 @@ E80 = linspace(0,80,60);
 fprintf('Loading data\n')
 %% 20 GeV data+sim
 % DATA 1mm
-counts_dat_20GeV_aligned_norm_tot = spectrum('energy_','.txt',[103, 104, 112:114]);
-counts_dat_20GeV_amorph_norm_tot = spectrum('energy_', '.txt', [109,115]);
 counts_dat_20GeV_bg_norm_tot = spectrum('energy_', '.txt', [105:108, 110, 111]);
 data_bg_20GeV_1mm = hist(counts_dat_20GeV_bg_norm_tot(counts_dat_20GeV_bg_norm_tot < max(E20) & counts_dat_20GeV_bg_norm_tot > min(E20)), E20);
+counts_dat_20GeV_amorph_norm_tot = spectrum('energy_', '.txt', [109,115]);
+
+counts_dat_20GeV_aligned_norm_tot = spectrum('energy_','.txt',[103, 104, 112:114]);
 data_align_20GeV_1mm = hist(counts_dat_20GeV_aligned_norm_tot(counts_dat_20GeV_aligned_norm_tot < max(E20) & counts_dat_20GeV_aligned_norm_tot > min(E20)), E20);
 data_align_20GeV_1mm_err = E20 .* sqrt(data_align_20GeV_1mm/(876217+467348+286232+258194+74259)^2 + data_bg_20GeV_1mm/(324000+590172+624602+734446+1415716+1224254)^2);
 data_align_20GeV_1mm = E20 .* (data_align_20GeV_1mm/(876217+467348+286232+258194+74259) - data_bg_20GeV_1mm/(324000+590172+624602+734446+1415716+1224254));
 
 % % DATA 1.5mm
-counts_dat_20GeV_amorph_1_5mm_norm_tot = spectrum('energy_', '.txt', 66:69 );
 counts_dat_20GeV_bg_1_5mm_norm_tot = spectrum('energy_', '.txt', [60,65] );
-counts_dat_20GeV_aligned_norm_tot_1_5mm = spectrum('energy_', '.txt',61:64);
 data_bg_20GeV_1_5mm = hist(counts_dat_20GeV_bg_1_5mm_norm_tot(counts_dat_20GeV_bg_1_5mm_norm_tot < max(E20) & counts_dat_20GeV_bg_1_5mm_norm_tot > min(E20)), E20);
+counts_dat_20GeV_amorph_1_5mm_norm_tot = spectrum('energy_', '.txt', 66:69 );
+
+counts_dat_20GeV_aligned_norm_tot_1_5mm = spectrum('energy_', '.txt',61:64);
 data_align_20GeV_1_5mm = hist(counts_dat_20GeV_aligned_norm_tot_1_5mm(counts_dat_20GeV_aligned_norm_tot_1_5mm < max(E20) & counts_dat_20GeV_aligned_norm_tot_1_5mm > min(E20)), E20);
 data_align_20GeV_1_5mm_err = E20 .* sqrt(data_align_20GeV_1_5mm/(174257+474970+876508+792574)^2 + data_bg_20GeV_1_5mm/(812417 + 2530699)^2);
-data_align_20GeV_1_5mm = E20 .* data_align_20GeV_1_5mm/(174257+474970+876508+792574);
+data_align_20GeV_1_5mm = E20 .* (data_align_20GeV_1_5mm/(174257+474970+876508+792574) - data_bg_20GeV_1_5mm/(812417 + 2530699));
 fprintf('\t 20 GeV CERN data loaded\n')
 
 % % SIM 1mm
-counts_sim_20GeV_amorph_bg_norm = spectrum('energy_sim_amorphous', '_20GeV.txt', []);
 counts_sim_20GeV_bg_norm = spectrum('energy_sim_background', '_20GeV.txt', []);
 sim_bg_20GeV_1mm = hist(counts_sim_20GeV_bg_norm(counts_sim_20GeV_bg_norm < max(E20) & counts_sim_20GeV_bg_norm > min(E20)), E20);
+counts_sim_20GeV_amorph_bg_norm = spectrum('energy_sim_amorphous', '_20GeV.txt', []);
+
 counts_sim_20GeV_aligned_RR = spectrum('energy_sim_aligned', '_20GeV_test.txt',  []);
 sim_align_20GeV_1mm_RR = hist(counts_sim_20GeV_aligned_RR(counts_sim_20GeV_aligned_RR < max(E20) & counts_sim_20GeV_aligned_RR > min(E20)), E20);
 sim_align_20GeV_1mm_RR = E20 .* (sim_align_20GeV_1mm_RR / 5e6 - sim_bg_20GeV_1mm / 1e8);
 % 
 % % SIM 1.5mm
 counts_sim_20GeV_bg_norm_1_5mm = spectrum('energy_sim_background', '_20GeV_1.5mm.txt', []);
-counts_sim_20GeV_amorph_bg_norm_1_5mm = spectrum('energy_sim_amorphous', '_20GeV_1.5mm.txt', []);
 sim_bg_20GeV_1_5mm = hist(counts_sim_20GeV_bg_norm_1_5mm(counts_sim_20GeV_bg_norm_1_5mm < max(E20) & counts_sim_20GeV_bg_norm_1_5mm > min(E20)), E20);
+counts_sim_20GeV_amorph_bg_norm_1_5mm = spectrum('energy_sim_amorphous', '_20GeV_1.5mm.txt', []);
+
 counts_sim_20GeV_aligned_RR_1_5mm = spectrum('energy_sim_aligned', '_20GeV_1.5mm_test.txt',  []);
 sim_align_20GeV_1_5mm_RR = hist(counts_sim_20GeV_aligned_RR_1_5mm(counts_sim_20GeV_aligned_RR_1_5mm < max(E20) & counts_sim_20GeV_aligned_RR_1_5mm > min(E20)), E20);
 sim_align_20GeV_1_5mm_RR = E20 .* (sim_align_20GeV_1_5mm_RR / 5e6 - sim_bg_20GeV_1_5mm / 1e8);
@@ -69,7 +71,8 @@ fprintf('\t 20 GeV SIM data loaded\n')
 counts_dat_40GeV_bg_norm = spectrum('energy_', '.txt', 74);
 data_bg_40GeV_1mm = hist(counts_dat_40GeV_bg_norm(counts_dat_40GeV_bg_norm < max(E40) & counts_dat_40GeV_bg_norm > min(E40)), E40);
 counts_dat_40GeV_amorph_norm_tot = spectrum('energy_', '.txt', [73 75:78]);
-counts_dat_40GeV_aligned_norm_tot = spectrum('energy_', '.txt', [71 72 79:81]);%, 142959 + 473324 + 460625 + 1288624 + 1275493);
+
+counts_dat_40GeV_aligned_norm_tot = spectrum('energy_', '.txt', [71 72 79:81]);
 data_align_40GeV_1mm = hist(counts_dat_40GeV_aligned_norm_tot(counts_dat_40GeV_aligned_norm_tot < max(E40) & counts_dat_40GeV_aligned_norm_tot > min(E40)), E40);
 data_align_40GeV_1mm_err = E40 .* sqrt(data_align_40GeV_1mm/(142959+473324+460625+1288624+1275493)^2 + data_bg_40GeV_1mm/(3029506)^2);
 data_align_40GeV_1mm = E40 .* (data_align_40GeV_1mm / (142959 + 473324 + 460625 + 1288624 + 1275493) - data_bg_40GeV_1mm/3029506);
@@ -78,6 +81,7 @@ data_align_40GeV_1mm = E40 .* (data_align_40GeV_1mm / (142959 + 473324 + 460625 
 counts_dat_40GeV_amorph_norm_tot_1_5mm = spectrum('energy_', '.txt', [32:34 39:41 43]);
 counts_dat_40GeV_bg_norm_1_5mm = spectrum('energy_', '.txt', 31);
 data_bg_40GeV_1_5mm = hist(counts_dat_40GeV_bg_norm_1_5mm(counts_dat_40GeV_bg_norm_1_5mm < max(E40) & counts_dat_40GeV_bg_norm_1_5mm > min(E40)), E40);
+
 counts_dat_40GeV_aligned_norm_tot_1_5mm = spectrum('energy_', '.txt', [30 35:38]);
 data_align_40GeV_1_5mm = hist(counts_dat_40GeV_aligned_norm_tot_1_5mm(counts_dat_40GeV_aligned_norm_tot_1_5mm < max(E40) & counts_dat_40GeV_aligned_norm_tot_1_5mm > min(E40)), E40);
 data_align_40GeV_1_5mm_err = E40 .* sqrt(data_align_40GeV_1_5mm/(172307+435890+538900+363630+209144)^2 + data_bg_40GeV_1_5mm/(2771773)^2);
@@ -85,12 +89,13 @@ data_align_40GeV_1_5mm = E40 .* (data_align_40GeV_1_5mm / (172307+435890+538900+
 fprintf('\t 40 GeV CERN data loaded\n')
 
 % SIM 1mm
-counts_sim_40GeV_amorph_bg_norm = spectrum('energy_sim_amorphous', '_40GeV.txt', []);
 counts_sim_40GeV_bg_norm = spectrum('energy_sim_background', '_40GeV.txt', []);
+sim_bg_40GeV_1mm = hist(counts_sim_40GeV_bg_norm(counts_sim_40GeV_bg_norm < max(E40) & counts_sim_40GeV_bg_norm > min(E40)), E40);
+counts_sim_40GeV_amorph_bg_norm = spectrum('energy_sim_amorphous', '_40GeV.txt', []);
+
 counts_sim_40GeV_aligned_norm_woshot = spectrum('energy_sim_aligned', '_40GeV_woshot_test.txt', []);
 counts_sim_40GeV_aligned_norm_worr = spectrum('energy_sim_aligned', '_40GeV_worr_test.txt', []);
 counts_sim_40GeV_aligned_norm = spectrum('energy_sim_aligned', '_40GeV_test.txt', []);
-sim_bg_40GeV_1mm = hist(counts_sim_40GeV_bg_norm(counts_sim_40GeV_bg_norm < max(E40) & counts_sim_40GeV_bg_norm > min(E40)), E40);
 sim_align_40GeV_1mm_RR = hist(counts_sim_40GeV_aligned_norm(counts_sim_40GeV_aligned_norm < max(E40) & counts_sim_40GeV_aligned_norm > min(E40)), E40);
 sim_align_40GeV_1mm_RR = E40 .* (sim_align_40GeV_1mm_RR / 5e6 - sim_bg_40GeV_1mm / 1e8);
 sim_align_40GeV_1mm_noRR = hist(counts_sim_40GeV_aligned_norm_worr(counts_sim_40GeV_aligned_norm_worr < max(E40) & counts_sim_40GeV_aligned_norm_worr > min(E40)), E40);
@@ -100,11 +105,12 @@ sim_align_40GeV_1mm_noSH = E40 .* (sim_align_40GeV_1mm_noSH / 5e6 - sim_bg_40GeV
 
 % SIM 1.5mm
 counts_sim_40GeV_bg_norm_1_5mm = spectrum('energy_sim_background', '_40GeV_1.5mm.txt', []);
-counts_sim_40GeV_amorph_bg_norm_1_5mm = spectrum('energy_sim_amorphous', '_40GeV_1.5mm.txt', []);
-counts_sim_40GeV_aligned_1_5mm_norm = spectrum('energy_sim_aligned', '_40GeV_1.5mm_test.txt', []);
 sim_bg_40GeV_1_5mm = hist(counts_sim_40GeV_bg_norm_1_5mm(counts_sim_40GeV_bg_norm_1_5mm < max(E40) & counts_sim_40GeV_bg_norm_1_5mm > min(E40)), E40);
+counts_sim_40GeV_amorph_bg_norm_1_5mm = spectrum('energy_sim_amorphous', '_40GeV_1.5mm.txt', []);
+
+counts_sim_40GeV_aligned_1_5mm_norm = spectrum('energy_sim_aligned', '_40GeV_1.5mm_test.txt', []);
 sim_align_40GeV_1_5mm_RR = hist(counts_sim_40GeV_aligned_1_5mm_norm(counts_sim_40GeV_aligned_1_5mm_norm < max(E40) & counts_sim_40GeV_aligned_1_5mm_norm > min(E40)), E40);
-sim_align_40GeV_1_5mm_RR = E40 .* (sim_align_40GeV_1_5mm_RR / 5e6 - sim_bg_40GeV_1mm / 1e8);
+sim_align_40GeV_1_5mm_RR = E40 .* (sim_align_40GeV_1_5mm_RR / 5e6 - sim_bg_40GeV_1_5mm / 1e8);
 
 % counts_sim_40GeV_aligned_1_5mm_norm_woshot = spectrum(E40, 'energy_sim_aligned', '_40GeV_woshot_1.5mm.txt',  [], 25e7);
 % counts_sim_40GeV_aligned_1_5mm_norm_worr = spectrum(E40, 'energy_sim_aligned', '_40GeV_worr_1.5mm.txt', [], 25e7);
@@ -115,6 +121,7 @@ fprintf('\t 40 GeV SIM data loaded\n')
 counts_dat_80GeV_bg_norm = spectrum('energy_', '.txt', [85 90 91]);
 data_bg_80GeV_1mm = hist(counts_dat_80GeV_bg_norm(counts_dat_80GeV_bg_norm < max(E80) & counts_dat_80GeV_bg_norm > min(E80)), E80);
 counts_dat_80GeV_amorph_norm_tot = spectrum('energy_', '.txt', 86:89);
+
 counts_dat_80GeV_aligned_norm_tot = spectrum('energy_', '.txt', [84 92:95]);
 data_align_80GeV_1mm = hist(counts_dat_80GeV_aligned_norm_tot(counts_dat_80GeV_aligned_norm_tot < max(E80) & counts_dat_80GeV_aligned_norm_tot > min(E80)), E80);
 data_align_80GeV_1mm_err = E80 .* sqrt(data_align_80GeV_1mm/(1134032+462880+943921+1833415+35424)^2 + data_bg_80GeV_1mm/(1911215+1892132+1219189)^2);
@@ -124,6 +131,7 @@ data_align_80GeV_1mm = E80 .* (data_align_80GeV_1mm / (1134032 + 462880 + 943921
 counts_dat_80GeV_bg_norm_1_5mm_tot = spectrum('energy_', '.txt', [48 54 55]);
 data_bg_80GeV_1_5mm = hist(counts_dat_80GeV_bg_norm_1_5mm_tot(counts_dat_80GeV_bg_norm_1_5mm_tot < max(E80) & counts_dat_80GeV_bg_norm_1_5mm_tot > min(E80)), E80);
 counts_dat_80GeV_amorph_norm_1_5mm_tot = spectrum('energy_', '.txt', [49:53 56 57]);
+
 counts_dat_80GeV_aligned_norm_1_5mm_tot = spectrum('energy_', '.txt', [46, 47]);
 data_align_80GeV_1_5mm = hist(counts_dat_80GeV_aligned_norm_1_5mm_tot(counts_dat_80GeV_aligned_norm_1_5mm_tot < max(E80) & counts_dat_80GeV_aligned_norm_1_5mm_tot > min(E80)), E80);
 data_align_80GeV_1_5mm_err = E80 .* sqrt(data_align_80GeV_1_5mm/(431667+942149)^2 + data_bg_80GeV_1_5mm/(2497897 + 312302 + 216860)^2);
@@ -131,10 +139,11 @@ data_align_80GeV_1_5mm = E80 .* (data_align_80GeV_1_5mm / (431667+942149) - data
 fprintf('\t 80 GeV CERN data loaded\n')
 
 % SIM 1mm
-counts_sim_80GeV_amorph_bg_norm = spectrum('energy_sim_amorphous', '_80GeV.txt', []);
 counts_sim_80GeV_bg_norm = spectrum('energy_sim_background', '_80GeV.txt', []);
-counts_sim_80GeV_aligned_noSH = spectrum('energy_sim_aligned', '_80GeV_woshot_test.txt', []);
 sim_bg_80GeV_1mm = hist(counts_sim_80GeV_bg_norm(counts_sim_80GeV_bg_norm < max(E80) & counts_sim_80GeV_bg_norm > min(E80)), E80);
+counts_sim_80GeV_amorph_bg_norm = spectrum('energy_sim_amorphous', '_80GeV.txt', []);
+
+counts_sim_80GeV_aligned_noSH = spectrum('energy_sim_aligned', '_80GeV_woshot_test.txt', []);
 sim_align_80GeV_1mm_noSH = hist(counts_sim_80GeV_aligned_noSH(counts_sim_80GeV_aligned_noSH < max(E80) & counts_sim_80GeV_aligned_noSH > min(E80)), E80);
 sim_align_80GeV_1mm_noSH = E80 .* (sim_align_80GeV_1mm_noSH / 5e6 - sim_bg_80GeV_1mm / 1e8);
 counts_sim_80GeV_aligned_noRR = spectrum('energy_sim_aligned', '_80GeV_worr_test.txt',  []);
@@ -150,53 +159,59 @@ counts_sim_80GeV_bg_1_5mm_norm = spectrum('energy_sim_background', '_80GeV_1.5mm
 counts_sim_80GeV_aligned_RR_1_5mm = spectrum('energy_sim_aligned', '_80GeV_1.5mm_test.txt',  []);
 sim_bg_80GeV_1_5mm = hist(counts_sim_80GeV_bg_1_5mm_norm(counts_sim_80GeV_bg_1_5mm_norm < max(E80) & counts_sim_80GeV_bg_1_5mm_norm > min(E80)), E80);
 sim_align_80GeV_1_5mm_RR = hist(counts_sim_80GeV_aligned_RR_1_5mm(counts_sim_80GeV_aligned_RR_1_5mm < max(E80) & counts_sim_80GeV_aligned_RR_1_5mm > min(E80)), E80);
-sim_align_80GeV_1_5mm_RR = E80 .* (sim_align_80GeV_1_5mm_RR / 5e6 - sim_bg_80GeV_1mm / 1e8);
+sim_align_80GeV_1_5mm_RR = E80 .* (sim_align_80GeV_1_5mm_RR / 5e6 - sim_bg_80GeV_1_5mm / 1e8);
 
 % counts_sim_80GeV_aligned_1_5mm_norm_woshot = spectrum(E80, 'energy_sim_aligned', '_80GeV_woshot_1.5mm.txt',  [], 25e7,altpath);
 % counts_sim_80GeV_aligned_1_5mm_norm_worr = spectrum(E80, 'energy_sim_aligned', '_80GeV_worr_1.5mm.txt', [], 25e7,altpath);
 % counts_sim_80GeV_aligned_1_5mm_norm = spectrum(E80, 'energy_sim_aligned', '_80GeV_1.5mm.txt',  [], 25e7,altpath);
 fprintf('\t 80 GeV SIM data loaded\n')
 
-%% KALIBRERING
+%% Kalibering 
 fprintf('Calculating callibration factors\n')
 % 20 GeV
 %1mm
-[eff_20, ~, ~, ~, data_amorph_20GeV_1mm, sim_amorph_20GeV_1mm, data_amorph_20GeV_1mm_err] = calibrate(E20, counts_sim_20GeV_amorph_bg_norm,...
-                    counts_sim_20GeV_bg_norm, counts_dat_20GeV_amorph_norm_tot,...
-                    counts_dat_20GeV_bg_norm_tot,...
+[eff_20, ~, ~, ~, data_amorph_20GeV_1mm, sim_amorph_20GeV_1mm, data_amorph_20GeV_1mm_err] = calibrate(E20,...
+                    counts_sim_20GeV_amorph_bg_norm,counts_sim_20GeV_bg_norm,...
+                    counts_dat_20GeV_amorph_norm_tot, counts_dat_20GeV_bg_norm_tot,...
                     1e8, 2764454 + 82089, 324000 + 590172 + 624602 + 734446 + 1415716 + 1224254);
 
 %1.5mm
-[eff_20_1_5mm, ~, ~, ~, data_amorph_20GeV_1_5mm, sim_amorph_20GeV_1_5mm, data_amorph_20GeV_1_5mm_err] = calibrate(E20, counts_sim_20GeV_amorph_bg_norm_1_5mm,counts_sim_20GeV_bg_norm_1_5mm,...
+[eff_20_1_5mm, ~, ~, ~, data_amorph_20GeV_1_5mm, sim_amorph_20GeV_1_5mm, data_amorph_20GeV_1_5mm_err] = calibrate(E20,...
+                          counts_sim_20GeV_amorph_bg_norm_1_5mm,counts_sim_20GeV_bg_norm_1_5mm,...
                           counts_dat_20GeV_amorph_1_5mm_norm_tot,counts_dat_20GeV_bg_1_5mm_norm_tot,...
                           1e8, 1197107 + 432597 + 634614 + 386867, 812417 + 2530699);
 
 % 40 GeV
 %1mm
-[eff_40, ~, ~, ~, data_amorph_40GeV_1mm, sim_amorph_40GeV_1mm, data_amorph_40GeV_1mm_err] = calibrate(E40, counts_sim_40GeV_amorph_bg_norm,counts_sim_40GeV_bg_norm,...
+[eff_40, ~, ~, ~, data_amorph_40GeV_1mm, sim_amorph_40GeV_1mm, data_amorph_40GeV_1mm_err] = calibrate(E40,...
+                          counts_sim_40GeV_amorph_bg_norm,counts_sim_40GeV_bg_norm,...
                           counts_dat_40GeV_amorph_norm_tot,counts_dat_40GeV_bg_norm,...
                           1e8, 1290988 + 1361162 + 1447462 + 715126 + 1456319, 3029506);
 
 %1.5mm
-[eff_40_1_5mm, ~, ~, ~, data_amorph_40GeV_1_5mm, sim_amorph_40GeV_1_5mm, data_amorph_40GeV_1_5mm_err] = calibrate(E40, counts_sim_40GeV_amorph_bg_norm_1_5mm,counts_sim_40GeV_bg_norm_1_5mm,...
+[eff_40_1_5mm, ~, ~, ~, data_amorph_40GeV_1_5mm, sim_amorph_40GeV_1_5mm, data_amorph_40GeV_1_5mm_err] = calibrate(E40,...
+                          counts_sim_40GeV_amorph_bg_norm_1_5mm,counts_sim_40GeV_bg_norm_1_5mm,...
                           counts_dat_40GeV_amorph_norm_tot_1_5mm,counts_dat_40GeV_bg_norm_1_5mm,...
                           1e8, 1449257 + 529097 + 724698 + 134167 + 692475 + 1694966 + 496471, 2771767);
 
 % 80 GeV
 %1mm
-[eff_80, ~, ~, ~, data_amorph_80GeV_1mm, sim_amorph_80GeV_1mm, data_amorph_80GeV_1mm_err] = calibrate(E80, counts_sim_80GeV_amorph_bg_norm,counts_sim_80GeV_bg_norm,...
+[eff_80, ~, ~, ~, data_amorph_80GeV_1mm, sim_amorph_80GeV_1mm, data_amorph_80GeV_1mm_err] = calibrate(E80,...
+                          counts_sim_80GeV_amorph_bg_norm,counts_sim_80GeV_bg_norm,...
                           counts_dat_80GeV_amorph_norm_tot,counts_dat_80GeV_bg_norm,...
                           1e8, 1719461 + 1172521 + 1210722 + 538281, 1911215 + 1892132 + 1219189);
 
 %1.5mm
-[eff_80_1_5mm, ~, ~, ~, data_amorph_80GeV_1_5mm, sim_amorph_80GeV_1_5mm, data_amorph_80GeV_1_5mm_err] = calibrate(E80, counts_sim_80GeV_amorph_bg_1_5mm_norm,counts_sim_80GeV_bg_1_5mm_norm,...
+[eff_80_1_5mm, ~, ~, ~, data_amorph_80GeV_1_5mm, sim_amorph_80GeV_1_5mm, data_amorph_80GeV_1_5mm_err] = calibrate(E80,...
+                          counts_sim_80GeV_amorph_bg_1_5mm_norm,counts_sim_80GeV_bg_1_5mm_norm,...
                           counts_dat_80GeV_amorph_norm_1_5mm_tot,counts_dat_80GeV_bg_norm_1_5mm_tot,...
                           1e8, 873246 + 434680 + 847524 + 182889 + 18846 + 392613 + 495068, 2497897 + 312302 + 216860);
                       
 fprintf('\n\t20 GeV\t40 GeV\t80 GeV\n%1.1fmm \t%1.3f \t%1.3f \t%1.3f\n%1.1fmm \t%1.3f \t%1.3f \t%1.3f\n',1, eff_20,eff_40,eff_80,1.5, eff_20_1_5mm,eff_40_1_5mm,eff_80_1_5mm);
 
-%% ENHANCEMENT
+%% Enhancement 
 % 40 GeV
+E = 40000;  
 % 1mm
 I_40_RR_1mm  = load(strcat('/home/christian/Dropbox/Cern2018Experiment/grendel/spectre/','sum_angles40GeV1mmRR.txt'));
 I_40_noSH_1mm  = load(strcat('/home/christian/Dropbox/Cern2018Experiment/grendel/spectre/','sum_angles40GeV1mmnoSH.txt'));
@@ -244,7 +259,7 @@ enhance_err_80GeV_1_5mm = abs(enhance_dat_80GeV_1_5mm) .* sqrt ((data_align_80Ge
 
 fprintf('Finished calculating enhancement\n')
 
-%% AMORPH RESIDUALS
+%% Amorph residual
 % 20 GeV
 residuals_20GeV_1mm = (data_amorph_20GeV_1mm - eff_20 * sim_amorph_20GeV_1mm);
 residuals_20GeV_1_5mm = (data_amorph_20GeV_1_5mm - eff_20_1_5mm * sim_amorph_20GeV_1_5mm);
@@ -267,7 +282,6 @@ colors = [        0    0.4470    0.7410
              0.3010    0.7450    0.9330
              0.6350    0.0780    0.1840
          ];
-
      
 %% amorph plot 1mm
 f = figure;
@@ -368,7 +382,7 @@ ax.YAxis.Exponent = -3;
 
 set(f, 'Units','centimeters','PaperUnits','centimeters', 'PaperSize',[18, 36],'PaperPosition',[0, 0, 18, 36],'Position',[0 0 18, 36])
 
-%% amorph residuals
+%% amorph residual plot
 f = figure;
 [ha, ~] = tight_subplot(3,1,[.12 .04],[.05 .05],[.07 .07]);
 axes(ha(1))
@@ -547,7 +561,7 @@ grid on
 
 set(f, 'Units','centimeters','PaperUnits','centimeters', 'PaperSize',[18 36],'PaperPosition',[0, 0, 18 36],'Position',[0 0 18 36])
 
-%% enhancement
+%% enhancement plot
 f = figure;
 [ha, ~] = tight_subplot(3,1,[.12 .04],[.05 .05],[.07 .07]);
 axes(ha(1))
@@ -652,8 +666,8 @@ function [minimum,val, k, f, dat, sim, dat_err] = calibrate(E, amorphsim, bgsim,
     dat = E .* (amorph/Ndat1 - bg/Ndat2);
     dat_err = E .* sqrt(amorph/Ndat1^2 + bg/Ndat2^2);
 
-    chi2 = @(eff) sum(((dat(dat > 0) - eff .* sim(dat > 0)).^2)./(sim_err(dat > 0).^2 + dat_err(dat > 0).^2)); % chi-squared wo error
-%     chi2 = @(eff) norm(dat(dat > 0) - eff .* sim(dat > 0));
+%     chi2 = @(eff) sum(((dat(dat > 0) - eff .* sim(dat > 0)).^2)./(sim_err(dat > 0).^2 + dat_err(dat > 0).^2)); % chi-squared wo error
+    chi2 = @(eff) norm(dat - eff .* sim);
 %     chi2 = @(eff) trapz(E, dat - eff .* sim);
 
     f = zeros(100,1);

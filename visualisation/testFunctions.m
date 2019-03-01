@@ -1,13 +1,14 @@
-clear all; close all;
+clear all; close all; clc;
 
-data = load("../src/test.txt");
-x = data(:,1);
-y = data(:,2);
-z = data(:,3);
+data1 = load("/home/christian/Desktop/SimulationTestOutput/dat_amorphous_40GeV_1.5mm.txt") * 6.2415091E9;
+data2 = load("/home/christian/Dropbox/Cern2018Experiment/spectre/energy_39.txt") * 6.2415091E9;
+
+E40 = linspace(0, 40, 40);
+
+[n, x] = hist(data1, E40);
+[nn, xx] = hist(data2, E40); 
 
 figure
 hold on
-plot(x(z == 5), y(z == 5),'x')
-axis equal
-box on
-grid on
+plot(x, n,'-')
+plot(xx, nn,'o')
