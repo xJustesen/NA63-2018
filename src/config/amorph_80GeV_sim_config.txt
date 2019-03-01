@@ -1,0 +1,9 @@
+BeamEnergy 80.0
+CrystalThickness 1.5E+03
+CrystalType amorphous
+OutputFilename /home/christian/Desktop/SimulationTestOutput/sim_amorphous_80GeV_1mm.txt
+IncludeBG 1
+NEvents 10000
+BeamProfile 80GeV_beam_params.txt
+Simulation 0
+runno sim_amorphous_80GeV_1mm

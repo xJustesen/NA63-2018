@@ -1,0 +1,5 @@
+OutputFilename /home/christian/Desktop/SimulationTestOutput/dat_amorphous_40GeV_1.5mm.txt
+InputDatafile /media/christian/Elements/CERN2018NA63/run39_01.root
+BeamProfile 80GeV_beam_params.txt
+runno 39
+Simulation 0
