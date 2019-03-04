@@ -1,9 +1,9 @@
 #include "./lib/analyser.h"
 #include "./lib/simulator.h"
-#include "./lib/auxfunctions.h"
-#include "./lib/preprocessor.h"
-#include "./lib/RunSimulation.h"
-#include "./lib/RunDataAnalysis.h"
+#include "./lib/auxillary_functions.h"
+#include "./lib/pre_processor.h"
+#include "./lib/run_simulation.h"
+#include "./lib/run_data_analysis.h"
 
 int main(int argc, char const *argv[])
 {
@@ -23,19 +23,19 @@ int main(int argc, char const *argv[])
         cerr << "Only legal input for main is a config.txt file and run no.\n";
         return 0;
     }
-    string ConfigFile = argv[1];
+    string config_file = argv[1];
 
     /* Pre-processing */
-    preprocessor *initialize = new preprocessor(ConfigFile);
+    PreProcessor *Initializer = new PreProcessor(config_file);
     vector<vector<double>> energies;
 
     /* Processing */
-    if (initialize->Config.Simulation)
+    if (Initializer->config_.Simulation)
     {
-        RunSimulation *simulation = new RunSimulation(initialize);
-        energies = simulation->get_energies();
+        RunSimulation *Simulator = new RunSimulation(Initializer);
+        energies = Simulator->GetEnergies();
     }
-    else if (!initialize->Config.Simulation)
+    else if (!Initializer->config_.Simulation)
     {
         if (argc < 3)
         {
@@ -49,13 +49,13 @@ int main(int argc, char const *argv[])
         }
         cout << "InputDataFile: " << argv[2] << "\n";
         const char *InputDataFile = argv[2];
-        RunDataAnalysis *analyser = new RunDataAnalysis(initialize, InputDataFile);
-        energies = analyser->get_energies();
+        RunDataAnalysis *Analyser = new RunDataAnalysis(Initializer, InputDataFile);
+        energies = Analyser->GetEnergies();
     }
 
     /* Post-processing */
     cout << "\nAnalysis finished, saving to file\n";
-    print_vector(initialize->Config.OutputFilename, energies);
+    PrintVector(Initializer->config_.OutputFilename, energies);
     cout << "\nCompleted\n";
     return 0;
 }

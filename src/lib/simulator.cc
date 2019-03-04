@@ -3,80 +3,79 @@
 simulator::simulator(int N, vector<double> z, string run, double BeamEnergy, double CrystalThickness, string filename, string s1, int bg)
 {
     /* Simulation paramters */
-    Nevents = N;                            // number of simulated events
-    zplanes = z;                            // z-coordinates of mimosa detectors
-    name = run;                             // suffix for produced data-files
-    beam_spatial_distro = (string)filename; // suffix of file containing beam's spaital distro.
-    assert("amorphous" == name or "aligned" == name or "background" == name or "alignmentrun" == name);
-    E = BeamEnergy;         // energy of beam [GeV]
-    d_c = CrystalThickness; // thickness of crystal target [micrometer]
-    conversions = 0;
-    no_photons = 0;
-    emitted_crystal = 0;
-    bg_include = bg;
-    DATPATH = "/home/christian/Documents/cern2018/simdata"; // path to save results
+    total_events_ = N;                            // number of simulated events
+    detector_z_coordinates_ = z;                            // z-coordinates of mimosa detectors
+    crystal_type_ = run;                             // suffix for produced data-files
+    beam_spatial_distribution_ = (string)filename; // suffix of file containing beam's spaital distro.
+    assert("amorphous" == crystal_type_ or "aligned" == crystal_type_ or "background" == crystal_type_ or "alignmentrun" == crystal_type_);
+    beam_energy_ = BeamEnergy;  // GeV
+    crystal_thicknes_ = CrystalThickness; // micrometer
+    total_photon_conversions_ = 0;
+    photons_on_foil_ = 0;
+    photons_from_crystal_ = 0;
+    include_background_radiation_ = bg;
+    data_path_ = "/home/christian/Documents/cern2018/simdata"; // path to save results
 
-    /* Physics constants */
-    q = -1.6021766208E-19; // charge of electron in Coulomb
-    c = 299792458;         // speed of light in vac. in m/s
-    m = 9.10938356E-31;    // electron/positron mass in kg
+    charge_ = -1.6021766208E-19; // charge of electron in Coulomb
+    c_ = 299792458;         // speed of light in vac. in m/s
+    electron_mass_ = 9.10938356E-31;    // electron/positron mass in kg
+    X0_Si_amorph_ = 9.370E+04;
+    X0_C_gem_ = 12.13E+04;
+    X0_mimosa_ = 9.370E+04;
+    X0_He_ = 5.671E+09;
+    X0_air_ = 3.039E+08;
+    X0_Ta_ = 0.4094E+04;
+    X0_tape_ = 19.63E+04;
+    X0_mylar_ = 28.54E+04;
+    mimosa_resolution_ = 35.0; // spatial resoultion of mimosa detector (micro-m) (smaller = better res.)
 
-    /* Radiation length of different materials. Used to calculate SAMS of particle. Units micro-meter (1e4 micrometer = 1 cm)*/
-    X0_Si_amorph = 9.370E+04;
-    X0_C_gem = 12.13E+04;
-    X0_Mimosa = 9.370E+04;
-    X0_He = 5.671E+09;
-    X0_air = 3.039E+08;
-    X0_Ta = 0.4094E+04;
-    X0_tape = 19.63E+04;
-    X0_Mylar = 28.54E+04;
 
     /* Prepare vectors for photon, particle and mimosa data */
-    particles.resize(Nevents);
-    photons.resize(Nevents);
+    particles_.resize(total_events_);
+    photons_.resize(total_events_);
     mimosas.resize(6);
 
     for (int i = 0; i < 6; i++)
     {
-        mimosas[i].resize(5 * Nevents);
+        mimosas[i].resize(5 * total_events_);
     }
 
     /* Load aligned spectrum */
-    if (name == "aligned")
+    if (crystal_type_ == "aligned")
     {
-        angle_spec = s1;
+        angle_spectrum_ = s1;
 
-        string aligned_crystal_sim = angle_spec; //sum_angles40GeV_full_peak.txt";
-        load_doubles(aligned_crystal_sim, emitted_energies, intensity_sum);
+        string aligned_crystal_sim = angle_spectrum_; //sum_angles40GeV_full_peak.txt";
+        LoadDoubles(aligned_crystal_sim, emitted_energies_, intensity_sum_);
 
         /* Do linear interpolation to obtain better energy resoultion */
-        energies_interp = linspace(100.0 * 0.5109989461E-03, emitted_energies.back(), 100 * intensity_sum.size());
-        linterp(emitted_energies, intensity_sum, energies_interp, intensity_sum_interp);
+        emitted_energies_interp_ = Linspace(100.0 * 0.5109989461E-03, emitted_energies_.back(), 100 * intensity_sum_.size());
+        LinearInterpolation(emitted_energies_, intensity_sum_, emitted_energies_interp_, intensity_sum_interp_);
 
-        for (size_t i = 1; i < intensity_sum_interp.size(); i++)
+        for (size_t i = 1; i < intensity_sum_interp_.size(); i++)
         {
-            intensity_sum_interp[i] /= energies_interp[i];
+            intensity_sum_interp_[i] /= emitted_energies_interp_[i];
         }
 
         /* Calculate integral of energy vs. intensity spectrum. Used to determine photon emission probability */
-        I_integral = trapz(energies_interp, intensity_sum_interp);
+        intensity_integral_ = TrapezoidalIntegrator(emitted_energies_interp_, intensity_sum_interp_);
     }
     else
     {
-        initial_spec = " ";
-        angle_spec = " ";
+        initial_spectrum_ = " ";
+        angle_spectrum_ = " ";
     }
 
     /* Load alignment of detectors and hot pixels */
     alignment_matrix.load("/home/christian/Documents/cern2018/alignment_matrix.txt", arma_ascii);
-    hotpixels.resize(6);
-    load_hotpixels();
+    hot_pixels_.resize(6);
+    LoadHotpixels();
 
     /* Make probability distributions and seed rng for Monte-Carlo methods */
     unsigned seed = chrono::system_clock::now().time_since_epoch().count();
-    R.param(uniform_real_distribution<double>(0.0, 1.0).param());
-    R_normal.param(normal_distribution<double>(0.0, 1.0).param());
-    global_generator.seed(seed);
+    uniform_real_distribution_.param(uniform_real_distribution<double>(0.0, 1.0).param());
+    normal_distribution_.param(normal_distribution<double>(0.0, 1.0).param());
+    global_generator_.seed(seed);
     srand(time(NULL));
 
     /* Report progress and loaded variables to terminal */
@@ -84,26 +83,26 @@ simulator::simulator(int N, vector<double> z, string run, double BeamEnergy, dou
     cout.precision(3);
     cout << "\nFinished initializing simulator class.";
     cout << "\nNumber of events:\t" << N;
-    cout << "\nCrystal thickness: \t" << d_c << " micron ";
-    cout << "\nBeam energy: \t\t" << E << " GeV";
-    if (name == "aligned")
-        cout << "\nEmission % / slice: \t" << I_integral / 300.0;
-    cout << "\nConversion rate: \t" << 200.0 * (7.0) / (9.0 * X0_Ta) * 100 << "%\n";
+    cout << "\nCrystal thickness: \t" << crystal_thicknes_ << " micron ";
+    cout << "\nBeam energy: \t\t" << beam_energy_ << " GeV";
+    if (crystal_type_ == "aligned")
+        cout << "\nEmission % / slice: \t" << intensity_integral_ / 300.0;
+    cout << "\nConversion rate: \t" << 200.0 * (7.0) / (9.0 * X0_Ta_) * 100 << "%\n";
 }
 
-double simulator::trapz(vector<double> x, vector<double> y)
+double simulator::TrapezoidalIntegrator(vector<double> x_coordinate, vector<double> y_coordinate)
 {
-    double I = 0.0;
-    for (size_t i = 1; i < y.size(); i++)
+    double integral = 0.0;
+    for (size_t i = 1; i < y_coordinate.size(); i++)
     {
-        double dx = x[i] - x[i - 1];
-        I += 0.5 * dx * (y[i - 1] + y[i]);
+        double dx = x_coordinate[i] - x_coordinate[i - 1];
+        integral += 0.5 * dx * (y_coordinate[i - 1] + y_coordinate[i]);
     }
 
-    return I;
+    return integral;
 }
 
-int simulator::coord2pixel(double xhit, double yhit)
+int simulator::Coord2Pixel(double x_coordinate, double y_coordinate)
 {
     int nrows = 576;
     int ncols = 1152;
@@ -112,78 +111,78 @@ int simulator::coord2pixel(double xhit, double yhit)
     /* Determine pixelno from coordinates */
     double dx = (xmax - xmin) / ncols;
     double dy = (ymax - ymin) / nrows;
-    int colno = (xhit + xmax) / dx;
-    int rowno = (yhit + ymax) / dy;
+    int colno = (x_coordinate + xmax) / dx;
+    int rowno = (y_coordinate + ymax) / dy;
 
     return rowno * ncols + colno;
 }
 
-void simulator::load_hotpixels(void)
+void simulator::LoadHotpixels(void)
 {
     for (int i = 0; i < 6; i++)
     {
-        string filename = "/home/christian/Documents/cern2018/simdata/hotpixels_run53_plane_" + to_string(i) + ".txt";
-        load_int(filename, hotpixels[i]);
-        sort(hotpixels[i].begin(), hotpixels[i].end());
+        string file_name = "/home/christian/Documents/cern2018/simdata/hotpixels_run53_plane_" + to_string(i) + ".txt";
+        LoadInt(file_name, hot_pixels_[i]);
+        sort(hot_pixels_[i].begin(), hot_pixels_[i].end());
     }
 }
 
-void simulator::load_doubles(string filename, vector<double> &data)
+void simulator::LoadDoubles(string file_name, vector<double> &data)
 {
-    ifstream datafile(filename);
+    ifstream data_file(file_name);
     double val;
-    if (datafile.is_open())
+    if (data_file.is_open())
     {
         while (true)
         {
-            datafile >> val;
-            if (datafile.eof())
+            data_file >> val;
+            if (data_file.eof())
                 break;
             data.push_back(val);
         }
-        datafile.close();
+        data_file.close();
     }
     else
-        cerr << "Unable to open file: " << filename << "\n";
+        cerr << "Unable to open file: " << file_name << "\n";
 }
 
-void simulator::load_doubles(string filename, vector<double> &data0, vector<double> &data1)
+void simulator::LoadDoubles(string file_name, vector<double> &data0, vector<double> &data1)
 {
-    ifstream datafile(filename);
+    ifstream data_file (file_name);
     double val0;
     double val1;
 
-    if (datafile.is_open())
+    if (data_file.is_open())
     {
         while (true)
         {
-            datafile >> val0 >> val1;
+            data_file >> val0 >> val1;
 
-            if (datafile.eof())
+            if (data_file.eof())
                 break;
 
             data0.push_back(val0);
             data1.push_back(val1);
         }
 
-        datafile.close();
+        data_file.close();
     }
     else
-        cerr << "Unable to open file: " << filename << "\n";
+        cerr << "Unable to open file: " << file_name << "\n";
 }
 
-void simulator::load_doubles(string filename, vector<double> &data0, vector<double> &data1, vector<double> &data2, vector<double> &data3)
+void simulator::LoadDoubles(string file_name, vector<double> &data0, vector<double> &data1, vector<double> &data2, vector<double> &data3)
 {
-    ifstream datafile(filename);
+    ifstream data_file(file_name);
     double val0, val1, val2, val3;
 
-    if (datafile.is_open())
+    if (data_file.is_open())
     {
         while (true)
         {
-            datafile >> val0 >> val1 >> val2 >> val3;
+            data_file >> val0 >> val1 >> val2 >> val3;
 
-            if (datafile.eof())
+            if (data_file.eof())
                 break;
 
             data0.push_back(val0);
@@ -192,39 +191,39 @@ void simulator::load_doubles(string filename, vector<double> &data0, vector<doub
             data3.push_back(val3);
         }
 
-        datafile.close();
+        data_file.close();
     }
     else
-        cerr << "Unable to open file: " << filename << "\n";
+        cerr << "Unable to open file: " << file_name << "\n";
 }
 
-void simulator::load_int(string filename, vector<int> &data)
+void simulator::LoadInt(string file_name, vector<int> &data)
 {
-    ifstream datafile(filename);
+    ifstream data_file(file_name);
     int val;
 
-    if (datafile.is_open())
+    if (data_file.is_open())
     {
         while (true)
         {
-            datafile >> val;
+            data_file >> val;
 
-            if (datafile.eof())
+            if (data_file.eof())
                 break;
 
             data.push_back(val);
         }
 
-        datafile.close();
+        data_file.close();
     }
     else
-        cerr << "Unable to open file: " << filename << "\n";
+        cerr << "Unable to open file: " << file_name << "\n";
 }
 
-void simulator::print_hits(void)
+void simulator::PrintHits(void)
 {
-    string filename = DATPATH + "/simulated_hits_coord_data" + name + ".txt";
-    ofstream output(filename);
+    string file_name = data_path_ + "/simulated_hits_coord_data" + crystal_type_ + ".txt";
+    ofstream output(file_name);
 
     for (size_t i = 0; i < mimosas.size(); i++)
     { // planes
@@ -246,291 +245,279 @@ void simulator::print_hits(void)
     } // end planes
 }
 
-void simulator::print_energy(string name)
-{
-    string filename = DATPATH + "/photon_energy_sim" + name + ".txt";
-    ofstream output(filename);
-
-    for (size_t i = 0; i < energies.size(); i++)
-    {
-        output << energies[i] << "\n";
-    }
-}
-
 /* Generate a beam-profile using measured data and store hits in Events */
-void simulator::load_beam_parameters(void)
+void simulator::LoadBeamParameters(void)
 {
     /* Open the text file for reading */
-    string filename1 = "/home/christian/Dropbox/speciale/code/beamParameters/angle_xweight_" + beam_spatial_distro;
-    string filename2 = "/home/christian/Dropbox/speciale/code/beamParameters/angle_yweight_" + beam_spatial_distro;
-    string filename3 = "/home/christian/Dropbox/speciale/code/beamParameters/xweight_" + beam_spatial_distro;
-    string filename4 = "/home/christian/Dropbox/speciale/code/beamParameters/yweight_" + beam_spatial_distro;
-    string filename5 = "/home/christian/Dropbox/speciale/code/beamParameters/angles.txt";
-    string filename6 = "/home/christian/Dropbox/speciale/code/beamParameters/xdat_" + beam_spatial_distro;
-    string filename7 = "/home/christian/Dropbox/speciale/code/beamParameters/ydat_" + beam_spatial_distro;
+    string file_name1 = "/home/christian/Dropbox/speciale/code/beamParameters/angle_xweight_" + beam_spatial_distribution_;
+    string file_name2 = "/home/christian/Dropbox/speciale/code/beamParameters/angle_yweight_" + beam_spatial_distribution_;
+    string file_name3 = "/home/christian/Dropbox/speciale/code/beamParameters/xweight_" + beam_spatial_distribution_;
+    string file_name4 = "/home/christian/Dropbox/speciale/code/beamParameters/yweight_" + beam_spatial_distribution_;
+    string file_name5 = "/home/christian/Dropbox/speciale/code/beamParameters/angles.txt";
+    string file_name6 = "/home/christian/Dropbox/speciale/code/beamParameters/xdat_" + beam_spatial_distribution_;
+    string file_name7 = "/home/christian/Dropbox/speciale/code/beamParameters/ydat_" + beam_spatial_distribution_;
 
-    load_doubles(filename1, xaw);
-    load_doubles(filename2, yaw);
-    load_doubles(filename3, xpw);
-    load_doubles(filename4, ypw);
-    load_doubles(filename5, a);
-    load_doubles(filename6, x);
-    load_doubles(filename7, y);
+    LoadDoubles(file_name1, x_angle_weight_);
+    LoadDoubles(file_name2, y_angle_weight_);
+    LoadDoubles(file_name3, x_coordinate_weight_);
+    LoadDoubles(file_name4, y_coordinate_weight_);
+    LoadDoubles(file_name5, angles_);
+    LoadDoubles(file_name6, x_coordinate_);
+    LoadDoubles(file_name7, y_coordinate_);
 }
 
 /* Propagates particles through the experiment. All radiation lengths are taken from PDG  */
-void simulator::propagate_particles(void)
+void simulator::PropagateParticles(void)
 {
     double start_time = omp_get_wtime();
 
     cout << "\nLoading beam parameters";
-    load_beam_parameters();
+    LoadBeamParameters();
     cout << "\nBeam parameters succesfully loaded\n";
     int total_emitted = 0, total_detected = 0;
 
-    double d_f = 200.0; // thickness of Tantalum foil (micro-meter)
+    double foil_thickness_ = 200.0; // thickness of Tantalum foil (micro-meter)
 
-    double T = 0;
-    int prog = 0;
+    double total_time = 0;
+    int progress = 0;
     cout << "\nSimulating events\n";
 
-    mt19937_64 private_generator = global_generator;
+    mt19937_64 private_generator = global_generator_;
     arma_rng::set_seed_random();
 
 #pragma omp parallel for
-    for (int i = 0; i < Nevents; i++)
+    for (int i = 0; i < total_events_; i++)
     {
         vector<vector<double>> local_photons;
-        int xslope_indx = select_member(xaw);
-        int yslope_indx = select_member(yaw);
-        int xpos_indx = select_member(xpw);
-        int ypos_indx = select_member(ypw);
-        double xslope = a[xslope_indx];
-        double yslope = a[yslope_indx];
-        double xcoord = x[xpos_indx];
-        double ycoord = y[ypos_indx];
-        vector<double> hitdata = {xcoord, ycoord, zplanes[0], 0, q, E, xslope, yslope}; // x, y, z, plane, charge, energy of particle, xslope, yslope
+        int x_slope_index = SelectMember(x_angle_weight_);
+        int y_slope_index = SelectMember(y_angle_weight_);
+        int x_position_index = SelectMember(x_coordinate_weight_);
+        int y_position_index = SelectMember(y_coordinate_weight_);
+        double x_slope = angles_[x_slope_index];
+        double y_slope = angles_[y_slope_index];
+        double x_coordinate = x_coordinate_[x_position_index];
+        double y_coordinate = y_coordinate_[y_position_index];
         vector<vector<double>> local_particles(1);
-        local_particles[0] = hitdata;
+        local_particles[0] = {x_coordinate, y_coordinate, detector_z_coordinates_[0], 0, charge_, beam_energy_, x_slope, y_slope};
 
-        int emitted = 0;
+        int emitted_event = 0;
 
-        if (bg_include)
-            add_photons(i, emitted, X0_Si_amorph, 3.0E+03, private_generator, local_photons, local_particles); // add photons to match measured background spectrum
+        if (include_background_radiation_)
+            AddPhotons(emitted_event, X0_Si_amorph_, 3.0E+03, private_generator, local_photons, local_particles); // add photons to match measured background spectrum
 
         /* MIMOSA 1 detector */
-        if (bg_include)
-            amorph_material(i, emitted, X0_tape, 50.0, 50.0, private_generator, local_photons, local_particles);
+        if (include_background_radiation_)
+            AmorphMaterial(emitted_event, X0_tape_, 50.0, 50.0, private_generator, local_photons, local_particles);
 
-        if (!bg_include)
-            SA_mult_scat(X0_tape, 50.0, private_generator, local_particles);
+        if (!include_background_radiation_)
+            MultipleScattering(X0_tape_, 50.0, private_generator, local_particles);
 
-        if (bg_include)
-            amorph_material(i, emitted, X0_Mimosa, 100.0, 50.0, private_generator, local_photons, local_particles);
-        if (!bg_include)
-            SA_mult_scat(X0_Mimosa, 100.0, private_generator, local_particles);
-        mimosa_detector(0, i, total_detected, private_generator, local_particles);
+        if (include_background_radiation_)
+            AmorphMaterial(emitted_event, X0_mimosa_, 100.0, 50.0, private_generator, local_photons, local_particles);
+        if (!include_background_radiation_)
+            MultipleScattering(X0_mimosa_, 100.0, private_generator, local_particles);
+        MimosaDetector(0, i, total_detected, private_generator, local_particles);
 
         /* Helium between M1 and M2 */
-        if (bg_include)
-            amorph_material(i, emitted, X0_He, zplanes[1] - 50.0, zplanes[1] - 150.0, private_generator, local_photons, local_particles);
-        if (!bg_include)
-            SA_mult_scat(X0_He, zplanes[1] - 50.0, private_generator, local_particles);
+        if (include_background_radiation_)
+            AmorphMaterial(emitted_event, X0_He_, detector_z_coordinates_[1] - 50.0, detector_z_coordinates_[1] - 150.0, private_generator, local_photons, local_particles);
+        if (!include_background_radiation_)
+            MultipleScattering(X0_He_, detector_z_coordinates_[1] - 50.0, private_generator, local_particles);
 
         /* MIMOSA 2 detector */
-        if (bg_include)
-            amorph_material(i, emitted, X0_tape, zplanes[1], 50.0, private_generator, local_photons, local_particles);
-        if (!bg_include)
-            SA_mult_scat(X0_tape, zplanes[1], private_generator, local_particles);
-        if (bg_include)
-            amorph_material(i, emitted, X0_Mimosa, zplanes[1] + 50.0, 50.0, private_generator, local_photons, local_particles);
-        if (!bg_include)
-            SA_mult_scat(X0_Mimosa, zplanes[1] + 50.0, private_generator, local_particles);
-        mimosa_detector(1, i, total_detected, private_generator, local_particles);
+        if (include_background_radiation_)
+            AmorphMaterial(emitted_event, X0_tape_, detector_z_coordinates_[1], 50.0, private_generator, local_photons, local_particles);
+        if (!include_background_radiation_)
+            MultipleScattering(X0_tape_, detector_z_coordinates_[1], private_generator, local_particles);
+        if (include_background_radiation_)
+            AmorphMaterial(emitted_event, X0_mimosa_, detector_z_coordinates_[1] + 50.0, 50.0, private_generator, local_photons, local_particles);
+        if (!include_background_radiation_)
+            MultipleScattering(X0_mimosa_, detector_z_coordinates_[1] + 50.0, private_generator, local_particles);
+        MimosaDetector(1, i, total_detected, private_generator, local_particles);
 
         /* Last mylar window He encasing */
-        if (bg_include)
-            amorph_material(i, emitted, X0_Mylar, zplanes[1] + 100.0, 50.0, private_generator, local_photons, local_particles);
-        if (!bg_include)
-            SA_mult_scat(X0_Mylar, zplanes[1] + 100.0, private_generator, local_particles);
+        if (include_background_radiation_)
+            AmorphMaterial(emitted_event, X0_mylar_, detector_z_coordinates_[1] + 100.0, 50.0, private_generator, local_photons, local_particles);
+        if (!include_background_radiation_)
+            MultipleScattering(X0_mylar_, detector_z_coordinates_[1] + 100.0, private_generator, local_particles);
 
         /* Air */
-        if (bg_include)
-            amorph_material(i, emitted, X0_air, 2060E+03, 2060E+03 - (zplanes[1] + 100.0), private_generator, local_photons, local_particles);
-        if (!bg_include)
-            SA_mult_scat(X0_air, 2060E+03, private_generator, local_particles);
+        if (include_background_radiation_)
+            AmorphMaterial(emitted_event, X0_air_, 2060E+03, 2060E+03 - (detector_z_coordinates_[1] + 100.0), private_generator, local_photons, local_particles);
+        if (!include_background_radiation_)
+            MultipleScattering(X0_air_, 2060E+03, private_generator, local_particles);
 
         /* Traverse crystal */
-        if ("amorphous" == name)
+        if ("amorphous" == crystal_type_)
         { // if amorphous
-            amorph_material(i, emitted, X0_C_gem, 2060E+03 + d_c, d_c, private_generator, local_photons, local_particles, 300);
+            AmorphMaterial(emitted_event, X0_C_gem_, 2060E+03 + crystal_thicknes_, crystal_thicknes_, private_generator, local_photons, local_particles, 300);
         }
-        else if ("aligned" == name)
+        else if ("aligned" == crystal_type_)
         { // if aligned
 
-            aligned_crystal(emitted, 300, private_generator, local_photons, local_particles);
+            AlignedCrystal(emitted_event, 300, private_generator, local_photons, local_particles);
         }
 
         /* Air */
-        if (bg_include)
-            amorph_material(i, emitted, X0_air, 2310E+03, 2310E+03 - (2060E+03 + d_c), private_generator, local_photons, local_particles);
-        if (!bg_include)
-            SA_mult_scat(X0_air, 2310.0E+03, private_generator, local_particles);
+        if (include_background_radiation_)
+            AmorphMaterial(emitted_event, X0_air_, 2310E+03, 2310E+03 - (2060E+03 + crystal_thicknes_), private_generator, local_photons, local_particles);
+        if (!include_background_radiation_)
+            MultipleScattering(X0_air_, 2310.0E+03, private_generator, local_particles);
 
         /* Traverse Scintilators */
-        if (bg_include)
-            amorph_material(i, emitted, X0_Si_amorph, 2310E+03 + 1.0E+03, 1.0E+03, private_generator, local_photons, local_particles, 300);
-        if (!bg_include)
-            SA_mult_scat(X0_Si_amorph, 2310E+03 + 1.0E+03, private_generator, local_particles);
+        if (include_background_radiation_)
+            AmorphMaterial(emitted_event, X0_Si_amorph_, 2310E+03 + 1.0E+03, 1.0E+03, private_generator, local_photons, local_particles, 300);
+        if (!include_background_radiation_)
+            MultipleScattering(X0_Si_amorph_, 2310E+03 + 1.0E+03, private_generator, local_particles);
 
         /* Air between S2 and vacuum tube */
-        if (bg_include)
-            amorph_material(i, emitted, X0_air, 2310E+03 + 1.0E+03 + 0.5E+06, 0.5E+06, private_generator, local_photons, local_particles);
-        if (!bg_include)
-            SA_mult_scat(X0_air, 2310E+03 + 1.0E+03 + 0.5E+06, private_generator, local_particles);
+        if (include_background_radiation_)
+            AmorphMaterial(emitted_event, X0_air_, 2310E+03 + 1.0E+03 + 0.5E+06, 0.5E+06, private_generator, local_photons, local_particles);
+        if (!include_background_radiation_)
+            MultipleScattering(X0_air_, 2310E+03 + 1.0E+03 + 0.5E+06, private_generator, local_particles);
 
         /* 1st vacuum tube window */
-        if (bg_include)
-            amorph_material(i, emitted, X0_Mylar, 2310E+03 + 1.0E+03 + 0.5E+06 + 120.0, 120.0, private_generator, local_photons, local_particles);
-        if (!bg_include)
-            SA_mult_scat(X0_Mylar, 2310E+03 + 1.0E+03 + 0.5E+06 + 120.0, private_generator, local_particles);
-        if (bg_include)
-            amorph_material(i, emitted, X0_tape, 2310E+03 + 1.0E+03 + 0.5E+06 + 120.0 + 100.0, 100.0, private_generator, local_photons, local_particles);
-        if (!bg_include)
-            SA_mult_scat(X0_tape, 2310E+03 + 1.0E+03 + 0.5E+06 + 120.0 + 100.0, private_generator, local_particles);
+        if (include_background_radiation_)
+            AmorphMaterial(emitted_event, X0_mylar_, 2310E+03 + 1.0E+03 + 0.5E+06 + 120.0, 120.0, private_generator, local_photons, local_particles);
+        if (!include_background_radiation_)
+            MultipleScattering(X0_mylar_, 2310E+03 + 1.0E+03 + 0.5E+06 + 120.0, private_generator, local_particles);
+        if (include_background_radiation_)
+            AmorphMaterial(emitted_event, X0_tape_, 2310E+03 + 1.0E+03 + 0.5E+06 + 120.0 + 100.0, 100.0, private_generator, local_photons, local_particles);
+        if (!include_background_radiation_)
+            MultipleScattering(X0_tape_, 2310E+03 + 1.0E+03 + 0.5E+06 + 120.0 + 100.0, private_generator, local_particles);
 
         /* If not alignment run */
-        if ("alignmentrun" != name)
+        if ("alignmentrun" != crystal_type_)
         {
-            MBPL_magnet(local_particles);
+            MbplMagnet(local_particles);
         }
         else
         {
             /* Air intead of vacuum? */
-            if (bg_include)
-                amorph_material(i, emitted, X0_air * 1e14, 2.8112e+006 + 5.14e+006, 5.14e+006, private_generator, local_photons, local_particles);
-            if (!bg_include)
-                SA_mult_scat(X0_air * 1e14, 2.8112e+006 + 5.14e+006, private_generator, local_particles);
+            if (include_background_radiation_)
+                AmorphMaterial(emitted_event, X0_air_ * 1e14, 2.8112e+006 + 5.14e+006, 5.14e+006, private_generator, local_photons, local_particles);
+            if (!include_background_radiation_)
+                MultipleScattering(X0_air_ * 1e14, 2.8112e+006 + 5.14e+006, private_generator, local_particles);
 
             /* 2nd vacuum tube window */
-            if (bg_include)
-                amorph_material(i, emitted, X0_Mylar, 2.8112e+006 + 5.14e+006 + 120.0, 120.0, private_generator, local_photons, local_particles);
-            if (!bg_include)
-                SA_mult_scat(X0_Mylar, 2.8112e+006 + 5.14e+006 + 120.0, private_generator, local_particles);
-            if (bg_include)
-                amorph_material(i, emitted, X0_tape, 2.8112e+006 + 5.14e+006 + 120.0 + 100.0, 100.0, private_generator, local_photons, local_particles);
-            if (!bg_include)
-                SA_mult_scat(X0_tape, 2.8112e+006 + 5.14e+006 + 120.0 + 100.0, private_generator, local_particles);
+            if (include_background_radiation_)
+                AmorphMaterial(emitted_event, X0_mylar_, 2.8112e+006 + 5.14e+006 + 120.0, 120.0, private_generator, local_photons, local_particles);
+            if (!include_background_radiation_)
+                MultipleScattering(X0_mylar_, 2.8112e+006 + 5.14e+006 + 120.0, private_generator, local_particles);
+            if (include_background_radiation_)
+                AmorphMaterial(emitted_event, X0_tape_, 2.8112e+006 + 5.14e+006 + 120.0 + 100.0, 100.0, private_generator, local_photons, local_particles);
+            if (!include_background_radiation_)
+                MultipleScattering(X0_tape_, 2.8112e+006 + 5.14e+006 + 120.0 + 100.0, private_generator, local_particles);
 
             /* Air between vacuum tube and M3 */
-            if (bg_include)
-                amorph_material(i, emitted, X0_air, zplanes[2] - d_f, zplanes[2] - d_f - (2.8112e+006 + 5.14e+006 + 120.0 + 100.0), private_generator, local_photons, local_particles);
-            if (!bg_include)
-                SA_mult_scat(X0_air, zplanes[2] - d_f, private_generator, local_particles);
+            if (include_background_radiation_)
+                AmorphMaterial(emitted_event, X0_air_, detector_z_coordinates_[2] - foil_thickness_, detector_z_coordinates_[2] - foil_thickness_ - (2.8112e+006 + 5.14e+006 + 120.0 + 100.0), private_generator, local_photons, local_particles);
+            if (!include_background_radiation_)
+                MultipleScattering(X0_air_, detector_z_coordinates_[2] - foil_thickness_, private_generator, local_particles);
         }
 
         /* Traverse converter foil */
-        project_photons(local_photons, zplanes[2] - d_f, emitted);
-        converter_foil(i, d_f, X0_Ta, private_generator, 300, local_photons, local_particles, emitted);
-        SA_mult_scat(X0_Ta, zplanes[2], private_generator, local_particles);
+        ProjectPhotons(local_photons, detector_z_coordinates_[2] - foil_thickness_);
+        ConverterFoil(X0_Ta_, private_generator, 300, local_photons, local_particles);
+        MultipleScattering(X0_Ta_, detector_z_coordinates_[2], private_generator, local_particles);
 
         /* MIMOSA 3 detector */
-        if (bg_include)
-            amorph_material(i, emitted, X0_tape, zplanes[2] + 50.0, 50.0, private_generator, local_photons, local_particles);
-        if (!bg_include)
-            SA_mult_scat(X0_tape, zplanes[2] + 50.0, private_generator, local_particles);
-        if (bg_include)
-            amorph_material(i, emitted, X0_Mimosa, zplanes[2] + 100.0, 50.0, private_generator, local_photons, local_particles);
-        if (!bg_include)
-            SA_mult_scat(X0_Mimosa, zplanes[2] + 100.0, private_generator, local_particles);
-        mimosa_detector(2, i, total_detected, private_generator, local_particles);
+        if (include_background_radiation_)
+            AmorphMaterial(emitted_event, X0_tape_, detector_z_coordinates_[2] + 50.0, 50.0, private_generator, local_photons, local_particles);
+        if (!include_background_radiation_)
+            MultipleScattering(X0_tape_, detector_z_coordinates_[2] + 50.0, private_generator, local_particles);
+        if (include_background_radiation_)
+            AmorphMaterial(emitted_event, X0_mimosa_, detector_z_coordinates_[2] + 100.0, 50.0, private_generator, local_photons, local_particles);
+        if (!include_background_radiation_)
+            MultipleScattering(X0_mimosa_, detector_z_coordinates_[2] + 100.0, private_generator, local_particles);
+        MimosaDetector(2, i, total_detected, private_generator, local_particles);
 
         /* Air between M3 and M4 */
-        if (bg_include)
-            amorph_material(i, emitted, X0_air, zplanes[3], zplanes[3] - zplanes[2] - 100.0, private_generator, local_photons, local_particles);
-        if (!bg_include)
-            SA_mult_scat(X0_air, zplanes[3], private_generator, local_particles);
+        if (include_background_radiation_)
+            AmorphMaterial(emitted_event, X0_air_, detector_z_coordinates_[3], detector_z_coordinates_[3] - detector_z_coordinates_[2] - 100.0, private_generator, local_photons, local_particles);
+        if (!include_background_radiation_)
+            MultipleScattering(X0_air_, detector_z_coordinates_[3], private_generator, local_particles);
 
         /* MIMOSA 4 detector */
-        if (bg_include)
-            amorph_material(i, emitted, X0_tape, zplanes[3] + 50.0, 50.0, private_generator, local_photons, local_particles);
-        if (!bg_include)
-            SA_mult_scat(X0_tape, zplanes[3] + 50.0, private_generator, local_particles);
-        if (bg_include)
-            amorph_material(i, emitted, X0_Mimosa, zplanes[3] + 100.0, 50.0, private_generator, local_photons, local_particles);
-        if (!bg_include)
-            SA_mult_scat(X0_Mimosa, zplanes[3] + 100.0, private_generator, local_particles);
-        mimosa_detector(3, i, total_detected, private_generator, local_particles);
+        if (include_background_radiation_)
+            AmorphMaterial(emitted_event, X0_tape_, detector_z_coordinates_[3] + 50.0, 50.0, private_generator, local_photons, local_particles);
+        if (!include_background_radiation_)
+            MultipleScattering(X0_tape_, detector_z_coordinates_[3] + 50.0, private_generator, local_particles);
+        if (include_background_radiation_)
+            AmorphMaterial(emitted_event, X0_mimosa_, detector_z_coordinates_[3] + 100.0, 50.0, private_generator, local_photons, local_particles);
+        if (!include_background_radiation_)
+            MultipleScattering(X0_mimosa_, detector_z_coordinates_[3] + 100.0, private_generator, local_particles);
+        MimosaDetector(3, i, total_detected, private_generator, local_particles);
 
         /* If not alignment run */
-        if ("alignmentrun" != name)
+        if ("alignmentrun" != beam_spatial_distribution_)
         {
             /* Air between M4 and middle of MIMOSA magnet */
-            if (bg_include)
-                amorph_material(i, emitted, X0_air, (zplanes[4] + zplanes[3]) / 2.0, (zplanes[4] - zplanes[3] - 100.0) / 2.0, private_generator, local_photons, local_particles);
-            if (!bg_include)
-                SA_mult_scat(X0_air, (zplanes[4] + zplanes[3]) / 2.0, private_generator, local_particles);
+            if (include_background_radiation_)
+                AmorphMaterial(emitted_event, X0_air_, (detector_z_coordinates_[4] + detector_z_coordinates_[3]) / 2.0, (detector_z_coordinates_[4] - detector_z_coordinates_[3] - 100.0) / 2.0, private_generator, local_photons, local_particles);
+            if (!include_background_radiation_)
+                MultipleScattering(X0_air_, (detector_z_coordinates_[4] + detector_z_coordinates_[3]) / 2.0, private_generator, local_particles);
 
             /* MIMOSA magnet */
-            mimosa_magnet(local_particles);
+            MimosaMagnet(local_particles);
 
             /* Air between middle of MIMOSA magnet and M5 */
-            if (bg_include)
-                amorph_material(i, emitted, X0_air, zplanes[4], (zplanes[4] - zplanes[3]) / 2.0, private_generator, local_photons, local_particles);
-            if (!bg_include)
-                SA_mult_scat(X0_air, zplanes[4], private_generator, local_particles);
+            if (include_background_radiation_)
+                AmorphMaterial(emitted_event, X0_air_, detector_z_coordinates_[4], (detector_z_coordinates_[4] - detector_z_coordinates_[3]) / 2.0, private_generator, local_photons, local_particles);
+            if (!include_background_radiation_)
+                MultipleScattering(X0_air_, detector_z_coordinates_[4], private_generator, local_particles);
         }
         else
         {
-            if (bg_include)
-                amorph_material(i, emitted, X0_air, zplanes[4], zplanes[4] - zplanes[3] - 100.0, private_generator, local_photons, local_particles);
-            if (!bg_include)
-                SA_mult_scat(X0_air, zplanes[4], private_generator, local_particles);
+            if (include_background_radiation_)
+                AmorphMaterial(emitted_event, X0_air_, detector_z_coordinates_[4], detector_z_coordinates_[4] - detector_z_coordinates_[3] - 100.0, private_generator, local_photons, local_particles);
+            if (!include_background_radiation_)
+                MultipleScattering(X0_air_, detector_z_coordinates_[4], private_generator, local_particles);
         }
 
         /* MIMOSA 5 detector */
-        if (bg_include)
-            amorph_material(i, emitted, X0_tape, zplanes[4] + 50.0, 50.0, private_generator, local_photons, local_particles);
-        if (!bg_include)
-            SA_mult_scat(X0_tape, zplanes[4] + 50.0, private_generator, local_particles);
-        if (bg_include)
-            amorph_material(i, emitted, X0_Mimosa, zplanes[4] + 100.0, 50.0, private_generator, local_photons, local_particles);
-        if (!bg_include)
-            SA_mult_scat(X0_Mimosa, zplanes[4] + 100.0, private_generator, local_particles);
-        mimosa_detector(4, i, total_detected, private_generator, local_particles);
+        if (include_background_radiation_)
+            AmorphMaterial(emitted_event, X0_tape_, detector_z_coordinates_[4] + 50.0, 50.0, private_generator, local_photons, local_particles);
+        if (!include_background_radiation_)
+            MultipleScattering(X0_tape_, detector_z_coordinates_[4] + 50.0, private_generator, local_particles);
+        if (include_background_radiation_)
+            AmorphMaterial(emitted_event, X0_mimosa_, detector_z_coordinates_[4] + 100.0, 50.0, private_generator, local_photons, local_particles);
+        if (!include_background_radiation_)
+            MultipleScattering(X0_mimosa_, detector_z_coordinates_[4] + 100.0, private_generator, local_particles);
+        MimosaDetector(4, i, total_detected, private_generator, local_particles);
 
         /* Air between MIMOSA 5 and MIMOSA 6 detectors */
-        if (bg_include)
-            amorph_material(i, emitted, X0_air, zplanes[5], zplanes[5] - zplanes[4] - 100.0, private_generator, local_photons, local_particles);
-        if (!bg_include)
-            SA_mult_scat(X0_air, zplanes[5], private_generator, local_particles);
+        if (include_background_radiation_)
+            AmorphMaterial(emitted_event, X0_air_, detector_z_coordinates_[5], detector_z_coordinates_[5] - detector_z_coordinates_[4] - 100.0, private_generator, local_photons, local_particles);
+        if (!include_background_radiation_)
+            MultipleScattering(X0_air_, detector_z_coordinates_[5], private_generator, local_particles);
 
         /* MIMOSA 6 detector */
-        if (bg_include)
-            amorph_material(i, emitted, X0_tape, zplanes[5] + 50.0, 50.0, private_generator, local_photons, local_particles);
-        if (!bg_include)
-            SA_mult_scat(X0_tape, zplanes[5] + 50.0, private_generator, local_particles);
-        if (bg_include)
-            amorph_material(i, emitted, X0_Mimosa, zplanes[5] + 100.0, 50.0, private_generator, local_photons, local_particles);
-        if (!bg_include)
-            SA_mult_scat(X0_Mimosa, zplanes[5] + 100.0, private_generator, local_particles);
-        mimosa_detector(5, i, total_detected, private_generator, local_particles);
+        if (include_background_radiation_)
+            AmorphMaterial(emitted_event, X0_tape_, detector_z_coordinates_[5] + 50.0, 50.0, private_generator, local_photons, local_particles);
+        if (!include_background_radiation_)
+            MultipleScattering(X0_tape_, detector_z_coordinates_[5] + 50.0, private_generator, local_particles);
+        if (include_background_radiation_)
+            AmorphMaterial(emitted_event, X0_mimosa_, detector_z_coordinates_[5] + 100.0, 50.0, private_generator, local_photons, local_particles);
+        if (!include_background_radiation_)
+            MultipleScattering(X0_mimosa_, detector_z_coordinates_[5] + 100.0, private_generator, local_particles);
+        MimosaDetector(5, i, total_detected, private_generator, local_particles);
 
 #pragma omp critical
         {
-            total_emitted += emitted;
-            prog++;
-            photons[prog] = local_photons;
-            particles[prog] = local_particles;
+            total_emitted += emitted_event;
+            progress++;
+            photons_[progress] = local_photons;
+            particles_[progress] = local_particles;
         }
 
         /* Report progress in terminal */
-        if ((prog + 1) % (Nevents / 10 + 1) == 0)
+        if ((progress + 1) % (total_events_ / 10 + 1) == 0)
         {
             double dt = omp_get_wtime() - start_time;
-            T += dt;
-            cout << "Progress :\t" << floor(100 * double(prog) / (double)Nevents) << "%"
-                 << "\ttime used :\t" << dt << "\ttotal time elapsed :\t" << T << "\ttime remaining :\t" << dt * (double)Nevents / (Nevents / 10 + 1) - T << "\n";
+            total_time += dt;
+            cout << "Progress :\t" << floor(100 * double(progress) / (double)total_events_) << "%"
+                 << "\ttime used :\t" << dt << "\ttotal time elapsed :\t" << total_time << "\ttime remaining :\t" << dt * (double)total_events_ / (total_events_ / 10 + 1) - total_time << "\n";
             start_time = omp_get_wtime();
         }
     }
@@ -538,185 +525,185 @@ void simulator::propagate_particles(void)
     /* Report results to terminal */
     cout << "\n Finished constructing tracks\n";
     cout << "\nTotal photons emitted: " << total_emitted << "\n";
-    cout << "Total photons emitted by crystal: " << emitted_crystal << "\n";
-    cout << "Signal-to-Noise Ratio (SNR): " << double(emitted_crystal) / double(total_emitted - emitted_crystal) << "\n";
-    cout << "Total photons incident on foil: " << no_photons << "\n";
-    cout << "Total conversions: " << conversions << "\n";
+    cout << "Total photons emitted by crystal: " << photons_from_crystal_ << "\n";
+    cout << "Signal-to-Noise Ratio (SNR): " << double(photons_from_crystal_) / double(total_emitted - photons_from_crystal_) << "\n";
+    cout << "Total photons incident on foil: " << photons_on_foil_ << "\n";
+    cout << "Total total_photon_conversions_: " << total_photon_conversions_ << "\n";
 }
 
 /* Simulate a particle travelling through an amorphous crystal. */
-void simulator::add_photons(int eventno, int &emitted, double X0, double d, mt19937_64 generator, vector<vector<double>> &local_photons, vector<vector<double>> local_particles)
+void simulator::AddPhotons(int &emitted_event, double X0, double d, mt19937_64 generator, vector<vector<double>> &local_photons, vector<vector<double>> local_particles)
 {
-    double Emin = 2 * 0.5109989461E-03; // 2 * electron mass in GeV
+    double minimum_energy = 2 * 0.5109989461E-03; // 2 * electron mass in GeV
 
-    for (size_t hitno = 0; hitno < local_particles.size(); hitno++)
+    for (size_t i = 0; i < local_particles.size(); i++)
     {
-        double Epart = local_particles[hitno][5];
+        double particle_energy = local_particles[i][5];
 
-        if (Epart < Emin)
+        if (particle_energy < minimum_energy)
             break;
 
         /* Determine if photon is emitted */
-        double randno = (double)rand() / RAND_MAX;
-        double P = d / X0 * ((4.0 / 3.0) * log(E / Emin) - (4.0 / 3.0) * (E - Emin) / E + (3.0 / 4.0) * (1.0 - Emin * Emin / (2.0 * E * E))); // BH-cross section * crystal length
+        double random_number = (double)rand() / RAND_MAX;
+        double emission_probability = d / X0 * ((4.0 / 3.0) * log(beam_energy_ / minimum_energy) - (4.0 / 3.0) * (beam_energy_ - minimum_energy) / beam_energy_ + (3.0 / 4.0) * (1.0 - minimum_energy * minimum_energy / (2.0 * beam_energy_ * beam_energy_))); // BH-cross section * crystal length
 
-        if (randno < P)
+        if (random_number < emission_probability)
         {
             /* Determine photon energy */
-            double randno2 = (double)rand() / RAND_MAX;
-            Epart = local_particles[hitno][5];
-            double norm = 4.0 / 3.0 * log(Epart / Emin) - 4.0 / (3.0 * Epart) * (Epart - Emin) + 1.0 / (2.0 * Epart * Epart) * (Epart * Epart - Emin * Emin);
-            function<double(vec)> energy = [randno2, Epart, norm](vec x) {
-                return photonic_energy_distribution(x, randno2, Epart, norm);
-            }; // make lambda-function in order to use same randno during iteration
-            vec sc1 = {0.1};
-            vec sc2 = {20.0};
-            vector<vec> initial_simplex = {sc1, sc2};                         // initial simplex for Nelder-Mead. The initial guess is hugely important for convergence
-            vec photon_energy = simplex_NM(energy, initial_simplex, 1.0E-08); // solve for energy using Nelder-Mead simplex.
+            double random_number_2 = (double)rand() / RAND_MAX;
+            particle_energy = local_particles[i][5];
+            double norm = 4.0 / 3.0 * log(particle_energy / minimum_energy) - 4.0 / (3.0 * particle_energy) * (particle_energy - minimum_energy) + 1.0 / (2.0 * particle_energy * particle_energy) * (particle_energy * particle_energy - minimum_energy * minimum_energy);
+            function<double(vec)> energy = [random_number_2, particle_energy, norm](vec x) {
+                return PhotonicEnergyDistribution(x, random_number_2, particle_energy, norm);
+            }; // make lambda-function in order to use same random_number during iteration
+            vec simplex_corner_1 = {0.1};
+            vec simplex_corner_2 = {20.0};
+            vector<vec> initial_simplex = {simplex_corner_1, simplex_corner_2};                         // initial simplex for Nelder-Mead. The initial guess is hugely important for convergence
+            vec photon_energy = SimplexNelderMead(energy, initial_simplex, 1.0E-08); // solve for energy using Nelder-Mead simplex.
 
             /* Determine direction of photon */
-            double gamma = local_particles[hitno][5] / (5.109989461E-4);
-            uniform_real_distribution<double> defl_angle(-1.0 / gamma, 1.0 / gamma);
+            double gamma = local_particles[i][5] / (5.109989461E-4);
+            uniform_real_distribution<double> deflection_angle(-1.0 / gamma, 1.0 / gamma);
 
             /* Update particles and photons vectors */
-            vector<double> photon = local_particles[hitno];
+            vector<double> photon = local_particles[i];
             photon[4] = 0.0; // charge
             photon[5] = photon_energy(0);
-            double dx = defl_angle(generator);
+            double dx = deflection_angle(generator);
             double dy = sqrt(1.0 / (gamma * gamma) - dx * dx);
             photon[6] += dx;
             photon[7] += dy;
             local_photons.push_back(photon);
 
-            emitted++;
+            emitted_event++;
         }
     }
 }
 
-void simulator::amorph_material(int eventno, int &emitted, double X0, double z, double L, mt19937_64 generator, vector<vector<double>> &local_photons, vector<vector<double>> &local_particles, int N_slices)
+void simulator::AmorphMaterial(int &emitted_event, double X0, double z, double length, mt19937_64 generator, vector<vector<double>> &local_photons, vector<vector<double>> &local_particles, int slices)
 {
-    double Emin = 2.0 * 0.5109989461E-03;
-    double dl = L / (double)N_slices;
+    double minimum_energy = 2.0 * 0.5109989461E-03;
+    double slice_length = length / (double)slices;
 
-    for (size_t hitno = 0; hitno < local_particles.size(); hitno++)
+    for (size_t i = 0; i < local_particles.size(); i++)
     {
-        for (int i = 0; i < N_slices; i++)
+        for (int j = 0; j < slices; j++)
         {
-            double Epart = local_particles[hitno][5];
+            double particle_energy = local_particles[i][5];
 
             /* Multiple scattering in C crystal slice. Calculate x/y displacement and deflection independently */
             for (int k = 0; k < 2; k++)
             {
                 double z1 = randn();
                 double z2 = randn();
-                double theta0 = 0.0136 / Epart * sqrt(dl / X0) * (1.0 + 0.038 * log(dl / X0));
-                double dy = dl * theta0 * (z1 / sqrt(12) + z2 / 2.0);
+                double theta0 = 0.0136 / particle_energy * sqrt(slice_length / X0) * (1.0 + 0.038 * log(slice_length / X0));
+                double dy = slice_length * theta0 * (z1 / sqrt(12) + z2 / 2.0);
                 double dtheta0 = z2 * theta0;
-                local_particles[hitno][k] += dy + dl * local_particles[hitno][6 + k]; // total (x/y) displacement
-                local_particles[hitno][6 + k] += dtheta0;                             // xslope/yslope
+                local_particles[i][k] += dy + slice_length * local_particles[i][6 + k]; // total (x/y) displacement
+                local_particles[i][6 + k] += dtheta0;                             // x_slope/y_slope
             }
 
-            local_particles[hitno][2] += dl;
+            local_particles[i][2] += slice_length;
 
             /* Proceed only if photon is emitted */
-            double randno = (double)rand() / RAND_MAX;                                                                                                           // random double between 0, 1
-            bool emission = randno < dl / X0 * ((4.0 / 3.0) * log(E / Emin) - (4.0 / 3.0) * (E - Emin) / E + (3.0 / 4.0) * (1.0 - Emin * Emin / (2.0 * E * E))); // BH-cross section * crystal length
+            double random_number = (double)rand() / RAND_MAX;                                                                                                           // random double between 0, 1
+            bool emission = random_number < slice_length / X0 * ((4.0 / 3.0) * log(beam_energy_ / minimum_energy) - (4.0 / 3.0) * (beam_energy_ - minimum_energy) / beam_energy_ + (3.0 / 4.0) * (1.0 - minimum_energy * minimum_energy / (2.0 * beam_energy_ * beam_energy_))); // BH-cross section * crystal length
 
-            if (emission and Epart > Emin)
+            if (emission and particle_energy > minimum_energy)
             {
-                if (X0 == X0_C_gem)
+                if (X0 == X0_C_gem_)
                 {
 #pragma omp atomic
-                    emitted_crystal++;
+                    photons_from_crystal_++;
                 }
 
                 /* Determine photon energy */
-                double randno2 = (double)rand() / RAND_MAX;
-                double norm = 4.0 / 3.0 * log(Epart / Emin) - 4.0 / (3.0 * Epart) * (Epart - Emin) + 1.0 / (2.0 * Epart * Epart) * (Epart * Epart - Emin * Emin);
-                vec sc1 = {0.001}, sc2 = {40.0};
-                vector<vec> initial_simplex = {sc1, sc2};
-                vec photon_energy = simplex_NM([randno2, Epart, norm, Emin](vec x) {
-                    return x(0) > 0 ? abs((4.0 / 3.0 * log(x(0) / Emin) - 4.0 / 3.0 * (x(0) - Emin) / Epart + 1.0 / (2.0 * Epart * Epart) * (x(0) * x(0) - Emin * Emin)) - randno2 * norm) : 1E+17;
+                double random_number_2 = (double)rand() / RAND_MAX;
+                double norm = 4.0 / 3.0 * log(particle_energy / minimum_energy) - 4.0 / (3.0 * particle_energy) * (particle_energy - minimum_energy) + 1.0 / (2.0 * particle_energy * particle_energy) * (particle_energy * particle_energy - minimum_energy * minimum_energy);
+                vec simplex_corner_1 = {0.001}, simplex_corner_2 = {40.0};
+                vector<vec> initial_simplex = {simplex_corner_1, simplex_corner_2};
+                vec photon_energy = SimplexNelderMead([random_number_2, particle_energy, norm, minimum_energy](vec x) {
+                    return x(0) > 0 ? abs((4.0 / 3.0 * log(x(0) / minimum_energy) - 4.0 / 3.0 * (x(0) - minimum_energy) / particle_energy + 1.0 / (2.0 * particle_energy * particle_energy) * (x(0) * x(0) - minimum_energy * minimum_energy)) - random_number_2 * norm) : 1E+17;
                 },
                                                initial_simplex, 1.0E-08);
 
                 /* Determine direction of photon */
-                double gamma = local_particles[hitno][5] / (5.109989461E-4);
-                uniform_real_distribution<double> defl_angle(-1.0 / gamma, 1.0 / gamma);
-                double dx = defl_angle(generator);
-                double dy = sqrt(1.0 / (gamma * gamma) - dx * dx);
+                double gamma = local_particles[i][5] / (5.109989461E-4);
+                uniform_real_distribution<double> deflection_angle(-1.0 / gamma, 1.0 / gamma);
+                double x_deflection_angle = deflection_angle(generator);
+                double y_deflection_angle = sqrt(1.0 / (gamma * gamma) - x_deflection_angle * x_deflection_angle);
 
                 /* Update particles and photons vectors */
-                vector<double> photon = local_particles[hitno];
+                vector<double> photon = local_particles[i];
                 photon[4] = 0.0; // charge
                 photon[5] = photon_energy(0);
-                photon[6] += dx;
-                photon[7] += dy;
+                photon[6] += x_deflection_angle;
+                photon[7] += y_deflection_angle;
 
-                local_particles[hitno][5] -= photon_energy(0);
+                local_particles[i][5] -= photon_energy(0);
                 local_photons.push_back(photon);
 
 #pragma omp atomic
-                emitted++;
+                emitted_event++;
             }
         } // slices end
     }     // events end
 }
 
-void simulator::converter_foil(int eventno, double d_f, double X0, mt19937_64 generator, int no_slices, vector<vector<double>> &local_photons, vector<vector<double>> &local_particles, int emitted)
+void simulator::ConverterFoil(double X0, mt19937_64 generator, int slices, vector<vector<double>> &local_photons, vector<vector<double>> &local_particles)
 {
-    // double Emin = 2*0.5109989461E-03; // 2 * electron mass in GeV
-    double dl = d_f / (double)no_slices;
+    // double minimum_energy = 2*0.5109989461E-03; // 2 * electron mass in GeV
+    double slice_thickness = foil_thickness_ / (double)slices;
     uniform_real_distribution<double> rotation(0.0, 2.0 * M_PI);
-    double P = dl * (7.0) / (9.0 * X0);
+    double conversion_probability = slice_thickness * (7.0) / (9.0 * X0);
 
     for (size_t i = 0; i < local_photons.size(); i++)
     {
 #pragma omp atomic
-        no_photons += 1;
+        photons_on_foil_ += 1;
 
-        for (int j = 0; j < no_slices; j++)
+        for (int j = 0; j < slices; j++)
         {
             /* Proceed only if a conversion happens */
-            double randno = (double)rand() / RAND_MAX;
+            double random_number = (double)rand() / RAND_MAX;
 
-            if (randno < P)
+            if (random_number < conversion_probability)
             {
                 /* Calculate energy gained by e+/e- pair */
                 double photon_energy = local_photons[i][5];
-                double electron_energy = (double)rand() / RAND_MAX; // random number for the inverse transform sampling in "electronic_energy_distribution"
+                double electron_energy = (double)rand() / RAND_MAX; // random number for the inverse transform sampling in "ElectronicEnergyDistribution"
 
-                electronic_energy_distribution(electron_energy); // the fractional electron energy, ie E_e-/ E_photon
+                ElectronicEnergyDistribution(electron_energy); // the fractional electron energy, ie E_e-/ E_photon
                 electron_energy *= photon_energy;
                 double positron_energy = photon_energy - electron_energy; // energy conservation
 
                 /* Calculate deflection of e+/e- pair */
                 double electron_defl;
                 double positron_defl;
-                Borsellino(electron_energy, positron_energy, photon_energy, electron_defl, positron_defl, generator); // deflection angle based on approximated Borsellino distribution
+                BorsellinoOpeningAngle(electron_energy, positron_energy, photon_energy, electron_defl, positron_defl); // deflection angle based on approximated Borsellino distribution
 
-                double r1 = rotation(generator);
+                double emission_angle = rotation(generator);
 
                 /* Add e+/e- pair to "particles" array */
                 vector<double> electron = local_photons[i];
-                electron[2] += dl * (j + 1);
-                electron[4] = (-1.0) * q;
+                electron[2] += slice_thickness * (j + 1);
+                electron[4] = (-1.0) * charge_;
                 electron[5] = electron_energy;
-                electron[6] += cos(r1) * electron_defl;
-                electron[7] += sin(r1) * electron_defl;
+                electron[6] += cos(emission_angle) * electron_defl;
+                electron[7] += sin(emission_angle) * electron_defl;
 
                 vector<double> positron = local_photons[i];
-                positron[2] += dl * (j + 1);
-                positron[4] = q;
+                positron[2] += slice_thickness * (j + 1);
+                positron[4] = charge_;
                 positron[5] = positron_energy;
-                positron[6] += cos(r1) * positron_defl;
-                positron[7] += sin(r1) * positron_defl;
+                positron[6] += cos(emission_angle) * positron_defl;
+                positron[7] += sin(emission_angle) * positron_defl;
 
                 local_particles.push_back(electron);
                 local_particles.push_back(positron);
 
 #pragma omp atomic
-                conversions++;
+                total_photon_conversions_++;
 
                 break; // break since photon no longer exists
             }
@@ -724,72 +711,65 @@ void simulator::converter_foil(int eventno, double d_f, double X0, mt19937_64 ge
     }
 }
 
-void simulator::MBPL_magnet(vector<vector<double>> &local_particles)
+void simulator::MbplMagnet(vector<vector<double>> &local_particles)
 {
     local_particles.clear(); // the MPBL magnet removes all particles
 }
 
-bool simulator::photon_emitted_aligned(double no_slices, mt19937_64 generator)
-{
-    double randno = (double)rand() / RAND_MAX;
-
-    return randno < I_integral / (double)no_slices;
-}
-
 /* Simulate a particle travelling through an aligned crystal. Multiple scattering is taken into account in the "propagte particles" function. */
-void simulator::aligned_crystal(int &emitted, int no_slices, mt19937_64 generator, vector<vector<double>> &local_photons, vector<vector<double>> &local_particles)
+void simulator::AlignedCrystal(int &emitted_event, int slices, mt19937_64 generator, vector<vector<double>> &local_photons, vector<vector<double>> &local_particles)
 {
-    double dl = d_c / (double)no_slices;
-    for (size_t hitno = 0; hitno < local_particles.size(); hitno++)
+    double slice_thickness = crystal_thicknes_ / (double)slices;
+    for (size_t i = 0; i < local_particles.size(); i++)
     {
-        for (int i = 0; i < no_slices; i++)
+        for (int j = 0; j < slices; j++)
         {
-            double Epart = local_particles[hitno][5];
+            double particle_energy = local_particles[i][5];
 
             /* Multiple scattering in C crystal slice. Calculate x/y displacement and deflection independently */
             for (int k = 0; k < 2; k++)
             {
                 double z1 = randn();
                 double z2 = randn();
-                double theta0 = 0.0136 / Epart * sqrt(dl / X0_C_gem) * (1.0 + 0.038 * log(dl / X0_C_gem));
-                double dy = dl * theta0 * (z1 / sqrt(12) + z2 / 2.0);
+                double theta0 = 0.0136 / particle_energy * sqrt(slice_thickness / X0_C_gem_) * (1.0 + 0.038 * log(slice_thickness / X0_C_gem_));
+                double dy = slice_thickness * theta0 * (z1 / sqrt(12) + z2 / 2.0);
                 double dtheta0 = z2 * theta0;
-                local_particles[hitno][k] += dy + dl * local_particles[hitno][6 + k]; // total (x/y) displacement
-                local_particles[hitno][6 + k] += dtheta0;                             // xslope/yslope
+                local_particles[i][k] += dy + slice_thickness * local_particles[i][6 + k]; // total (x/y) displacement
+                local_particles[i][6 + k] += dtheta0;                             // x_slope/y_slope
             }
 
-            local_particles[hitno][2] += dl;
+            local_particles[i][2] += slice_thickness;
 
             /* Proceed only if photon is emitted */
-            double randno = (double)rand() / RAND_MAX;
+            double random_number = (double)rand() / RAND_MAX;
 
-            bool emission = randno < (I_integral / (double)no_slices);
+            bool emission = random_number < (intensity_integral_ / (double)slices);
 
             if (emission)
             {
 #pragma omp atomic
-                emitted_crystal++;
+                photons_from_crystal_++;
 
                 /* Determine photon energy */
-                int E_indx = select_member(intensity_sum_interp);
+                int E_indx = SelectMember(intensity_sum_interp_);
 
                 /* Determine direction of emission of photon */
-                double gamma = local_particles[hitno][5] / (5.109989461E-4);
-                uniform_real_distribution<double> defl_angle(-1.0 / gamma, 1.0 / gamma);
-                double dx = defl_angle(generator);
+                double gamma = local_particles[i][5] / (5.109989461E-4);
+                uniform_real_distribution<double> deflection_angle(-1.0 / gamma, 1.0 / gamma);
+                double dx = deflection_angle(generator);
                 double dy = sqrt(1.0 / (gamma * gamma) - dx * dx);
 
                 /* Add photon to "photons" vector */
-                vector<double> photon = local_particles[hitno];
+                vector<double> photon = local_particles[i];
                 photon[4] = 0.0; // charge
-                photon[5] = energies_interp[E_indx];
+                photon[5] = emitted_energies_interp_[E_indx];
                 photon[6] += dx;
                 photon[7] += dy;
 
                 local_photons.push_back(photon);
 
 #pragma omp atomic
-                emitted++;
+                emitted_event++;
             }
 
         } // end slices
@@ -797,12 +777,12 @@ void simulator::aligned_crystal(int &emitted, int no_slices, mt19937_64 generato
     } // end events
 }
 
-void simulator::mimosa_detector(int planeno, int eventno, int &detections, mt19937_64 generator, vector<vector<double>> local_particles)
+void simulator::MimosaDetector(int detector, int event, int &detections, mt19937_64 generator, vector<vector<double>> local_particles)
 {
     /* Define mimosa parameters */
-    double x1 = 0.0, x2 = 0.0, x3 = 0.0, x4 = 0.0, y1 = 0.0, y2 = 0.0, y3 = 0.0, y4 = 0.0, fakehitprob = 0;
+    double x1 = 0.0, x2 = 0.0, x3 = 0.0, x4 = 0.0, y1 = 0.0, y2 = 0.0, y3 = 0.0, y4 = 0.0, fake_hit_probability = 0;
 
-    switch (planeno)
+    switch (detector)
     {
     case 0:
         x1 = -1.048E+04;
@@ -815,7 +795,7 @@ void simulator::mimosa_detector(int planeno, int eventno, int &detections, mt199
         y3 = 0.5272E+04;
         y4 = -0.5235E+04;
 
-        fakehitprob = 1;
+        fake_hit_probability = 1;
 
         break;
 
@@ -830,7 +810,7 @@ void simulator::mimosa_detector(int planeno, int eventno, int &detections, mt199
         y3 = 0.5272E+04;
         y4 = -0.5235E+04;
 
-        fakehitprob = 0.95;
+        fake_hit_probability = 0.95;
 
         break;
 
@@ -845,7 +825,7 @@ void simulator::mimosa_detector(int planeno, int eventno, int &detections, mt199
         y3 = 0.5272E+04 + alignment_matrix(1, 2, 0);
         y4 = -0.5235E+04 + alignment_matrix(1, 2, 0);
 
-        fakehitprob = 0.43;
+        fake_hit_probability = 0.43;
 
         break;
 
@@ -860,7 +840,7 @@ void simulator::mimosa_detector(int planeno, int eventno, int &detections, mt199
         y3 = 0.5272E+04 + alignment_matrix(1, 2, 1);
         y4 = -0.5235E+04 + alignment_matrix(1, 2, 1);
 
-        fakehitprob = 0.43;
+        fake_hit_probability = 0.43;
 
         break;
 
@@ -875,7 +855,7 @@ void simulator::mimosa_detector(int planeno, int eventno, int &detections, mt199
         y3 = 0.5272E+04 + alignment_matrix(1, 2, 2);
         y4 = -0.5235E+04 + alignment_matrix(1, 2, 2);
 
-        fakehitprob = 0.80;
+        fake_hit_probability = 0.80;
 
         break;
 
@@ -890,32 +870,30 @@ void simulator::mimosa_detector(int planeno, int eventno, int &detections, mt199
         y3 = 0.5272E+04 + alignment_matrix(1, 2, 3);
         y4 = -0.5235E+04 + alignment_matrix(1, 2, 3);
 
-        fakehitprob = 0.52;
+        fake_hit_probability = 0.52;
 
         break;
     }
 
-    vector<double> xbounds = {x1, x2, x3, x4}; // xcoords of corners
-    vector<double> ybounds = {y1, y2, y3, y4}; // ycoords of corners
-
-    mimosa_res = 35.0; // spatial resoultion of mimosa detector (micro-m) (smaller = better res.)
+    vector<double> x_bounds = {x1, x2, x3, x4}; // xcoords of corners
+    vector<double> y_bounds = {y1, y2, y3, y4}; // ycoords of corners
 
     /* Take into account detector resoultion by adding a random (Dx, Dy) displacement drawn from gaussian distro with stdev = 3.5mu, mean = 0mu */
     normal_distribution<double> distribution(0.0, 3.5);
 
     /* Simulate real hit detection */
-    for (size_t hitno = 0; hitno < local_particles.size(); hitno++)
+    for (size_t i = 0; i < local_particles.size(); i++)
     {
         /* Check if particle is within physical boundaries of detector.*/
-        bool inside_bounds = isInside(4, xbounds, ybounds, local_particles[hitno][0], local_particles[hitno][1]);
+        bool inside_bounds = IsInsidePolygon(4, x_bounds, y_bounds, local_particles[i][0], local_particles[i][1]);
 
         if (inside_bounds)
         {
             /* Proceed only if particle does not hit hot pixel */
-            int pixel = coord2pixel(local_particles[hitno][0], local_particles[hitno][1]);
-            int high = hotpixels[planeno].size() - 1;
+            int pixel = Coord2Pixel(local_particles[i][0], local_particles[i][1]);
+            int high = hot_pixels_[detector].size() - 1;
             int low = 0;
-            int hotpix = binarySearch(hotpixels[planeno], low, high, pixel);
+            int hotpix = BinarySearch(hot_pixels_[detector], low, high, pixel);
 
             if (hotpix == -1)
             {
@@ -923,28 +901,28 @@ void simulator::mimosa_detector(int planeno, int eventno, int &detections, mt199
                 double Dy = distribution(generator);
 
                 /* Combine neighbor-hits into single hit if they are closer than detectors resoultion */
-                if (mimosas[planeno][eventno].size() > 0)
+                if (mimosas[detector][event].size() > 0)
                 {
-                    double dist = calc_dist(local_particles[hitno][0] + Dx, local_particles[hitno][1] + Dy, mimosas[planeno][eventno][0][0], mimosas[planeno][eventno][0][1]);
+                    double dist = CalculateDistance(local_particles[i][0] + Dx, local_particles[i][1] + Dy, mimosas[detector][event][0][0], mimosas[detector][event][0][1]);
 
                     /* Save hit in "mimosas" array. This array has the same structure and contains equivalent data as the "hitcoords" array in the "analyser" class */
-                    if (dist > mimosa_res)
+                    if (dist > mimosa_resolution_)
                     {
-                        mimosas[planeno][eventno].push_back({local_particles[hitno][0] + Dx, local_particles[hitno][1] + Dy});
+                        mimosas[detector][event].push_back({local_particles[i][0] + Dx, local_particles[i][1] + Dy});
                     }
                     else
                     {
                         /* The distance is shorter than detector resolution, so we combine two hits. This is equivalent to moving the previously recorded hit by half the seperation */
-                        double dx = mimosas[planeno][eventno][0][0] - local_particles[hitno][0] - Dx;
-                        double dy = mimosas[planeno][eventno][0][1] - local_particles[hitno][1] - Dy;
-                        mimosas[planeno][eventno][0][0] += dx / 2.0;
-                        mimosas[planeno][eventno][0][1] += dy / 2.0;
+                        double dx = mimosas[detector][event][0][0] - local_particles[i][0] - Dx;
+                        double dy = mimosas[detector][event][0][1] - local_particles[i][1] - Dy;
+                        mimosas[detector][event][0][0] += dx / 2.0;
+                        mimosas[detector][event][0][1] += dy / 2.0;
                     }
                 }
                 else
                 {
                     /* If there are no previous hits in detector simply add the hit to "mimoas" array */
-                    mimosas[planeno][eventno].push_back({local_particles[hitno][0] + Dx, local_particles[hitno][1] + Dy});
+                    mimosas[detector][event].push_back({local_particles[i][0] + Dx, local_particles[i][1] + Dy});
                 }
             }
         }
@@ -954,140 +932,113 @@ void simulator::mimosa_detector(int planeno, int eventno, int &detections, mt199
     uniform_real_distribution<double> fake_hit_x(x1, x4);
     uniform_real_distribution<double> fake_hit_y(y1, y2);
 
-    if ((double)rand() / RAND_MAX < fakehitprob)
+    if ((double)rand() / RAND_MAX < fake_hit_probability)
     {
-        double xcoord = fake_hit_x(generator);
-        double ycoord = fake_hit_y(generator);
+        double x_coordinate = fake_hit_x(generator);
+        double y_coordinate = fake_hit_y(generator);
 
-        vector<double> hit = {xcoord, ycoord};
+        vector<double> hit = {x_coordinate, y_coordinate};
 
-        mimosas[planeno][eventno].push_back(hit);
+        mimosas[detector][event].push_back(hit);
     }
 }
 
-double simulator::calc_dist(double x0, double y0, double x1, double y1)
+double simulator::CalculateDistance(double x0, double y0, double x1, double y1)
 {
     return sqrt(pow(x1 - x0, 2) + pow(y1 - y0, 2));
 }
 
-void simulator::project_photons(vector<vector<double>> &local_photons, double zcoord, int emitted)
+void simulator::ProjectPhotons(vector<vector<double>> &local_photons, double z_coordinate)
 {
-    for (size_t hitno = 0; hitno < local_photons.size(); hitno++)
+    for (size_t i = 0; i < local_photons.size(); i++)
     {
-        double dx = (zcoord - local_photons[hitno][2]) * local_photons[hitno][6];
-        double dy = (zcoord - local_photons[hitno][2]) * local_photons[hitno][7];
-        local_photons[hitno][0] += dx;
-        local_photons[hitno][1] += dy;
-        local_photons[hitno][2] = zcoord;
+        double dx = (z_coordinate - local_photons[i][2]) * local_photons[i][6];
+        double dy = (z_coordinate - local_photons[i][2]) * local_photons[i][7];
+        local_photons[i][0] += dx;
+        local_photons[i][1] += dy;
+        local_photons[i][2] = z_coordinate;
     }
 }
 
-/* (i,j) : (eventno, hitno). The following formulae taken from PDG ch. 32, 2014 (particles through matter) */
-void simulator::SA_mult_scat(double X0, double zcoord, mt19937_64 generator, vector<vector<double>> &local_particles)
+void simulator::MultipleScattering(double X0, double z_coordinate, mt19937_64 generator, vector<vector<double>> &local_particles)
 {
     /* Iterate over paticles traversing medium */
-    for (size_t j = 0; j < local_particles.size(); j++)
+    for (size_t i = 0; i < local_particles.size(); i++)
     {
-        double l = zcoord - local_particles[j][2];
+        double length = z_coordinate - local_particles[i][2];
 
         /* Calculate x/y displacement and deflection independently */
-        for (int k = 0; k < 2; k++)
+        for (int j = 0; j < 2; j++)
         {
-            double z1 = randn();
-            double z2 = randn();
-            double theta0 = 0.0136 / local_particles[j][5] * sqrt(l / X0) * (1.0 + 0.038 * log(l / X0));
-            double dy = l * theta0 * (z1 / sqrt(12) + z2 / 2.0);
-            double dtheta0 = z2 * theta0;
-            local_particles[j][k] += dy + l * local_particles[j][6 + k]; // total (x/y) displacement
-            local_particles[j][6 + k] += dtheta0;                        // xslope/yslope
+            double random_number_1 = randn();
+            double random_number_2 = randn();
+            double theta0 = 0.0136 / local_particles[i][5] * sqrt(length / X0) * (1.0 + 0.038 * log(length / X0));
+            double displacement = length * theta0 * (random_number_1 / sqrt(12) + random_number_2 / 2.0);
+            double direction_change = random_number_2 * theta0;
+            local_particles[i][j] += displacement + length * local_particles[i][6 + j]; // total (x/y) displacement
+            local_particles[i][6 + j] += direction_change;                        // x_slope/y_slope
         }
 
-        local_particles[j][2] = zcoord;
+        local_particles[i][2] = z_coordinate;
     }
 }
 
 /* Calculate the deflection of a charged particle traversing the mimosa magnet. Magnet only deflects in x-direction. */
-void simulator::mimosa_magnet(vector<vector<double>> &local_particles)
+void simulator::MimosaMagnet(vector<vector<double>> &local_particles)
 {
-    double L = 0.15; // length traveled through Mimosa magnet in m
-    double B = 0.12; // strength of magnetic field in T
+    double length = 0.15; // length traveled through Mimosa magnet in m
+    double field_strength = 0.12; // strength of magnetic field in T
 
     for (size_t hitno = 0; hitno < local_particles.size(); hitno++)
     {
-        local_particles[hitno][6] += (local_particles[hitno][4] * L * B * c) / (local_particles[hitno][5] * 1.6021766E-10); // update direction of particle
+        local_particles[hitno][6] += (local_particles[hitno][4] * length * field_strength * c_) / (local_particles[hitno][5] * 1.6021766E-10); // update direction of particle
     }
 }
 
-/* Approximated (SAA) Borsellino opening angle of produced electron (1) positron (2) pair */
-void simulator::Borsellino(double E1, double E2, double E_phot, double &phi1, double &phi2, mt19937_64 generator)
+void simulator::BorsellinoOpeningAngle(double energy_particle_1, double energy_particle_2, double energy_photon, double &deflection_particle_1, double &deflection_particle_2)
 {
     double u1 = (double)rand() / RAND_MAX, u2 = (double)rand() / RAND_MAX;
-    double nu0 = E_phot * m * c / (E1 * E2) * 1.6021766E+10;
+    double nu0 = energy_photon * electron_mass_ * c_ / (energy_particle_1 * energy_particle_2) * 1.6021766E+10;
     double nu = nu0 * (sqrt(1.0 / (1.0 - u1) - 1.0) + 0.70 * u2);
-    phi1 = nu / (E1 / E2 + (1.0 - nu * nu / 2.0)); // deflection of particle 1
-    phi2 = nu - phi1;                              // deflection of particle 2
+    deflection_particle_1 = nu / (energy_particle_1 / energy_particle_2 + (1.0 - nu * nu / 2.0)); // deflection of particle 1
+    deflection_particle_2 = nu - deflection_particle_1;                              // deflection of particle 2
 }
 
-/* See http://pdg.lbl.gov/2014/reviews/rpp2014-rev-passage-particles-matter.pdf for formulae and constants */
-bool simulator::pair_produced(double l, double X0_f, mt19937_64 generator)
+/* Analytical solution to CDF(x) = random_number (see Flohr's thesis) integrated and solved 3rd order poly. equation (2.58) */
+void simulator::ElectronicEnergyDistribution(double &random_number)
 {
-    double randno = (double)rand() / RAND_MAX; // random double between 0, 1 used to determine if a pair is produced
-
-    return randno < (7.0 * l) / (9.0 * X0_f);
+    random_number = 0.25 * (1.5874 * pow(sqrt(196.0 * random_number * random_number - 196.0 * random_number + 81.0) + 14 * random_number - 7.0, 1.0 / 3.0) - 5.03968 / pow(sqrt(196.0 * random_number * random_number - 196.0 * random_number + 81.0) + 14.0 * random_number - 7.0, 1.0 / 3.0) + 2.0);
 }
 
-/* Calcualte wheter or not a photon is emitted when traveling through an amorphous crystal. */
-bool simulator::photon_emitted_amorph(double l, double X0, double E, mt19937_64 generator)
+double simulator::PhotonicEnergyDistribution(vec energy, double random_number, double beam_energy, double norm)
 {
-    double randno = R(global_generator);                                                                                                  // random double between 0, 1 used to determine if a pair is produced
-    double Emin = 2 * 0.5109989461E-03;                                                                                                   // 2 * Electron mass in GeV must be the minimum energy of photon, since we cannot observe lower energy photons anyway
-    double P = l / X0 * ((4.0 / 3.0) * log(E / Emin) - (4.0 / 3.0) * (E - Emin) / E + (3.0 / 4.0) * (1.0 - Emin * Emin / (2.0 * E * E))); // BH-cross section * crystal length
-    return randno < P;
+    double minimum_energy = 2.0 * 0.5109989461E-3; // 2 * electron mass GeV
+    return energy(0) > 0 ? abs((4.0 / 3.0 * log(energy(0) / minimum_energy) - 4.0 / 3.0 * (energy(0) - minimum_energy) / beam_energy + 1.0 / (2.0 * beam_energy * beam_energy) * (energy(0) * energy(0) - minimum_energy * minimum_energy)) - random_number * norm) : 1E+17;
 }
 
-void simulator::electronic_energy_distribution(double &r)
-{
-    /* Analytical solution to CDF(x) = r (see Flohr's thesis) integrated and solved 3rd order poly. equation (2.58)
-            r : random number */
-    r = 0.25 * (1.5874 * pow(sqrt(196.0 * r * r - 196.0 * r + 81.0) + 14 * r - 7.0, 1.0 / 3.0) - 5.03968 / pow(sqrt(196.0 * r * r - 196.0 * r + 81.0) + 14.0 * r - 7.0, 1.0 / 3.0) + 2.0);
-}
-
-double simulator::photonic_energy_distribution(vec x, double r, double Eb, double norm)
-{
-    /* This function is minimized to determine the photon energy.
-           The Bethe-Heitler cross section as presented in Flohr's thesis, should be solved using inverse transform sampling with a Nelder-Mead simplex solver. The equation is therefore normalized to ensure the probability distro. is betwen (0, 1)
-            x   : solution, ie E_e- / E_photon
-            r   : random number betwenn (0, 1)
-            Eb  : beam energy
-         */
-
-    double Emin = 2.0 * 0.5109989461E-3; // 2 * electron mass GeV
-    return x(0) > 0 ? abs((4.0 / 3.0 * log(x(0) / Emin) - 4.0 / 3.0 * (x(0) - Emin) / Eb + 1.0 / (2.0 * Eb * Eb) * (x(0) * x(0) - Emin * Emin)) - r * norm) : 1E+17;
-}
-
-int simulator::binarySearch(vector<int> numbers, int low, int high, int val)
+int simulator::BinarySearch(vector<int> numbers, int low, int high, int value)
 {
     if (high >= low)
     {
         int mid = (high + low) / 2;
-        if (numbers[mid] == val)
+        if (numbers[mid] == value)
             return mid;
-        if (numbers[mid] > val)
-            return binarySearch(numbers, low, mid - 1, val);
-        return binarySearch(numbers, mid + 1, high, val);
+        if (numbers[mid] > value)
+            return BinarySearch(numbers, low, mid - 1, value);
+        return BinarySearch(numbers, mid + 1, high, value);
     }
 
-    return -1; // returned only if "val" is not in "numbers"
+    return -1; // returned only if "value" is not in "numbers"
 }
 
-/* This function takes a test point (testx, testy) and checks if it is within an nvert-sided polygon defined by the vertices vertx and verty. Function is a slightly modified version of the one posted on https://wrf.ecse.rpi.edu//Research/Short_Notes/pnpoly.html */
-int simulator::isInside(int nvert, vector<double> vertx, vector<double> verty, double testx, double testy)
+/* This function takes a test point (x_coordinate, y_coordinate) and checks if it is within an vertices-sided polygon defined by the vertices vertex_x_coordinate and vertex_y_coordinate. Function is a slightly modified version of the one posted on https://wrf.ecse.rpi.edu//Research/Short_Notes/pnpoly.html */
+int simulator::IsInsidePolygon(int vertices, vector<double> vertex_x_coordinate, vector<double> vertex_y_coordinate, double x_coordinate, double y_coordinate)
 {
     int i, j, c = 0;
 
-    for (i = 0, j = nvert - 1; i < nvert; j = i++)
+    for (i = 0, j = vertices - 1; i < vertices; j = i++)
     {
-        if (((verty[i] > testy) != (verty[j] > testy)) && (testx < (vertx[j] - vertx[i]) * (testy - verty[i]) / (verty[j] - verty[i]) + vertx[i]))
+        if (((vertex_y_coordinate[i] > y_coordinate) != (vertex_y_coordinate[j] > y_coordinate)) && (x_coordinate < (vertex_x_coordinate[j] - vertex_x_coordinate[i]) * (y_coordinate - vertex_y_coordinate[i]) / (vertex_y_coordinate[j] - vertex_y_coordinate[i]) + vertex_x_coordinate[i]))
         {
             c = !c;
         }
@@ -1097,7 +1048,7 @@ int simulator::isInside(int nvert, vector<double> vertx, vector<double> verty, d
 }
 
 /* This function selects a member from a weighted ("weights") list and returns the indx */
-int simulator::select_member(vector<double> weights)
+int simulator::SelectMember(vector<double> weights)
 {
     /* Calculate cumulative sum of weights to represent the probability that a number will be picked */
     vector<double> weights_cumsum;
@@ -1106,7 +1057,7 @@ int simulator::select_member(vector<double> weights)
     uniform_real_distribution<double> distribution(0.0, weights_cumsum.back());
 
     /* Generate random number, used to determine index */
-    double r = distribution(global_generator);
+    double r = distribution(global_generator_);
 
     /* Binary search to find which number to pick based on weight */
     int low = 0, high = weights.size() - 1;
@@ -1134,116 +1085,110 @@ int simulator::select_member(vector<double> weights)
     return -1; // if this is returned, somehting has gone wrong
 }
 
-vector<double> simulator::linspace(double min, double max, int N)
+vector<double> simulator::Linspace(double min, double max, int N)
 {
     vector<double> range;
     range.resize(N);
-
-    /* Determine step-size */
     double delta = (max - min) / (N - 1);
-
-    /* Iterate over range, excluding the last entry */
     for (int i = 0; i < N - 1; i++)
     {
         range[i] = min + i * delta;
     }
-
-    /* Set last entry to "max". This ensures that we get a range from min -> max */
-    range.back() = max;
+    range.back() = max; // Set last entry to "max". This ensures that we get a range from min -> max
     return range;
 }
 
-void simulator::linterp(vector<double> x, vector<double> y, vector<double> xi, vector<double> &yi)
+void simulator::LinearInterpolation(vector<double> x_coordinates, vector<double> y_coordinates, vector<double> x_interpolated_coordinates, vector<double> &y_interpolated_coordinates)
 {
-    yi.resize(xi.size());
+    y_interpolated_coordinates.resize(x_interpolated_coordinates.size());
 
     /* Iterate over interpolated values */
-    for (size_t j = 0; j < xi.size(); j++)
+    for (size_t j = 0; j < x_interpolated_coordinates.size(); j++)
     {
         /* Find the interval over which to interpolate with binary search */
         int low = 0;
-        int high = x.size() - 1;
+        int high = x_coordinates.size() - 1;
 
         while (high - low > 1)
         {
             int guess = (high + low) / 2;
 
-            if (xi[j] > x[guess])
+            if (x_interpolated_coordinates[j] > x_coordinates[guess])
                 low = guess;
             else
                 high = guess;
         }
         /* Calculate slope and do interpolation */
-        double dydx = (y[low + 1] - y[low]) / (x[low + 1] - x[low]);
-        yi[j] = y[low] + dydx * (xi[j] - x[low]);
+        double dydx = (y_coordinates[low + 1] - y_coordinates[low]) / (x_coordinates[low + 1] - x_coordinates[low]);
+        y_interpolated_coordinates[j] = y_coordinates[low] + dydx * (x_interpolated_coordinates[j] - x_coordinates[low]);
     }
 }
 
 /* Reflect highest point against centroid */
-vec simulator::simplex_reflect(vec highest, vec centroid)
+vec simulator::SimplexReflect(vec highest, vec centroid)
 {
     return 2.0 * centroid - highest;
 }
 
 /* Reflect highest point against centroid, then double distance to centroid */
-vec simulator::simplex_expand(vec highest, vec centroid)
+vec simulator::SimplexExpand(vec highest, vec centroid)
 {
     return 3.0 * centroid - 2.0 * highest;
 }
 
 /* Highest point halves its distance from centroid */
-vec simulator::simplex_contract(vec highest, vec centroid)
+vec simulator::SimplexContract(vec highest, vec centroid)
 {
     return 0.5 * (centroid + highest);
 }
 
 /* All points, except lowest, halves their distance to lowest point */
-void simulator::simplex_reduce(vector<vec> &simplex, int ilow)
+void simulator::SimplexReduce(vector<vec> &simplex, int low_index)
 {
     for (size_t i = 0; i < simplex.size(); i++)
     {
-        if ((int)i != ilow)
+        if ((int)i != low_index)
         {
-            simplex[i] = 0.5 * (simplex[i] + simplex[ilow]);
+            simplex[i] = 0.5 * (simplex[i] + simplex[low_index]);
         }
     }
 }
 
 /* Calculate size of the simplex-polygon */
-double simulator::simplex_size(vector<vec> simplex)
+double simulator::SimplexSize(vector<vec> simplex)
 {
-    double s = norm(simplex[0] - simplex.back(), 2);
+    double current_size = norm(simplex[0] - simplex.back(), 2);
 
     for (size_t i = 1; i < simplex.size(); i++)
     {
-        double d = norm(simplex[i] - simplex[i - 1], 2);
+        double new_size = norm(simplex[i] - simplex[i - 1], 2);
 
-        if (s < d)
-            s = d;
+        if (current_size < new_size)
+            current_size = new_size;
     }
 
-    return s;
+    return current_size;
 }
 
-/* Update ihigh, ilow and centroid.  */
-void simulator::simplex_update(vector<vec> simplex, vec fs, vec &centroid, int &ihigh, int &ilow)
+/* Update high_index, low_index and centroid.  */
+void simulator::SimplexUpdate(vector<vec> simplex, vec function, vec &centroid, int &high_index, int &low_index)
 {
-    ihigh = 0;
-    double fhigh = fs(0);
-    ilow = 0;
-    double flow = fs(0);
+    high_index = 0;
+    double function_high_value = function(0);
+    low_index = 0;
+    double function_low_value = function(0);
 
     for (size_t i = 1; i < simplex.size(); i++)
     {
-        if (fs(i) > fhigh)
+        if (function(i) > function_high_value)
         {
-            fhigh = fs(i);
-            ihigh = i;
+            function_high_value = function(i);
+            high_index = i;
         }
-        if (fs(i) < flow)
+        if (function(i) < function_low_value)
         {
-            flow = fs(i);
-            ilow = i;
+            function_low_value = function(i);
+            low_index = i;
         }
     }
 
@@ -1252,7 +1197,7 @@ void simulator::simplex_update(vector<vec> simplex, vec fs, vec &centroid, int &
 
     for (int i = 0; i < (int)simplex.size(); i++)
     {
-        if (i != ihigh)
+        if (i != high_index)
         {
             s += simplex[i];
         }
@@ -1264,10 +1209,10 @@ void simulator::simplex_update(vector<vec> simplex, vec fs, vec &centroid, int &
     }
 }
 
-void simulator::save_vector(string name, vector<double> data)
+void simulator::SaveVector(string name, vector<double> data)
 {
-    string filename = DATPATH + "/" + name + ".txt";
-    ofstream output(filename);
+    string file_name = data_path_ + "/" + name + ".txt";
+    ofstream output(file_name);
 
     for (size_t i = 0; i < data.size(); i++)
     {
@@ -1275,10 +1220,10 @@ void simulator::save_vector(string name, vector<double> data)
     }
 }
 
-void simulator::save_vector(string name, vector<vector<double>> data)
+void simulator::SaveVector(string name, vector<vector<double>> data)
 {
-    string filename = DATPATH + "/" + name + ".txt";
-    ofstream output(filename);
+    string file_name = data_path_ + "/" + name + ".txt";
+    ofstream output(file_name);
 
     for (size_t i = 0; i < data.size(); i++)
     {
@@ -1291,10 +1236,10 @@ void simulator::save_vector(string name, vector<vector<double>> data)
     }
 }
 
-void simulator::save_vector(string name, vector<vector<vector<double>>> data)
+void simulator::SaveVector(string name, vector<vector<vector<double>>> data)
 {
-    string filename = DATPATH + "/" + name + ".txt";
-    ofstream output(filename);
+    string file_name = data_path_ + "/" + name + ".txt";
+    ofstream output(file_name);
 
     for (size_t i = 0; i < data.size(); i++)
     {

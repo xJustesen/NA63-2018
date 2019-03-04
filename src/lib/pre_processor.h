@@ -15,18 +15,19 @@ typedef struct
     int IncludeBG, NEvents, Simulation;
 } CONFIG;
 
-class preprocessor
+class PreProcessor
 {
   public:
-    vector<double> z;
-    CONFIG Config;
-    preprocessor(string ConfigFile);
+    vector<double> z_;
+    CONFIG config_;
+    PreProcessor(string config_file);
+
 
   private:
-    vector<string> LegalInput;
-    void InitializeInputVariables(std::string filename);
+    vector<string> legal_input_;
+    void InitializeInputVariables(std::string file_name);
     void InitializeInputVariablesHelper(std::string, std::string);
-    int SearchList(std::vector<std::string> List, std::string Key);
+    int SearchList(std::vector<std::string> list, std::string key);
 };
 
 #endif

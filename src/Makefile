@@ -146,7 +146,7 @@ main_data : main_data.cc analyser.cc
 sim_test : main
 	./main $(CONFIGPATH)/amorph_80GeV_sim_config.txt
 
-main : main.cc $(LIBPATH)/simulator.cc $(LIBPATH)/analyser.cc $(LIBPATH)/preprocessor.cc $(LIBPATH)/RunSimulation.cc $(LIBPATH)/RunDataAnalysis.cc $(LIBPATH)/auxfunctions.cc
+main : main.cc $(LIBPATH)/simulator.cc $(LIBPATH)/analyser.cc $(LIBPATH)/pre_processor.cc $(LIBPATH)/run_simulation.cc $(LIBPATH)/run_data_analysis.cc $(LIBPATH)/auxillary_functions.cc
 
 clean:
 	rm -f main_sim main_sim.o main_data main_data.o tester tester.o

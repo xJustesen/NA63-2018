@@ -3,18 +3,18 @@
 
 #include "simulator.h"
 #include "analyser.h"
-#include "preprocessor.h"
+#include "pre_processor.h"
 
 using namespace std;
 
 class RunSimulation
 {
   public:
-    RunSimulation(preprocessor *initialize);
-    vector<vector<double>> get_energies();
+    RunSimulation(PreProcessor *initialize);
+    vector<vector<double>> GetEnergies();
 
   private:
-    vector<vector<double>> energies;
+    vector<vector<double>> energies_;
 };
 
 #endif
