@@ -23,11 +23,12 @@ class simulator
   public:
     double beam_energy_;                                       // energy of particle
     double crystal_thicknes_;                                     // size of crystal
-    vector<vector<vector<vector<double>>>> mimosas; // equivalent to the "hitcoords" vector in "analyser" class
+    vector<vector<vector<vector<double>>>> mimosas_; // equivalent to the "hitcoords" vector in "analyser" class
 
     simulator(int N, vector<double> z, string run, double BeamEnergy, double CrystalThickness, string filename, string TheorySpec, int bg);
     void PropagateParticles(void); // propagate particles through the experiment
     void PrintHits(void);
+    void LinearInterpolation(vector<double> x_coordinate, vector<double> y_coordinate, vector<double> xi, vector<double> &yi);
 
   private:
     vector<vector<vector<double>>> photons_;   // stores photon data
@@ -92,6 +93,7 @@ class simulator
     void AlignedCrystal(int &emitted, int no_slices, mt19937_64, vector<vector<double>> &local_photons, vector<vector<double>> &local_particles);
     void AddPhotons(int &emitted, double X0, double d, mt19937_64, vector<vector<double>> &, vector<vector<double>>);
     int BinarySearch(vector<int> numbers, int low, int high, int val);
+    int BinarySearch(vector<double> numbers, int low, int high, double value);
     int Coord2Pixel(double xhit, double yhit);
     void LoadHotpixels(void);
     void LoadDoubles(string filename, vector<double> &data);
@@ -106,7 +108,6 @@ class simulator
     vec SimplexContract(vec highest, vec centroid);
     int SelectMember(vector<double> weigths); // makes a random draw from a weighted list of numbers
     vector<double> Linspace(double min, double max, int N);
-    void LinearInterpolation(vector<double> x_coordinate, vector<double> y_coordinate, vector<double> xi, vector<double> &yi);
     int IsInsidePolygon(int nvert, vector<double> vertx, vector<double> verty, double testx, double testy); // check if point (testx, testy) is inside boundaries of polygon defined by verticecs (vertx, verty)
     double CalculateDistance(double x0, double y0, double x1, double y1);
     void ProjectPhotons(vector<vector<double>> &particletype, double zcoord); // rectilinear-projection hit into plane

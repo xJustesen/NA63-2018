@@ -1,0 +1,4 @@
+OutputFilename /home/christian/Documents/cern2018/spectre/cuts/energy_dat_aligned_20GeV_1.5mm.txt
+BeamProfile ../beamParameters/20GeV_beam_params_1.5mm.txt
+Simulation 0
+runno aligned_dat_20GeV_1.5mm

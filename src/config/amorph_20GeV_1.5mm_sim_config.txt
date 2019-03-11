@@ -1,0 +1,9 @@
+BeamEnergy 20.0
+CrystalThickness 1.5E+03
+CrystalType amorphous
+OutputFilename /home/christian/Desktop/SimulationTestOutput/sim_amorphous_20GeV_1.5mm.txt
+IncludeBG 1
+NEvents 5000000
+BeamProfile ../beamParameters/20GeV_beam_params_1.5mm.txt
+Simulation 0
+runno sim_amorphous_20GeV_1.5mm

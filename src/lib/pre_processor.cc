@@ -19,11 +19,9 @@ PreProcessor::PreProcessor(string config_file)
         "IncludeBG",
         "NEvents",
         "Simulation"};
-
     /* Assign default values to angular cuts */
     config_.cut_lb_x = config_.cut_lb_y = (-1.0) * 1E+17;
     config_.cut_ub_x = config_.cut_ub_y = 1E+17;
-
     /* Initialize simulation input parameters */
     cout << "\nConfig-struct contains:\n";
     try
@@ -33,7 +31,7 @@ PreProcessor::PreProcessor(string config_file)
     catch (const char *msg)
     {
         cerr << msg << endl;
-    };
+    }
     z_ = {0, 1832.3E+03, 8913E+03, 8989E+03, 9196.2E+03, 9273.7E+03};
     cout << "Entry angles x : {" << config_.cut_lb_x << ", " << config_.cut_ub_x << "} rad\n";
     cout << "Entry angles y : {" << config_.cut_lb_y << ", " << config_.cut_ub_y << "} rad\n";
@@ -45,7 +43,6 @@ void PreProcessor::InitializeInputVariables(std::string filename)
     std::ifstream config_file(filename);
     std::string key;
     std::string value;
-
     bool EmptyFile = true;
     if (config_file.is_open())
     {
@@ -56,7 +53,7 @@ void PreProcessor::InitializeInputVariables(std::string filename)
             {
                 if (EmptyFile)
                 {
-                    throw "config_ file appears to be empty!\n";
+                    throw "config file appears to be empty!\n";
                 }
                 break;
             }
@@ -89,19 +86,15 @@ void PreProcessor::InitializeInputVariablesHelper(std::string key, std::string v
         break;
     case 3:
         config_.cut_lb_x = std::stod(value);
-        std::cout << "cut_lb_x : " << config_.cut_lb_x << "\n";
         break;
     case 4:
         config_.cut_ub_x = std::stod(value);
-        std::cout << "cut_ub_x : " << config_.cut_ub_x << "\n";
         break;
     case 5:
         config_.cut_lb_y = std::stod(value);
-        std::cout << "cut_lb_y : " << config_.cut_lb_y << "\n";
         break;
     case 6:
         config_.cut_ub_y = std::stod(value);
-        std::cout << "cut_ub_y : " << config_.cut_ub_y << "\n";
         break;
     case 7:
         config_.OutputFilename = value;

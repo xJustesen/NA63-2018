@@ -47,6 +47,7 @@
         "utility": "cpp",
         "list": "cpp",
         "optional": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "algorithm": "cpp"
     }
 }

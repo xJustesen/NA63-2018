@@ -24,11 +24,9 @@ int main(int argc, char const *argv[])
         return 0;
     }
     string config_file = argv[1];
-
     /* Pre-processing */
     PreProcessor *Initializer = new PreProcessor(config_file);
     vector<vector<double>> energies;
-
     /* Processing */
     if (Initializer->config_.Simulation)
     {
@@ -52,10 +50,9 @@ int main(int argc, char const *argv[])
         RunDataAnalysis *Analyser = new RunDataAnalysis(Initializer, InputDataFile);
         energies = Analyser->GetEnergies();
     }
-
     /* Post-processing */
-    cout << "\nAnalysis finished, saving to file\n";
-    PrintVector(Initializer->config_.OutputFilename, energies);
+    // cout << "\nAnalysis finished, saving to file\n";
+    // PrintVector(Initializer->config_.OutputFilename, energies);
     cout << "\nCompleted\n";
     return 0;
 }

@@ -1,9 +1,9 @@
 BeamEnergy 80.0
 CrystalThickness 1.5E+03
 CrystalType amorphous
-OutputFilename /home/christian/Desktop/SimulationTestOutput/sim_amorphous_80GeV_1mm.txt
+OutputFilename /home/christian/Desktop/SimulationTestOutput/sim_amorphous_80GeV_1.5mm.txt
 IncludeBG 1
-NEvents 10000
-BeamProfile 80GeV_beam_params.txt
+NEvents 5000000
+BeamProfile ../beamParameters/80GeV_beam_params_1.5mm.txt
 Simulation 0
-runno sim_amorphous_80GeV_1mm
+runno sim_amorphous_80GeV_1.5mm
