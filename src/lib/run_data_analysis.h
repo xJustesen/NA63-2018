@@ -8,12 +8,14 @@ using namespace std;
 
 class RunDataAnalysis
 {
-  public:
-    RunDataAnalysis(PreProcessor *initialize,  const char *input_data_file);
-    vector<vector<double>> GetEnergies();
+public:
+  RunDataAnalysis(PreProcessor *initialize, const char *input_data_file);
+  vector<vector<double>> GetEnergies();
+  int GetEvents();
 
-  private:
-    vector<vector<double>> energies_;
+private:
+  vector<vector<double>> energies_;
+  int number_of_events_;
 };
 
 #endif

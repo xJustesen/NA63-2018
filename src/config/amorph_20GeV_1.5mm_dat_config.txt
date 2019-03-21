@@ -1,8 +1,0 @@
-OutputFilename /home/christian/Documents/cern2018/spectre/cuts/energy_dat_amorphous_20GeV_1.5mm.txt
-BeamProfile ../beamParameters/20GeV_beam_params_1.5mm.txt
-Simulation 0
-runno amorphous_dat_20GeV_1.5mm_cut
-cut_lb_x -3.0237e-06
-cut_ub_x 1.3612e-04
-cut_lb_y -1.4757e-04
-cut_ub_y -8.4220e-06

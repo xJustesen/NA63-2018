@@ -1,0 +1,10 @@
+BeamEnergy 20.0
+CrystalThickness 1.0E+03
+CrystalType amorphous
+OutputDataFilename /home/christian/Documents/cern2018/spectre/cuts95/energy_sim_amorph_20GeV_1.5mm_stochastic.txt
+OutputEventFilename /home/christian/Documents/cern2018/spectre/cuts95/energy_sim_amorph_20GeV_1.5mm_stochastic.txt
+IncludeBG 1
+NEvents 5000000
+BeamProfile ../beamParameters/20GeV_beam_params_1.0mm.txt
+Simulation 1
+runno sim_amorphous_20GeV_1.0mm

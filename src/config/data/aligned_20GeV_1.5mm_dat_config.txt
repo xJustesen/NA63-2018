@@ -1,0 +1,9 @@
+OutputDataFilename /home/christian/Documents/cern2018/spectre/cuts95/energy_dat_aligned_20GeV_1.5mm.txt
+OutputEventFilename /home/christian/Documents/cern2018/spectre/cuts95/events_dat_aligned_20GeV_1.5mm.txt
+BeamProfile ../beamParameters/20GeV_beam_params_1.5mm.txt
+Simulation 0
+runno aligned_dat_20GeV_1.5mm
+cut_lb_x -2.919711e-04
+cut_ub_x 3.279604e-04
+cut_lb_y -1.695655e-04
+cut_ub_y 5.956529e-05

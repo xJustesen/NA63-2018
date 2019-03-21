@@ -1,0 +1,10 @@
+BeamEnergy 40.0
+CrystalThickness 1.0E+03
+CrystalType amorphous
+OutputDataFilename /home/christian/Documents/cern2018/spectre/cuts95/energy_sim_amorph_40GeV_1.0mm.txt
+OutputEventFilename /home/christian/Documents/cern2018/spectre/cuts95/energy_sim_amorph_40GeV_1.0mm.txt
+IncludeBG 1
+NEvents 5000000
+BeamProfile ../beamParameters/40GeV_beam_params_1.0mm.txt
+Simulation 1
+runno sim_amorphous_40GeV_1.0mm

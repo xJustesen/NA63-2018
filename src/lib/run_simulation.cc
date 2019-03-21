@@ -2,6 +2,7 @@
 
 RunSimulation::RunSimulation(PreProcessor *initialize)
 {
+    // Simulate data set
     simulator *Simulate = new simulator(initialize->config_.NEvents,
                                         initialize->z_,
                                         initialize->config_.CrystalType,
@@ -10,9 +11,9 @@ RunSimulation::RunSimulation(PreProcessor *initialize)
                                         initialize->config_.BeamProfile,
                                         initialize->config_.TheorySpectrum,
                                         initialize->config_.IncludeBG);
-    Simulate->PropagateParticles();
+    Simulate->GenerateSyntheticData();
     cout << "\nData simulated, starting analysis\n";
-    /* Analysis */
+    // Analyse simulated data set
     const char *dummy_root_file_name = "";
     analyser *Analyse = new analyser(initialize->z_,
                                      dummy_root_file_name,
@@ -30,9 +31,15 @@ RunSimulation::RunSimulation(PreProcessor *initialize)
     cout << "Pairing tracks and calculating energies\n";
     Analyse->PairTracks();
     energies_ = Analyse->GetEnergies();
+    number_of_events_ = Analyse->GetEventsWithinCut();
 }
 
 vector<vector<double>> RunSimulation::GetEnergies()
 {
     return energies_;
+}
+
+int RunSimulation::GetEvents()
+{
+    return number_of_events_;
 }

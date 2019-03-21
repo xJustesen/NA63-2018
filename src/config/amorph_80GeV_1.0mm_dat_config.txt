@@ -1,4 +1,0 @@
-OutputFilename /home/christian/Desktop/SimulationTestOutput/energy_dat_amorphous_80GeV_1mm.txt
-BeamProfile ../beamParameters/80GeV_beam_params.txt
-Simulation 0
-runno dat_80GeV_1mm

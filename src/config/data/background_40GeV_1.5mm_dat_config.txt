@@ -1,0 +1,9 @@
+OutputDataFilename /home/christian/Documents/cern2018/spectre/cuts95/energy_dat_bg_40GeV_1.5mm.txt
+OutputEventFilename /home/christian/Documents/cern2018/spectre/cuts95/events_dat_bg_40GeV_1.5mm.txt
+BeamProfile ../beamParameters/40GeV_beam_params_1.5mm.txt
+Simulation 0
+runno background_dat_40GeV_1.5mm_cut
+cut_lb_x -2.376100e-07
+cut_ub_x 3.070817e-04
+cut_lb_y -1.504502e-04
+cut_ub_y 2.808442e-05

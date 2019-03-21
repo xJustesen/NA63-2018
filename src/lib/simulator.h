@@ -15,18 +15,31 @@
 #include <random>
 #include <vector>
 
+#include "auxillary_functions.h"
+
 using namespace std;
 using namespace arma;
+
+struct DETECTOR
+{
+    vector<double> x;
+    vector<double> y;
+    double z;
+    double resolution;
+    double accuracy;
+    double fake_hit_rate;
+    int number;
+};
 
 class simulator
 {
   public:
-    double beam_energy_;                                       // energy of particle
-    double crystal_thicknes_;                                     // size of crystal
+    double beam_energy_;                             // energy of particle
+    double crystal_thicknes_;                        // size of crystal
     vector<vector<vector<vector<double>>>> mimosas_; // equivalent to the "hitcoords" vector in "analyser" class
 
     simulator(int N, vector<double> z, string run, double BeamEnergy, double CrystalThickness, string filename, string TheorySpec, int bg);
-    void PropagateParticles(void); // propagate particles through the experiment
+    void GenerateSyntheticData(void); // propagate particles through the experiment
     void PrintHits(void);
     void LinearInterpolation(vector<double> x_coordinate, vector<double> y_coordinate, vector<double> xi, vector<double> &yi);
 
@@ -34,11 +47,11 @@ class simulator
     vector<vector<vector<double>>> photons_;   // stores photon data
     vector<vector<vector<double>>> particles_; // stores particles data
     vector<vector<int>> hot_pixels_;
-    vector<double> detector_z_coordinates_;         // z-coordinates of detectors
+    vector<double> detector_z_coordinates_; // z-coordinates of detectors
     vector<double> intensity_sum_;
     vector<double> intensity_sum_interp_;
-    vector<double> emitted_energies_interp_;  // interpolated values of "emitted_energies_"
-    vector<double> emitted_energies_; // summed distribution of simulated emitted energies for aligned crystal
+    vector<double> emitted_energies_interp_; // interpolated values of "emitted_energies_"
+    vector<double> emitted_energies_;        // summed distribution of simulated emitted energies for aligned crystal
     vector<double> x_angle_weight_;
     vector<double> y_angle_weight_;
     vector<double> x_coordinate_weight_;
@@ -52,10 +65,10 @@ class simulator
     double dev_entry_angle_x_;  // standard deviation of entry angles of incoming particles
     double mean_entry_angle_y_; // mean entry angle of incoming particles
     double dev_entry_angle_y_;  // standard deviation of entry angles of incoming particles
-    double charge_;                  // charge of positron in Coulombergy)
+    double charge_;             // charge of positron in Coulombergy)
     double c_;                  // speed of light in vac. in m/s
-    double electron_mass_;                  // mass of electron/positron in kg
-    double foil_thickness_;                // thickness of converter foil
+    double electron_mass_;      // mass of electron/positron in kg
+    double foil_thickness_;     // thickness of converter foil
     double X0_Si_amorph_;       // 9.370E+04,
     double X0_C_gem_;
     double X0_mimosa_;
@@ -79,14 +92,20 @@ class simulator
     mt19937_64 global_generator_;
     normal_distribution<double> normal_distribution_;
     uniform_real_distribution<double> uniform_real_distribution_;
+    DETECTOR M1;
+    DETECTOR M2;
+    DETECTOR M3;
+    DETECTOR M4;
+    DETECTOR M5;
+    DETECTOR M6;
 
-    void LoadBeamParameters(void);                                              // generates beam profile
+    void LoadBeamParameters(void);                                                      // generates beam profile
     void MultipleScattering(double X0, double z, mt19937_64, vector<vector<double>> &); // projection taking multiple scattering into account
-    void MimosaMagnet(vector<vector<double>> &local_particles);                  // used to caluclate deflection in mimosa magnet
+    void MimosaMagnet(vector<vector<double>> &local_particles);                         // used to caluclate deflection in mimosa magnet
     void ConverterFoil(double X0, mt19937_64, int N_slices, vector<vector<double>> &photons, vector<vector<double>> &particles);
-    void MimosaDetector(int planeno, int eventno, int &, mt19937_64, vector<vector<double>>); // adds a MIMOSA detector, ie simulates a detection
-    void ElectronicEnergyDistribution(double &r);                                            // analytical solution to the equation CDF(x) = r, where CDF is the cumulative distribution function for the fractional energy distribution of a produced electron/positron pair
-    void MbplMagnet(vector<vector<double>> &);                                                // clears particle-vector
+    void MimosaDetector(DETECTOR detector, int eventno, int &, mt19937_64, vector<vector<double>>); // adds a MIMOSA detector, ie simulates a detection
+    void ElectronicEnergyDistribution(double &r);                                                   // analytical solution to the equation CDF(x) = r, where CDF is the cumulative distribution function for the fractional energy distribution of a produced electron/positron pair
+    void MbplMagnet(vector<vector<double>> &);                                                      // clears particle-vector
     void AmorphMaterial(int &emitted, double X0, double z, double L, mt19937_64, vector<vector<double>> &, vector<vector<double>> &, int no_slices = 1);
     static double PhotonicEnergyDistribution(vec x, double randno, double E, double norm);
     void BorsellinoOpeningAngle(double E1, double E2, double E_phot, double &phi1, double &phi2); // the approximated Borsellino opening angle of e-/e+ pair
@@ -118,6 +137,8 @@ class simulator
     void InitializeInputVariables(string filename);
     void InitializeInputVariablesHelper(string Key, string Value);
     int SearchList(vector<string> List, string Key);
+    void LoadConfigFile(const string &configfile);
+    void AssignDetectorParameters(string config, pt::ptree tree, DETECTOR &detector);
 
     template <typename lambda>
     void SimplexInitiate(vector<vec> simplex, lambda F, vec &fs)

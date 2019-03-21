@@ -1,4 +1,0 @@
-OutputFilename /home/christian/Documents/cern2018/spectre/cuts/energy_dat_aligned_80GeV_1.5mm.txt
-BeamProfile ../beamParameters/80GeV_beam_params_1.5mm.txt
-Simulation 0
-runno aligned_dat_80GeV_1.5mm

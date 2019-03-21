@@ -1,0 +1,12 @@
+BeamEnergy 20.0
+CrystalThickness 1.0E+03
+CrystalType aligned
+OutputDataFilename /home/christian/Documents/cern2018/spectre/cuts95/energy_sim_aligned_20GeV_1.0mm_stochastic.txt
+OutputEventFilename /home/christian/Documents/cern2018/spectre/cuts95/energy_sim_aligned_20GeV_1.0mm_stochastic.txt
+IncludeBG 1
+NEvents 5000000
+BeamProfile 20GeV_beam_params.txt
+Simulation 1
+runno sim_aligned_20GeV_1.0mm_stochastic
+TheorySpectrum /home/christian/Dropbox/Cern2018Experiment/grendel/spectre/sum_angles20GeV1mmstochastic.txt
+

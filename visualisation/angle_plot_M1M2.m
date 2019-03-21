@@ -1,7 +1,7 @@
 clear all; close all; clear all;
 datpath = '/home/christian/Documents/cern2018/simdata/';
 
-runs_dat = 84;
+runs_dat = 66;
 sim = 1:1;
 angles = linspace(-2e-3, 2e-3, 200);
 angx_tot = [];
@@ -24,20 +24,20 @@ for i = runs_dat
     angx_tot = [angx_tot; angx];
     angy_tot = [angy_tot; angy];
 end
-
-for i = sim
-    filepath = strcat(datpath,['beam_divergence_sim_amorphous1_80GeV_04012019.txt']);
-    datsim = load(filepath);
-    
-    angxsim = datsim(:,1);
-    angysim = datsim(:,2);
-    
-    % Save angles and positions in matrix
-    angx_tot_sim = [angx_tot_sim; angxsim];
-    angy_tot_sim = [angy_tot_sim; angysim];
-end
-
-
+% 
+% for i = sim
+%     filepath = strcat(datpath,['beam_divergence_sim_amorphous1_40GeV_1.5mm.txt']);
+%     datsim = load(filepath);
+%     
+%     angxsim = datsim(:,1);
+%     angysim = datsim(:,2);
+%     
+%     % Save angles and positions in matrix
+%     angx_tot_sim = [angx_tot_sim; angxsim];
+%     angy_tot_sim = [angy_tot_sim; angysim];
+% end
+% 
+% 
 % fakerun = load(strcat(datpath,'angles_M1M2_',num2str(4),'.txt'));
 
 % Make histogram for combined runs
@@ -110,8 +110,8 @@ box on
 grid on
 plot(angles, ang_counts_x_tot/max(ang_counts_x_tot),'-','linewidth',2.5);
 plot(angles, ang_counts_y_tot/max(ang_counts_x_tot),'-','linewidth',2.5);
-plot(angles, (ang_counts_x_tot_sim - xfit_fakes(angles))/max((ang_counts_x_tot_sim - xfit_fakes(angles))),'-','linewidth',2.5);
-plot(angles, (ang_counts_y_tot_sim - yfit_fakes(angles))/max((ang_counts_x_tot_sim - xfit_fakes(angles))),'-','linewidth',2.5);
+% plot(angles, (ang_counts_x_tot_sim - xfit_fakes(angles))/max((ang_counts_x_tot_sim - xfit_fakes(angles))),'-','linewidth',2.5);
+% plot(angles, (ang_counts_y_tot_sim - yfit_fakes(angles))/max((ang_counts_x_tot_sim - xfit_fakes(angles))),'-','linewidth',2.5);
 set(gca, 'FontSize', 24)
 xlabel('Angle [rad]','fontsize',36,'interpreter','latex');ylabel('Normalized counts','fontsize',36,'interpreter','latex');
 legend({'x','y'},'interpreter','latex','fontsize',36);
@@ -125,8 +125,8 @@ box on
 grid on
 plot(angles, (ang_counts_x_tot - xfit_fakes(angles))/max((ang_counts_x_tot - xfit_fakes(angles))),'-','linewidth',2.5);
 plot(angles, (ang_counts_y_tot - yfit_fakes(angles))/max((ang_counts_x_tot - xfit_fakes(angles))),'-','linewidth',2.5);
-plot(angles, (ang_counts_x_tot_sim - xfit_fakes(angles))/max((ang_counts_x_tot_sim - xfit_fakes(angles))),'-','linewidth',2.5);
-plot(angles, (ang_counts_y_tot_sim - yfit_fakes(angles))/max((ang_counts_x_tot_sim - xfit_fakes(angles))),'-','linewidth',2.5);
+% plot(angles, (ang_counts_x_tot_sim - xfit_fakes(angles))/max((ang_counts_x_tot_sim - xfit_fakes(angles))),'-','linewidth',2.5);
+% plot(angles, (ang_counts_y_tot_sim - yfit_fakes(angles))/max((ang_counts_x_tot_sim - xfit_fakes(angles))),'-','linewidth',2.5);
 set(gca, 'FontSize', 24)
 xlabel('Angle [rad]','fontsize',36,'interpreter','latex'); ylabel('Normalized counts','fontsize',36,'interpreter','latex');
 legend({'x','y'},'interpreter','latex','fontsize',36);

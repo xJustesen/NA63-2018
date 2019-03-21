@@ -1,8 +1,59 @@
 #include "pre_processor.h"
 
+void PreProcessor::LoadConfigFile(const string &configfile)
+{
+    // Create empty property tree object
+    pt::ptree tree;
+    // Parse the JSON into the property tree.
+    pt::read_json(configfile, tree);
+    // Assign parameters
+    config_.IncludeBG = tree.get<int>("IncludeBackground");
+    config_.Simulation = tree.get<int>("Simulation");
+    config_.NEvents = tree.get<int>("NumberOfEvents");
+    config_.CrystalType = tree.get<string>("CrystalType.amorphous");
+    config_.BeamEnergy = tree.get<double>("BeamEnergy.40GeV");
+    config_.CrystalThickness = tree.get<double>("CrystalThickness.1,5mm");
+    string crystal_thickness;
+    string beam_energy;
+    if (config_.CrystalThickness == 1.5)
+    {
+        crystal_thickness = "_1.5mm_";
+    }
+    else
+    {
+        crystal_thickness = "_1.0mm_";
+    }
+    if (config_.BeamEnergy == 20)
+    {
+        beam_energy = "_20GeV.txt";
+    }
+    else if (config_.BeamEnergy == 40)
+    {
+        beam_energy = "_40GeV.txt";
+    }
+    else
+    {
+        beam_energy = "_80GeV.txt";
+    }
+    if (config_.CrystalType == "amorphous")
+    {
+        config_.OutputDataFilename = "energy_" + tree.get<string>("OutputDirectory") + "_amorphous_" + crystal_thickness + beam_energy;
+        config_.OutputDataFilename = "events_" + tree.get<string>("OutputDirectory") + "_amorphous_" + crystal_thickness + beam_energy;
+    }
+    else
+    {
+        config_.OutputDataFilename = "energy_" + tree.get<string>("OutputDirectory") + "_aligned_" + crystal_thickness + beam_energy;
+        config_.OutputDataFilename = "events_" + tree.get<string>("OutputDirectory") + "_aligned_" + crystal_thickness + beam_energy;
+    }
+}
+
 PreProcessor::PreProcessor(string config_file)
 {
-    /* Define parameters for constructor */
+
+    // string configfile = "./sim/simulation_configuration.json";
+    // LoadConfigFile(configfile);
+
+    // Define parameters for constructor
     legal_input_ = {
         "BeamEnergy",
         "CrystalThickness",
@@ -11,18 +62,19 @@ PreProcessor::PreProcessor(string config_file)
         "cut_ub_x",
         "cut_lb_y",
         "cut_ub_y",
-        "OutputFilename",
+        "OutputDataFilename",
         "CrystalType",
         "runno",
         "DataPath",
-        "TheorySepctrum",
+        "TheorySpectrum",
         "IncludeBG",
         "NEvents",
-        "Simulation"};
-    /* Assign default values to angular cuts */
+        "Simulation",
+        "OutputEventFilename"};
+    // Assign default values to angular cuts
     config_.cut_lb_x = config_.cut_lb_y = (-1.0) * 1E+17;
     config_.cut_ub_x = config_.cut_ub_y = 1E+17;
-    /* Initialize simulation input parameters */
+    // Initialize simulation input parameters
     cout << "\nConfig-struct contains:\n";
     try
     {
@@ -53,7 +105,7 @@ void PreProcessor::InitializeInputVariables(std::string filename)
             {
                 if (EmptyFile)
                 {
-                    throw "config file appears to be empty!\n";
+                    throw "Config file appears to be empty; exiting program!\n";
                 }
                 break;
             }
@@ -69,7 +121,7 @@ void PreProcessor::InitializeInputVariables(std::string filename)
 
 void PreProcessor::InitializeInputVariablesHelper(std::string key, std::string value)
 {
-    int index = SearchList(legal_input_, key);
+    int index = SearchLegalInput(key);
     switch (index)
     {
     case 0:
@@ -97,8 +149,8 @@ void PreProcessor::InitializeInputVariablesHelper(std::string key, std::string v
         config_.cut_ub_y = std::stod(value);
         break;
     case 7:
-        config_.OutputFilename = value;
-        std::cout << "OutputFilename : " << config_.OutputFilename << "\n";
+        config_.OutputDataFilename = value;
+        std::cout << "OutputDataFilename : " << config_.OutputDataFilename << "\n";
         break;
     case 8:
         config_.CrystalType = value;
@@ -128,6 +180,10 @@ void PreProcessor::InitializeInputVariablesHelper(std::string key, std::string v
         config_.Simulation = stoi(value);
         std::cout << "Simulation : " << config_.Simulation << "\n";
         break;
+    case 15:
+        config_.OutputEventFilename = value;
+        std::cout << "OutputEventFilename : " << config_.OutputEventFilename << "\n";
+        break;
     case -1:
         std::cerr << "\nIllegal variable name:\t'" << key << "'\tin config file\n";
         std::cerr << "Legal variable names are:\n";
@@ -140,11 +196,11 @@ void PreProcessor::InitializeInputVariablesHelper(std::string key, std::string v
     }
 }
 
-int PreProcessor::SearchList(std::vector<std::string> list, std::string key)
+int PreProcessor::SearchLegalInput(std::string key)
 {
-    for (size_t i = 0; i < list.size(); i++)
+    for (size_t i = 0; i < legal_input_.size(); i++)
     {
-        if (key == list[i])
+        if (key == legal_input_[i])
         {
             return i;
         }

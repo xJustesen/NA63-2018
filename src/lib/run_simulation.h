@@ -9,13 +9,14 @@ using namespace std;
 
 class RunSimulation
 {
-  public:
-    RunSimulation(PreProcessor *initialize);
-    vector<vector<double>> GetEnergies();
+public:
+  RunSimulation(PreProcessor *initialize);
+  vector<vector<double>> GetEnergies();
+  int GetEvents();
 
-  private:
-    vector<vector<double>> energies_;
+private:
+  vector<vector<double>> energies_;
+  int number_of_events_;
 };
 
 #endif
-

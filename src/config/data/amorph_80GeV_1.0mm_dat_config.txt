@@ -1,0 +1,9 @@
+Simulation 0
+OutputDataFilename /home/christian/Documents/cern2018/spectre/cuts95/energy_dat_amorphous_80GeV_1mm.txt
+OutputEventFilename /home/christian/Documents/cern2018/spectre/cuts95/events_dat_amorphous_80GeV_1mm.txt
+BeamProfile ../beamParameters/80GeV_beam_params.txt
+runno amorph_data_80GeV_1mm
+cut_lb_x -2.373887e-07
+cut_ub_x 3.070892e-04
+cut_lb_y -1.504502e-04
+cut_ub_y 2.808442e-05

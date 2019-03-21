@@ -1,4 +1,0 @@
-OutputFilename /home/christian/Desktop/SimulationTestOutput/energy_dat_amorphous_40GeV_1.5mm.txt
-BeamProfile ../beamParameters/40GeV_beam_params_1.5mm.txt
-Simulation 0
-runno dat_40GeV_1.5mm

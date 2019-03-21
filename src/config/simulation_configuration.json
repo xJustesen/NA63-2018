@@ -1,0 +1,19 @@
+{
+    "IncludeBackground": 1,
+    "Simulation": 1,
+    "NumberOfEvents": 1000000,
+    "BeamEnergy": {
+        "20GeV": 20.0,
+        "40GeV": 40.0,
+        "80GeV": 80.0
+    },
+    "CrystalType": {
+        "amorphous": "amorphous",
+        "aligned": "aligned"
+    },
+    "CrystalThickness": {
+        "1,5mm": 1.5,
+        "1,0mm": 1.0
+    },
+    "OutputDirectory": "/home/christian/Desktop/SimulationTestOutput/"
+}

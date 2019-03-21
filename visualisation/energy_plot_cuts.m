@@ -1,7 +1,7 @@
-clear all; clc; close all; 
+clear all; clc; %close all; 
 global datpath simpath;
 datpath = '/home/christian/Dropbox/Cern2018Experiment/spectre/cuts/';
-simpath = '/home/christian/Dropbox/Cern2018Experiment/grendel/spectre/cuts/';
+simpath = '/home/christian/Dropbox/Cern2018Experiment/spectre/cuts/';
 
 Em = 0.511;
 Na = 6.022*10^23;
@@ -17,7 +17,7 @@ crit_angle_20 = sqrt(4 * di_Z * e2 / (20000 * di_d * 1e-6)); % se Allan's NIMB a
 crit_angle_40 = crit_angle_20 * sqrt(1/2);
 crit_angle_80 = crit_angle_20 * sqrt(1/4);
 
-fprintf("Critical angle\t20 GeV\t40 GeV\t80 GeV \nmicrorad\t%2.2f\t%2.2f\t%2.2f\n",crit_angle_20, crit_angle_40, crit_angle_80);
+fprintf("\nCritical angle\t20 GeV\t40 GeV\t80 GeV \nmicrorad\t%2.2f\t%2.2f\t%2.2f\n",crit_angle_20, crit_angle_40, crit_angle_80);
 
 E20 = linspace(0,20,20);
 E40 = linspace(0,40,40);
@@ -45,9 +45,16 @@ for i = 1:length(types)
    end
 end
 
-counts_dat_20GeV_aligned_norm_tot = spectrum('energy_','.txt',[103, 104, 112:114]);
+events_20GeV_1mm(1) = load('/home/christian/Dropbox/Cern2018Experiment/spectre/cuts/events_dat_aligned_20GeV_1mm.txt');
+% events_20GeV_1mm(2) = load('/home/christian/Documents/cern2018/spectre/cuts/events_run_amorphous_dat_20GeV_1mm_cut.txt');
+% events_20GeV_1mm(3) = load('/home/christian/Documents/cern2018/spectre/cuts/events_run_background_dat_20GeV_1mm_cut.txt');
+
+% counts_dat_20GeV_aligned_norm_tot = spectrum('energy_','.txt',[103, 104, 112:114]);
+counts_dat_20GeV_aligned_norm_tot = spectrum('energy_dat','_aligned_20GeV_1mm.txt',[]);
 counts_dat_20GeV_amorph_norm_tot = spectrum('energy_', '.txt', [109,115]);
+% counts_dat_20GeV_amorph_norm_tot = load('/home/christian/Documents/cern2018/spectre/cuts/energy_dat_amorphous_20GeV_1mm.txt')* 6.2415091E9;
 counts_dat_20GeV_bg_norm_tot = spectrum('energy_', '.txt', [105:108, 110, 111]);
+% counts_dat_20GeV_bg_norm_tot = load('/home/christian/Documents/cern2018/spectre/cuts/energy_dat_background_20GeV_1mm.txt')* 6.2415091E9;
 
 data_bg_20GeV_1mm = hist(counts_dat_20GeV_bg_norm_tot(counts_dat_20GeV_bg_norm_tot < max(E20) & counts_dat_20GeV_bg_norm_tot > min(E20)), E20);
 
@@ -68,9 +75,17 @@ for i = 1:length(types)
        events_20GeV_1_5mm(i) = events_20GeV_1_5mm(i) +  events(dataruns == runs(j));
    end
 end
+
+events_20GeV_1mm(1) = load('/home/christian/Dropbox/Cern2018Experiment/spectre/cuts/events_dat_aligned_20GeV_1.5mm.txt');
+% events_20GeV_1_5mm(2) = load('/home/christian/Documents/cern2018/spectre/cuts/events_run_amorphous_dat_20GeV_1.5mm_cut.txt');
+% events_20GeV_1_5mm(3) = load('/home/christian/Documents/cern2018/spectre/cuts/events_run_background_dat_20GeV_1.5mm_cut.txt');
+% 
 counts_dat_20GeV_amorph_1_5mm_norm_tot = spectrum('energy_', '.txt', 66:69 );
+% counts_dat_20GeV_amorph_1_5mm_norm_tot = load('/home/christian/Documents/cern2018/spectre/cuts/energy_dat_amorphous_20GeV_1.5mm.txt')* 6.2415091E9;
 counts_dat_20GeV_bg_1_5mm_norm_tot = spectrum('energy_', '.txt', [60,65] );
-counts_dat_20GeV_aligned_norm_tot_1_5mm = spectrum('energy_', '.txt',61:64);
+% counts_dat_20GeV_bg_1_5mm_norm_tot = load('/home/christian/Documents/cern2018/spectre/cuts/energy_dat_background_20GeV_1.5mm.txt')* 6.2415091E9;
+% counts_dat_20GeV_aligned_norm_tot_1_5mm = spectrum('energy_', '.txt',61:64);
+counts_dat_20GeV_aligned_norm_tot_1_5mm = spectrum('energy_dat','_aligned_20GeV_1.5mm.txt',[]);
 
 data_bg_20GeV_1_5mm = hist(counts_dat_20GeV_bg_1_5mm_norm_tot(counts_dat_20GeV_bg_1_5mm_norm_tot < max(E20) & counts_dat_20GeV_bg_1_5mm_norm_tot > min(E20)), E20);
 
@@ -80,51 +95,33 @@ data_align_20GeV_1_5mm = E20 .* data_align_20GeV_1_5mm/(events_20GeV_1_5mm(1));
 
 fprintf('\t 20 GeV CERN data loaded\n')
 
-% SIM 1mm
-nevents_amorph_20GeV_1mm = load(strcat(simpath, 'events_run_cuts_sim_amorphous_20GeV.txt'));
-nevents_bg_20GeV_1mm = load(strcat(simpath, 'events_run_cuts_sim_background_20GeV.txt'));
-nevents_align_20GeV_1mm_worr = load(strcat(simpath, 'events_run_cuts_sim_aligned_20GeV_worr_test.txt'));
-nevents_align_20GeV_1mm_wosh = load(strcat(simpath, 'events_run_cuts_sim_aligned_20GeV_woshot_test.txt'));
-nevents_align_20GeV_1mm = load(strcat(simpath, 'events_run_cuts_sim_aligned_20GeV_test.txt'));
+% % SIM 1mm
+nevents_amorph_20GeV_1mm = load(strcat(simpath, 'events_run_sim_amorphous_20GeV_finite_size.txt'));
+nevents_bg_20GeV_1mm = load(strcat(simpath, 'events_run_sim_background_20GeV_finite_size.txt'));
+nevents_align_20GeV_1mm_stoch = load(strcat(simpath, 'events_run_sim_aligned_20GeV_stochastic_finite_size.txt'));
 
-counts_sim_20GeV_amorph_bg_norm = spectrum('energy_sim_amorphous', '_20GeV.txt', []);
-counts_sim_20GeV_bg_norm = spectrum('energy_sim_background', '_20GeV.txt', []);
+counts_sim_20GeV_amorph_bg_norm = spectrum('energy_sim_amorphous', '_20GeV_finite_size.txt', []);
+counts_sim_20GeV_bg_norm = spectrum('energy_sim_background', '_20GeV_finite_size.txt', []);
 sim_bg_20GeV_1mm = hist(counts_sim_20GeV_bg_norm(counts_sim_20GeV_bg_norm < max(E20) & counts_sim_20GeV_bg_norm > min(E20)), E20);
-% align wo RR
-counts_sim_20GeV_aligned_1mm_woRR = spectrum('energy_sim_aligned', '_20GeV_worr_test.txt',  []);
-sim_align_20GeV_1mm_woRR = hist(counts_sim_20GeV_aligned_1mm_woRR(counts_sim_20GeV_aligned_1mm_woRR < max(E20) & counts_sim_20GeV_aligned_1mm_woRR > min(E20)), E20);
-sim_align_20GeV_1mm_woRR = E20 .* (sim_align_20GeV_1mm_woRR / nevents_align_20GeV_1mm_worr - sim_bg_20GeV_1mm / nevents_bg_20GeV_1mm);
-% align
-counts_sim_20GeV_aligned_1mm = spectrum('energy_sim_aligned', '_20GeV_test.txt',  []);
-sim_align_20GeV_1mm_RR = hist(counts_sim_20GeV_aligned_1mm(counts_sim_20GeV_aligned_1mm < max(E20) & counts_sim_20GeV_aligned_1mm > min(E20)), E20);
-sim_align_20GeV_1mm_RR = E20 .* (sim_align_20GeV_1mm_RR / nevents_align_20GeV_1mm - sim_bg_20GeV_1mm / nevents_bg_20GeV_1mm);
-% align wo SH
-counts_sim_20GeV_aligned_1mm_woSH = spectrum('energy_sim_aligned', '_20GeV_woshot_test.txt',  []);
-sim_align_20GeV_1mm_woSH = hist(counts_sim_20GeV_aligned_1mm_woSH(counts_sim_20GeV_aligned_1mm_woSH < max(E20) & counts_sim_20GeV_aligned_1mm_woSH > min(E20)), E20);
-sim_align_20GeV_1mm_woSH = E20 .* (sim_align_20GeV_1mm_woSH / nevents_align_20GeV_1mm_wosh - sim_bg_20GeV_1mm / nevents_bg_20GeV_1mm);
+
+% align stochastic
+counts_sim_20GeV_aligned_1mm_stoch = spectrum('energy_sim_aligned', '_20GeV_stochastic_finite_size.txt',  []);
+sim_align_20GeV_1mm_stoch = hist(counts_sim_20GeV_aligned_1mm_stoch(counts_sim_20GeV_aligned_1mm_stoch < max(E20) & counts_sim_20GeV_aligned_1mm_stoch > min(E20)), E20);
+sim_align_20GeV_1mm_stoch = E20 .* (sim_align_20GeV_1mm_stoch / nevents_align_20GeV_1mm_stoch - sim_bg_20GeV_1mm / nevents_bg_20GeV_1mm);
 
 % SIM 1.5mm
-nevents_amorph_20GeV_1_5mm = load(strcat(simpath, 'events_run_cuts_sim_amorphous_20GeV_1.5mm.txt'));
-nevents_bg_20GeV_1_5mm = load(strcat(simpath, 'events_run_cuts_sim_background_20GeV_1.5mm.txt'));
-nevents_align_20GeV_1_5mm_worr = load(strcat(simpath, 'events_run_cuts_sim_aligned_20GeV_worr_1.5mm_test.txt'));
-nevents_align_20GeV_1_5mm_wosh = load(strcat(simpath, 'events_run_cuts_sim_aligned_20GeV_woshot_1.5mm_test.txt'));
-nevents_align_20GeV_1_5mm = load(strcat(simpath, 'events_run_cuts_sim_aligned_20GeV_1.5mm_test.txt'));
+nevents_amorph_20GeV_1_5mm = load(strcat(simpath, 'events_run_sim_amorphous_20GeV_1.5mm_finite_size.txt'));
+nevents_bg_20GeV_1_5mm = load(strcat(simpath, 'events_run_sim_background_20GeV_1.5mm_finite_size.txt'));
+nevents_align_20GeV_1_5mm_stoch = load(strcat(simpath, 'events_run_sim_aligned_20GeV_1.5mm_stochastic_finite_size.txt'));
 
-counts_sim_20GeV_bg_norm_1_5mm = spectrum('energy_sim_background', '_20GeV_1.5mm.txt', []);
-counts_sim_20GeV_amorph_bg_norm_1_5mm = spectrum('energy_sim_amorphous', '_20GeV_1.5mm.txt', []);
+counts_sim_20GeV_bg_norm_1_5mm = spectrum('energy_sim_background', '_20GeV_1.5mm_finite_size.txt', []);
+counts_sim_20GeV_amorph_bg_norm_1_5mm = spectrum('energy_sim_amorphous', '_20GeV_1.5mm_finite_size.txt', []);
 sim_bg_20GeV_1_5mm = hist(counts_sim_20GeV_bg_norm_1_5mm(counts_sim_20GeV_bg_norm_1_5mm < max(E20) & counts_sim_20GeV_bg_norm_1_5mm > min(E20)), E20);
-% align wo RR
-counts_sim_20GeV_aligned_1_5mm_woRR = spectrum('energy_sim_aligned', '_20GeV_worr_1.5mm_test.txt',  []);
-sim_align_20GeV_1_5mm_woRR = hist(counts_sim_20GeV_aligned_1_5mm_woRR(counts_sim_20GeV_aligned_1_5mm_woRR < max(E20) & counts_sim_20GeV_aligned_1_5mm_woRR > min(E20)), E20);
-sim_align_20GeV_1_5mm_woRR = E20 .* (sim_align_20GeV_1_5mm_woRR / nevents_align_20GeV_1_5mm_worr - sim_bg_20GeV_1_5mm / nevents_bg_20GeV_1_5mm);
-% align RR
-counts_sim_20GeV_aligned_1_5mm_RR = spectrum('energy_sim_aligned', '_20GeV_1.5mm_test.txt',  []);
-sim_align_20GeV_1_5mm_RR = hist(counts_sim_20GeV_aligned_1_5mm_RR(counts_sim_20GeV_aligned_1_5mm_RR < max(E20) & counts_sim_20GeV_aligned_1_5mm_RR > min(E20)), E20);
-sim_align_20GeV_1_5mm_RR = E20 .* (sim_align_20GeV_1_5mm_RR / nevents_align_20GeV_1_5mm - sim_bg_20GeV_1_5mm / nevents_bg_20GeV_1_5mm);
-% align wo SH
-counts_sim_20GeV_aligned_1_5mm_woSH = spectrum('energy_sim_aligned', '_20GeV_woshot_1.5mm_test.txt',  []);
-sim_align_20GeV_1_5mm_woSH = hist(counts_sim_20GeV_aligned_1_5mm_woSH(counts_sim_20GeV_aligned_1_5mm_woSH < max(E20) & counts_sim_20GeV_aligned_1_5mm_woSH > min(E20)), E20);
-sim_align_20GeV_1_5mm_woSH = E20 .* (sim_align_20GeV_1_5mm_woSH / nevents_align_20GeV_1_5mm_wosh - sim_bg_20GeV_1_5mm / nevents_bg_20GeV_1_5mm);
+
+% align stochastic
+counts_sim_20GeV_aligned_1_5mm_stoch = spectrum('energy_sim_aligned', '_20GeV_1.5mm_stochastic_finite_size.txt',  []);
+sim_align_20GeV_1_5mm_stoch = hist(counts_sim_20GeV_aligned_1_5mm_stoch(counts_sim_20GeV_aligned_1_5mm_stoch < max(E20) & counts_sim_20GeV_aligned_1_5mm_stoch > min(E20)), E20);
+sim_align_20GeV_1_5mm_stoch = E20 .* (sim_align_20GeV_1_5mm_stoch / nevents_align_20GeV_1_5mm_stoch - sim_bg_20GeV_1_5mm / nevents_bg_20GeV_1_5mm);
 
 fprintf('\t 20 GeV SIM data loaded\n')
 %% 40 GeV data+sim
@@ -180,49 +177,50 @@ fprintf('\t 40 GeV CERN data loaded\n')
 % SIM 1mm
 nevents_amorph_40GeV_1mm = load(strcat(simpath, 'events_run_cuts_sim_amorphous_40GeV.txt'));
 nevents_bg_40GeV_1mm = load(strcat(simpath, 'events_run_cuts_sim_background_40GeV.txt'));
-nevents_align_40GeV_1mm_worr = load(strcat(simpath, 'events_run_cuts_sim_aligned_40GeV_worr_test.txt'));
-nevents_align_40GeV_1mm_wosh = load(strcat(simpath, 'events_run_cuts_sim_aligned_40GeV_woshot_test.txt'));
-nevents_align_40GeV_1mm = load(strcat(simpath, 'events_run_cuts_sim_aligned_40GeV_test.txt'));
+nevents_align_40GeV_1mm_worr = load(strcat(simpath, 'events_run_sim_aligned_40GeV_worr.txt'));
+nevents_align_40GeV_1mm = load(strcat(simpath, 'events_run_sim_aligned_40GeV.txt'));
+nevents_align_40GeV_1mm_stoch = load(strcat(simpath, 'events_run_sim_aligned_40GeV_stochastic.txt'));
 
+%amroph+bg
 counts_sim_40GeV_amorph_bg_norm = spectrum('energy_sim_amorphous', '_40GeV.txt', []);
 counts_sim_40GeV_bg_norm = spectrum('energy_sim_background', '_40GeV.txt', []);
-
 sim_bg_40GeV_1mm = hist(counts_sim_40GeV_bg_norm(counts_sim_40GeV_bg_norm < max(E40) & counts_sim_40GeV_bg_norm > min(E40)), E40);
 % align wo RR
-counts_sim_40GeV_aligned_1mm_woRR = spectrum('energy_sim_aligned', '_40GeV_worr_test.txt',  []);
+counts_sim_40GeV_aligned_1mm_woRR = spectrum('energy_sim_aligned', '_40GeV_worr.txt',  []);
 sim_align_40GeV_1mm_woRR = hist(counts_sim_40GeV_aligned_1mm_woRR(counts_sim_40GeV_aligned_1mm_woRR < max(E40) & counts_sim_40GeV_aligned_1mm_woRR > min(E40)), E40);
 sim_align_40GeV_1mm_woRR = E40 .* (sim_align_40GeV_1mm_woRR / nevents_align_40GeV_1mm - sim_bg_40GeV_1mm / nevents_bg_40GeV_1mm);
-% align wo SH
-counts_sim_40GeV_aligned_1mm_woSH = spectrum('energy_sim_aligned', '_40GeV_woshot_test.txt',  []);
-sim_align_40GeV_1mm_woSH = hist(counts_sim_40GeV_aligned_1mm_woSH(counts_sim_40GeV_aligned_1mm_woSH < max(E40) & counts_sim_40GeV_aligned_1mm_woSH > min(E40)), E40);
-sim_align_40GeV_1mm_woSH = E40 .* (sim_align_40GeV_1mm_woSH / nevents_align_40GeV_1mm_wosh - sim_bg_40GeV_1mm / nevents_bg_40GeV_1mm);
 % align RR
-counts_sim_40GeV_aligned_1mm_RR = spectrum('energy_sim_aligned', '_40GeV_test.txt',  []);
+counts_sim_40GeV_aligned_1mm_RR = spectrum('energy_sim_aligned', '_40GeV.txt',  []);
 sim_align_40GeV_1mm_RR = hist(counts_sim_40GeV_aligned_1mm_RR(counts_sim_40GeV_aligned_1mm_RR < max(E40) & counts_sim_40GeV_aligned_1mm_RR > min(E40)), E40);
 sim_align_40GeV_1mm_RR = E40 .* (sim_align_40GeV_1mm_RR / nevents_align_40GeV_1mm - sim_bg_40GeV_1mm / nevents_bg_40GeV_1mm);
+% align stochastic
+counts_sim_40GeV_aligned_1mm_stoch = spectrum('energy_sim_aligned', '_40GeV_stochastic.txt',  []);
+sim_align_40GeV_1mm_stoch = hist(counts_sim_40GeV_aligned_1mm_stoch(counts_sim_40GeV_aligned_1mm_stoch < max(E40) & counts_sim_40GeV_aligned_1mm_stoch > min(E40)), E40);
+sim_align_40GeV_1mm_stoch = E40 .* (sim_align_40GeV_1mm_stoch / nevents_align_40GeV_1mm_stoch - sim_bg_40GeV_1mm / nevents_bg_40GeV_1mm);
 
 % SIM 1.5mm
-nevents_amorph_40GeV_1_5mm = load(strcat(simpath, 'events_run_cuts_sim_amorphous_40GeV_1.5mm.txt'));
-nevents_bg_40GeV_1_5mm = load(strcat(simpath, 'events_run_cuts_sim_background_40GeV_1.5mm.txt'));
-nevents_align_40GeV_1_5mm_worr = load(strcat(simpath, 'events_run_cuts_sim_aligned_40GeV_worr_1.5mm_test.txt'));
-nevents_align_40GeV_1_5mm_wosh = load(strcat(simpath, 'events_run_cuts_sim_aligned_40GeV_woshot_1.5mm_test.txt'));
-nevents_align_40GeV_1_5mm = load(strcat(simpath, 'events_run_cuts_sim_aligned_40GeV_1.5mm_test.txt'));
+nevents_amorph_40GeV_1_5mm = load(strcat(simpath, 'events_run_sim_amorphous_40GeV_1.5mm.txt'));
+nevents_bg_40GeV_1_5mm = load(strcat(simpath, 'events_run_sim_background_40GeV_1.5mm.txt'));
+nevents_align_40GeV_1_5mm_worr = load(strcat(simpath, 'events_run_sim_aligned_40GeV_worr_1.5mm.txt'));
+nevents_align_40GeV_1_5mm = load(strcat(simpath, 'events_run_sim_aligned_40GeV_1.5mm.txt'));
+nevents_align_40GeV_1_5mm_stoch = load(strcat(simpath, 'events_run_sim_aligned_40GeV_1.5mm_stochastic.txt'));
+
 % amorph+bg
 counts_sim_40GeV_bg_norm_1_5mm = spectrum('energy_sim_background', '_40GeV_1.5mm.txt', []);
 counts_sim_40GeV_amorph_bg_norm_1_5mm = spectrum('energy_sim_amorphous', '_40GeV_1.5mm.txt', []);
 sim_bg_40GeV_1_5mm = hist(counts_sim_40GeV_bg_norm_1_5mm(counts_sim_40GeV_bg_norm_1_5mm < max(E40) & counts_sim_40GeV_bg_norm_1_5mm > min(E40)), E40);
 % align wo RR
-counts_sim_40GeV_aligned_1_5mm_woRR = spectrum('energy_sim_aligned', '_40GeV_worr_1.5mm_test.txt',  []);
+counts_sim_40GeV_aligned_1_5mm_woRR = spectrum('energy_sim_aligned', '_40GeV_worr_1.5mm.txt',  []);
 sim_align_40GeV_1_5mm_woRR = hist(counts_sim_40GeV_aligned_1_5mm_woRR(counts_sim_40GeV_aligned_1_5mm_woRR < max(E40) & counts_sim_40GeV_aligned_1_5mm_woRR > min(E40)), E40);
 sim_align_40GeV_1_5mm_woRR = E40 .* (sim_align_40GeV_1_5mm_woRR / nevents_align_40GeV_1_5mm_worr - sim_bg_40GeV_1_5mm / nevents_bg_40GeV_1_5mm);
-% align wo schott
-counts_sim_40GeV_aligned_1_5mm_woSH = spectrum('energy_sim_aligned', '_40GeV_woshot_1.5mm_test.txt',  []);
-sim_align_40GeV_1_5mm_woSH = hist(counts_sim_40GeV_aligned_1_5mm_woSH(counts_sim_40GeV_aligned_1_5mm_woSH < max(E40) & counts_sim_40GeV_aligned_1_5mm_woSH > min(E40)), E40);
-sim_align_40GeV_1_5mm_woSH = E40 .* (sim_align_40GeV_1_5mm_woSH / nevents_align_40GeV_1_5mm_wosh - sim_bg_40GeV_1_5mm / nevents_bg_40GeV_1_5mm);
 % align wo RR
-counts_sim_40GeV_aligned_1_5mm_RR = spectrum('energy_sim_aligned', '_40GeV_1.5mm_test.txt',  []);
+counts_sim_40GeV_aligned_1_5mm_RR = spectrum('energy_sim_aligned', '_40GeV_1.5mm.txt',  []);
 sim_align_40GeV_1_5mm_RR = hist(counts_sim_40GeV_aligned_1_5mm_RR(counts_sim_40GeV_aligned_1_5mm_RR < max(E40) & counts_sim_40GeV_aligned_1_5mm_RR > min(E40)), E40);
 sim_align_40GeV_1_5mm_RR = E40 .* (sim_align_40GeV_1_5mm_RR / nevents_align_40GeV_1_5mm - sim_bg_40GeV_1_5mm / nevents_bg_40GeV_1_5mm);
+% align stochastic
+counts_sim_40GeV_aligned_1_5mm_stoch = spectrum('energy_sim_aligned', '_40GeV_1.5mm_stochastic.txt',  []);
+sim_align_40GeV_1_5mm_stoch = hist(counts_sim_40GeV_aligned_1_5mm_stoch(counts_sim_40GeV_aligned_1_5mm_stoch < max(E40) & counts_sim_40GeV_aligned_1_5mm_stoch > min(E40)), E40);
+sim_align_40GeV_1_5mm_stoch = E40 .* (sim_align_40GeV_1_5mm_stoch / nevents_align_40GeV_1_5mm_stoch - sim_bg_40GeV_1_5mm / nevents_bg_40GeV_1_5mm);
 
 fprintf('\t 40 GeV SIM data loaded\n')
 %% 80 GeV data+sim
@@ -278,49 +276,50 @@ fprintf('\t 80 GeV CERN data loaded\n')
 %SIM 1mm
 nevents_amorph_80GeV_1mm = load(strcat(simpath, 'events_run_cuts_sim_amorphous_80GeV_test.txt'));
 nevents_bg_80GeV_1mm = load(strcat(simpath, 'events_run_cuts_sim_background_80GeV_test.txt'));
-nevents_align_80GeV_1mm_worr = load(strcat(simpath, 'events_run_cuts_sim_aligned_80GeV_worr_test.txt'));
-% nevents_align_80GeV_1mm_wosh = load(strcat(simpath, 'events_run_cuts_sim_aligned_80GeV_woshot_test.txt'));
-nevents_align_80GeV_1mm = load(strcat(simpath, 'events_run_cuts_sim_aligned_80GeV_test.txt'));
+nevents_align_80GeV_1mm_worr = load(strcat(simpath, 'events_run_sim_aligned_80GeV_worr.txt'));
+nevents_align_80GeV_1mm = load(strcat(simpath, 'events_run_sim_aligned_80GeV.txt'));
+nevents_align_80GeV_1mm_stoch = load(strcat(simpath, 'events_run_sim_aligned_80GeV_stochastic.txt'));
 
+%amorph+bg
 counts_sim_80GeV_amorph_bg_norm = spectrum('energy_sim_amorphous', '_80GeV_test.txt', []);
 counts_sim_80GeV_bg_norm = spectrum('energy_sim_background', '_80GeV_test.txt', []);
-
 sim_bg_80GeV_1mm = hist(counts_sim_80GeV_bg_norm(counts_sim_80GeV_bg_norm < max(E80) & counts_sim_80GeV_bg_norm > min(E80)), E80);
 % align wo RR
-counts_sim_80GeV_aligned_1mm_woRR = spectrum('energy_sim_aligned', '_80GeV_worr_test.txt',  []);
+counts_sim_80GeV_aligned_1mm_woRR = spectrum('energy_sim_aligned', '_80GeV_worr.txt',  []);
 sim_align_80GeV_1mm_woRR = hist(counts_sim_80GeV_aligned_1mm_woRR(counts_sim_80GeV_aligned_1mm_woRR < max(E80) & counts_sim_80GeV_aligned_1mm_woRR > min(E80)), E80);
 sim_align_80GeV_1mm_woRR = E80 .* (sim_align_80GeV_1mm_woRR / nevents_align_80GeV_1mm_worr - sim_bg_80GeV_1mm / nevents_bg_80GeV_1mm);
-% align wo SH
-% counts_sim_80GeV_aligned_1mm_woSH = spectrum('energy_sim_aligned', '_80GeV_woshot_test.txt',  []);
-% sim_align_80GeV_1mm_woSH = hist(counts_sim_80GeV_aligned_1mm_woSH(counts_sim_80GeV_aligned_1mm_woSH < max(E80) & counts_sim_80GeV_aligned_1mm_woSH > min(E80)), E80);
-% sim_align_80GeV_1mm_woSH = E80 .* (sim_align_80GeV_1mm_woSH / nevents_align_80GeV_1mm_wosh - sim_bg_80GeV_1mm / nevents_bg_80GeV_1mm);
 % align RR
-counts_sim_80GeV_aligned_1mm_RR = spectrum('energy_sim_aligned', '_80GeV_test.txt',  []);
+counts_sim_80GeV_aligned_1mm_RR = spectrum('energy_sim_aligned', '_80GeV.txt',  []);
 sim_align_80GeV_1mm_RR = hist(counts_sim_80GeV_aligned_1mm_RR(counts_sim_80GeV_aligned_1mm_RR < max(E80) & counts_sim_80GeV_aligned_1mm_RR > min(E80)), E80);
 sim_align_80GeV_1mm_RR = E80 .* (sim_align_80GeV_1mm_RR / nevents_align_80GeV_1mm - sim_bg_80GeV_1mm / nevents_bg_80GeV_1mm);
+% align stochastic
+counts_sim_80GeV_aligned_1mm_stoch = spectrum('energy_sim_aligned', '_80GeV_stochastic.txt',  []);
+sim_align_80GeV_1mm_stoch = hist(counts_sim_80GeV_aligned_1mm_stoch(counts_sim_80GeV_aligned_1mm_stoch < max(E80) & counts_sim_80GeV_aligned_1mm_stoch > min(E80)), E80);
+sim_align_80GeV_1mm_stoch = E80 .* (sim_align_80GeV_1mm_stoch / nevents_align_80GeV_1mm_stoch - sim_bg_80GeV_1mm / nevents_bg_80GeV_1mm);
 
 % SIM 1.5mm
 nevents_amorph_80GeV_1_5mm = load(strcat(simpath, 'events_run_cuts_sim_amorphous_80GeV_1.5mm_test.txt'));
 nevents_bg_80GeV_1_5mm = load(strcat(simpath, 'events_run_cuts_sim_background_80GeV_1.5mm_test.txt'));
-nevents_align_80GeV_1_5mm_worr = load(strcat(simpath, 'events_run_cuts_sim_aligned_80GeV_worr_1.5mm_test.txt'));
-% nevents_align_80GeV_1_5mm_wosh = load(strcat(simpath, 'events_run_cuts_sim_aligned_80GeV_woshot_1.5mm_test.txt'));
-nevents_align_80GeV_1_5mm = load(strcat(simpath, 'events_run_cuts_sim_aligned_80GeV_1.5mm_test.txt'));
+nevents_align_80GeV_1_5mm_worr = load(strcat(simpath, 'events_run_sim_aligned_80GeV_worr_1.5mm.txt'));
+nevents_align_80GeV_1_5mm = load(strcat(simpath, 'events_run_sim_aligned_80GeV_1.5mm.txt'));
+nevents_align_80GeV_1_5mm_stoch = load(strcat(simpath, 'events_run_sim_aligned_80GeV_1.5mm_stochastic.txt'));
 
+%amorph+bg
 counts_sim_80GeV_amorph_bg_1_5mm_norm = spectrum('energy_sim_amorphous', '_80GeV_1.5mm_test.txt', []);
 counts_sim_80GeV_bg_1_5mm_norm = spectrum('energy_sim_background', '_80GeV_1.5mm_test.txt', []);
 sim_bg_80GeV_1_5mm = hist(counts_sim_80GeV_bg_1_5mm_norm(counts_sim_80GeV_bg_1_5mm_norm < max(E80) & counts_sim_80GeV_bg_1_5mm_norm > min(E80)), E80);
 % align wo RR
-counts_sim_80GeV_aligned_1_5mm_woRR = spectrum('energy_sim_aligned', '_80GeV_worr_1.5mm_test.txt',  []);
+counts_sim_80GeV_aligned_1_5mm_woRR = spectrum('energy_sim_aligned', '_80GeV_worr_1.5mm.txt',  []);
 sim_align_80GeV_1_5mm_woRR = hist(counts_sim_80GeV_aligned_1_5mm_woRR(counts_sim_80GeV_aligned_1_5mm_woRR < max(E80) & counts_sim_80GeV_aligned_1_5mm_woRR > min(E80)), E80);
 sim_align_80GeV_1_5mm_woRR = E80 .* (sim_align_80GeV_1_5mm_woRR / nevents_align_80GeV_1_5mm_worr - sim_bg_80GeV_1_5mm / nevents_bg_80GeV_1_5mm);
-% align wo schott
-% counts_sim_80GeV_aligned_1_5mm_woSH = spectrum('energy_sim_aligned', '_80GeV_woshot_1.5mm_test.txt',  []);
-% sim_align_80GeV_1_5mm_woSH = hist(counts_sim_80GeV_aligned_1_5mm_woSH(counts_sim_80GeV_aligned_1_5mm_woSH < max(E80) & counts_sim_80GeV_aligned_1_5mm_woSH > min(E80)), E80);
-% sim_align_80GeV_1_5mm_woSH = E80 .* (sim_align_80GeV_1_5mm_woSH / nevents_align_80GeV_1_5mm_wosh - sim_bg_80GeV_1_5mm / nevents_bg_80GeV_1_5mm);
 % align RR
-counts_sim_80GeV_aligned_1_5mm_RR = spectrum('energy_sim_aligned', '_80GeV_1.5mm_test.txt',  []);
+counts_sim_80GeV_aligned_1_5mm_RR = spectrum('energy_sim_aligned', '_80GeV_1.5mm.txt',  []);
 sim_align_80GeV_1_5mm_RR = hist(counts_sim_80GeV_aligned_1_5mm_RR(counts_sim_80GeV_aligned_1_5mm_RR < max(E80) & counts_sim_80GeV_aligned_1_5mm_RR > min(E80)), E80);
 sim_align_80GeV_1_5mm_RR = E80 .* (sim_align_80GeV_1_5mm_RR / nevents_align_80GeV_1_5mm - sim_bg_80GeV_1_5mm / nevents_bg_80GeV_1_5mm);
+% align stochastic
+counts_sim_80GeV_aligned_1_5mm_stoch = spectrum('energy_sim_aligned', '_80GeV_1.5mm_stochastic.txt',  []);
+sim_align_80GeV_1_5mm_stoch = hist(counts_sim_80GeV_aligned_1_5mm_stoch(counts_sim_80GeV_aligned_1_5mm_stoch < max(E80) & counts_sim_80GeV_aligned_1_5mm_stoch > min(E80)), E80);
+sim_align_80GeV_1_5mm_stoch = E80 .* (sim_align_80GeV_1_5mm_stoch / nevents_align_80GeV_1_5mm_stoch - sim_bg_80GeV_1_5mm / nevents_bg_80GeV_1_5mm);
 
 fprintf('\t 80 GeV SIM data loaded\n\n')
 %% Kallibreringsfaktorer
@@ -381,46 +380,37 @@ E = 40000;
 
 I_40_RR_1mm  = load(strcat(simpath,'sum_angles40GeV1mmRRcut.txt'));
 I_40_RR_1mm_noRR  = load(strcat(simpath,'sum_angles40GeV1mmnoRRcut.txt'));
-I_40_RR_1mm_noSH  = load(strcat(simpath,'sum_angles40GeV1mmnoSHcut.txt'));
+I_40_RR_1mm_stoch  = load(strcat(simpath,'sum_angles40GeV1mmstochasticcut.txt'));
 
 bremstrahlung_40GeV_1mm_RR = 1.00*1e-3*alpha*16/3*r0^2*(1-I_40_RR_1mm(:,1)./(E)+(I_40_RR_1mm(:,1)/(E)).^2)*(7*6*log(183*6^(-1/3)))*Na*di_density/di_m;
 bremstrahlung_40GeV_1mm_noRR = 1.00*1e-3*alpha*16/3*r0^2*(1-I_40_RR_1mm_noRR(:,1)./(E)+(I_40_RR_1mm_noRR(:,1)/(E)).^2)*(7*6*log(183*6^(-1/3)))*Na*di_density/di_m;
-bremstrahlung_40GeV_1mm_noSH = 1.00*1e-3*alpha*16/3*r0^2*(1-I_40_RR_1mm_noSH(:,1)./(E)+(I_40_RR_1mm_noSH(:,1)/(E)).^2)*(7*6*log(183*6^(-1/3)))*Na*di_density/di_m;
+bremstrahlung_40GeV_1mm_stoch = 1.00*1e-3*alpha*16/3*r0^2*(1-I_40_RR_1mm_stoch(:,1)./(E)+(I_40_RR_1mm_stoch(:,1)/(E)).^2)*(7*6*log(183*6^(-1/3)))*Na*di_density/di_m;
 enhance_dat_40GeV_1mm = (data_align_40GeV_1mm)./(data_amorph_40GeV_1mm);
 enhance_err_40GeV_1mm = abs(enhance_dat_40GeV_1mm) .* sqrt ((data_align_40GeV_1mm_err ./ data_align_40GeV_1mm).^2 +  (data_amorph_40GeV_1mm_err ./ data_amorph_40GeV_1mm).^2);
 
 % 1.5mm
 I_40_RR_1_5mm  = load(strcat(simpath,'sum_angles40GeV1_5mmRRcut.txt'));
 I_40_RR_1_5mm_noRR  = load(strcat(simpath,'sum_angles40GeV1_5mmnoRRcut.txt'));
-I_40_RR_1_5mm_noSH  = load(strcat(simpath,'sum_angles40GeV1_5mmnoSHcut.txt'));
+I_40_RR_1_5mm_stoch  = load(strcat(simpath,'sum_angles40GeV1_5mmstochasticcut.txt'));
 
 bremstrahlung_40GeV_1_5mm_RR = 1.50*1e-3*alpha*16/3*r0^2*(1-I_40_RR_1_5mm(:,1)./(E)+(I_40_RR_1_5mm(:,1)/(E)).^2)*(7*6*log(183*6^(-1/3)))*Na*di_density/di_m;
 bremstrahlung_40GeV_1_5mm_noRR = 1.50*1e-3*alpha*16/3*r0^2*(1-I_40_RR_1_5mm_noRR(:,1)./(E)+(I_40_RR_1_5mm_noRR(:,1)/(E)).^2)*(7*6*log(183*6^(-1/3)))*Na*di_density/di_m;
-bremstrahlung_40GeV_1_5mm_noSH = 1.50*1e-3*alpha*16/3*r0^2*(1-I_40_RR_1_5mm_noSH(:,1)./(E)+(I_40_RR_1_5mm_noSH(:,1)/(E)).^2)*(7*6*log(183*6^(-1/3)))*Na*di_density/di_m;
+bremstrahlung_40GeV_1_5mm_stoch = 1.50*1e-3*alpha*16/3*r0^2*(1-I_40_RR_1_5mm_stoch(:,1)./(E)+(I_40_RR_1_5mm_stoch(:,1)/(E)).^2)*(7*6*log(183*6^(-1/3)))*Na*di_density/di_m;
 
 enhance_dat_40GeV_1_5mm = (data_align_40GeV_1_5mm)./(data_amorph_40GeV_1_5mm);
 enhance_err_40GeV_1_5mm = abs(enhance_dat_40GeV_1_5mm) .* sqrt ((data_align_40GeV_1_5mm_err ./ data_align_40GeV_1_5mm).^2 +  (data_amorph_40GeV_1_5mm_err ./ data_amorph_40GeV_1_5mm).^2);
 
 % 20 GeV
-E = 20000;
-% 1mm
-I_20_RR_1mm  = load(strcat(simpath,'sum_angles20GeV1mmRRcut.txt'));
-I_20_RR_1mm_noRR  = load(strcat(simpath,'sum_angles20GeV1mmnoRRcut.txt'));
-I_20_RR_1mm_noSH  = load(strcat(simpath,'sum_angles20GeV1mmnoSHcut.txt'));
+E = 20000;  
 
-bremstrahlung_20GeV_1mm_RR = 1.00*1e-3*alpha*16/3*r0^2*(1-I_20_RR_1mm(:,1)./(E)+(I_20_RR_1mm(:,1)/(E)).^2)*(7*6*log(183*6^(-1/3)))*Na*di_density/di_m;
-bremstrahlung_20GeV_1mm_noRR = 1.00*1e-3*alpha*16/3*r0^2*(1-I_20_RR_1mm_noRR(:,1)./(E)+(I_20_RR_1mm_noRR(:,1)/(E)).^2)*(7*6*log(183*6^(-1/3)))*Na*di_density/di_m;
-bremstrahlung_20GeV_1mm_noSH = 1.00*1e-3*alpha*16/3*r0^2*(1-I_20_RR_1mm_noSH(:,1)./(E)+(I_20_RR_1mm_noSH(:,1)/(E)).^2)*(7*6*log(183*6^(-1/3)))*Na*di_density/di_m;
-
+I_20_RR_1mm_stoch  = load(strcat(simpath,'sum_angles20GeV1mmstochasticcut.txt'));
+bremstrahlung_20GeV_1mm_stoch = 1.00*1e-3*alpha*16/3*r0^2*(1-I_20_RR_1mm_stoch(:,1)./(E)+(I_20_RR_1mm_stoch(:,1)/(E)).^2)*(7*6*log(183*6^(-1/3)))*Na*di_density/di_m;
 enhance_dat_20GeV_1mm = (data_align_20GeV_1mm)./(data_amorph_20GeV_1mm);
 enhance_err_20GeV_1mm = abs(enhance_dat_20GeV_1mm) .* sqrt ((data_align_20GeV_1mm_err ./ data_align_20GeV_1mm).^2 +  (data_amorph_20GeV_1mm_err ./ data_amorph_20GeV_1mm).^2);
 
-%1.5mm
-I_20_RR_1_5mm  = load(strcat(simpath,'sum_angles20GeV1_5mmRRcut.txt'));
-I_20_RR_1_5mm_noRR  = load(strcat(simpath,'sum_angles20GeV1_5mmnoRRcut.txt'));
-I_20_RR_1_5mm_noSH  = load(strcat(simpath,'sum_angles20GeV1_5mmnoSHcut.txt'));
-
-bremstrahlung_20GeV_1_5mm_RR = 1.50*1e-3*alpha*16/3*r0^2*(1-I_20_RR_1_5mm(:,1)./(E)+(I_20_RR_1_5mm(:,1)/(E)).^2)*(7*6*log(183*6^(-1/3)))*Na*di_density/di_m;
+% 1.5mm
+I_20_RR_1_5mm_stoch  = load(strcat(simpath,'sum_angles20GeV1_5mmstochasticcut.txt'));
+bremstrahlung_20GeV_1_5mm_stoch = 1.50*1e-3*alpha*16/3*r0^2*(1-I_20_RR_1_5mm_stoch(:,1)./(E)+(I_20_RR_1_5mm_stoch(:,1)/(E)).^2)*(7*6*log(183*6^(-1/3)))*Na*di_density/di_m;
 enhance_dat_20GeV_1_5mm = (data_align_20GeV_1_5mm)./(data_amorph_20GeV_1_5mm);
 enhance_err_20GeV_1_5mm = abs(enhance_dat_20GeV_1_5mm) .* sqrt ((data_align_20GeV_1_5mm_err ./ data_align_20GeV_1_5mm).^2 +  (data_amorph_20GeV_1_5mm_err ./ data_amorph_20GeV_1_5mm).^2);
 
@@ -430,11 +420,11 @@ E = 80000;
 %1mm
 I_80_RR_1mm  = load(strcat(simpath,'sum_angles80GeV1mmRRcut.txt'));
 I_80_RR_1mm_noRR  = load(strcat(simpath,'sum_angles80GeV1mmnoRRcut.txt'));
-I_80_RR_1mm_noSH  = load(strcat(simpath,'sum_angles80GeV1mmnoSHcut.txt'));
+I_80_RR_1mm_stoch  = load(strcat(simpath,'sum_angles80GeV1mmstochasticcut.txt'));
 
 bremstrahlung_80GeV_1mm_RR = 1.00*1e-3*alpha*16/3*r0^2*(1-I_80_RR_1mm(:,1)./(E)+(I_80_RR_1mm(:,1)/(E)).^2)*(7*6*log(183*6^(-1/3)))*Na*di_density/di_m;
 bremstrahlung_80GeV_1mm_noRR = 1.00*1e-3*alpha*16/3*r0^2*(1-I_80_RR_1mm_noRR(:,1)./(E)+(I_80_RR_1mm_noRR(:,1)/(E)).^2)*(7*6*log(183*6^(-1/3)))*Na*di_density/di_m;
-bremstrahlung_80GeV_1mm_noSH = 1.00*1e-3*alpha*16/3*r0^2*(1-I_80_RR_1mm_noSH(:,1)./(E)+(I_80_RR_1mm_noSH(:,1)/(E)).^2)*(7*6*log(183*6^(-1/3)))*Na*di_density/di_m;
+bremstrahlung_80GeV_1mm_stoch = 1.00*1e-3*alpha*16/3*r0^2*(1-I_80_RR_1mm_stoch(:,1)./(E)+(I_80_RR_1mm_stoch(:,1)/(E)).^2)*(7*6*log(183*6^(-1/3)))*Na*di_density/di_m;
 
 enhance_dat_80GeV_1mm = (data_align_80GeV_1mm)./(data_amorph_80GeV_1mm);
 enhance_err_80GeV_1mm = abs(enhance_dat_80GeV_1mm) .* sqrt ((data_align_80GeV_1mm_err ./ data_align_80GeV_1mm).^2 +  (data_amorph_80GeV_1mm_err ./ data_amorph_80GeV_1mm).^2);
@@ -442,17 +432,16 @@ enhance_err_80GeV_1mm = abs(enhance_dat_80GeV_1mm) .* sqrt ((data_align_80GeV_1m
 %1.5mm
 I_80_RR_1_5mm  = load(strcat(simpath,'sum_angles80GeV1_5mmRRcut.txt'));
 I_80_RR_1_5mm_noRR  = load(strcat(simpath,'sum_angles80GeV1_5mmnoRRcut.txt'));
-I_80_RR_1_5mm_noSH  = load(strcat(simpath,'sum_angles80GeV1_5mmnoSHcut.txt'));
+I_80_RR_1_5mm_stoch  = load(strcat(simpath,'sum_angles80GeV1_5mmstochasticcut.txt'));
 
 bremstrahlung_80GeV_1_5mm_RR = 1.50*1e-3*alpha*16/3*r0^2*(1-I_80_RR_1_5mm(:,1)./(E)+(I_80_RR_1_5mm(:,1)/(E)).^2)*(7*6*log(183*6^(-1/3)))*Na*di_density/di_m;
 bremstrahlung_80GeV_1_5mm_noRR = 1.50*1e-3*alpha*16/3*r0^2*(1-I_80_RR_1_5mm_noRR(:,1)./(E)+(I_80_RR_1_5mm_noRR(:,1)/(E)).^2)*(7*6*log(183*6^(-1/3)))*Na*di_density/di_m;
-bremstrahlung_80GeV_1_5mm_noSH = 1.50*1e-3*alpha*16/3*r0^2*(1-I_80_RR_1_5mm_noSH(:,1)./(E)+(I_80_RR_1_5mm_noSH(:,1)/(E)).^2)*(7*6*log(183*6^(-1/3)))*Na*di_density/di_m;
+bremstrahlung_80GeV_1_5mm_stoch = 1.50*1e-3*alpha*16/3*r0^2*(1-I_80_RR_1_5mm_stoch(:,1)./(E)+(I_80_RR_1_5mm_stoch(:,1)/(E)).^2)*(7*6*log(183*6^(-1/3)))*Na*di_density/di_m;
 
 enhance_dat_80GeV_1_5mm = (data_align_80GeV_1_5mm)./(data_amorph_80GeV_1_5mm);
 enhance_err_80GeV_1_5mm = abs(enhance_dat_80GeV_1_5mm) .* sqrt ((data_align_80GeV_1_5mm_err ./ data_align_80GeV_1_5mm).^2 +  (data_amorph_80GeV_1_5mm_err ./ data_amorph_80GeV_1_5mm).^2);
 
 fprintf('Finished calculating enhancement\n')
-% 
 %% farver til plot
 fprintf('Plotting data\n');
 colors = [        0    0.4470    0.7410
@@ -484,7 +473,7 @@ box on
 title('40GeV 1.0mm cut kritisk vinkel')
 errorbar(E40, data_amorph_40GeV_1mm,data_amorph_40GeV_1mm_err,'s','MarkerFaceColor','auto')
 plot(E40, eff_40*sim_amorph_40GeV_1mm,'-','linewidth',2.5,'color',colors(2,:))
-xlabel('Energy [GeV]')
+xlabel('Energy [GeV]');ylabel('dP/dE [1/mm]');
 legend({'Data','Sim'})
 xticklabels('auto'); yticklabels('auto')
 grid on
@@ -496,7 +485,7 @@ title('80GeV 1.0mm cut kritisk vinkel')
 errorbar(E80, data_amorph_80GeV_1mm,data_amorph_80GeV_1mm_err,'s','MarkerFaceColor','auto')
 plot(E80, eff_80* sim_amorph_80GeV_1mm,'-','linewidth',2.5,'color',colors(2,:))
 legend({'Data','Sim'})
-xlabel('Energy [GeV]')
+xlabel('Energy [GeV]');ylabel('dP/dE [1/mm]');
 xticklabels('auto'); yticklabels('auto')
 grid on
 
@@ -548,14 +537,9 @@ title('20GeV e- 1.0mm cut kritisk vinkel')
 hold on
 box on
 errorbar(E20, data_align_20GeV_1mm,data_align_20GeV_1mm_err,'o','MarkerFaceColor','auto')
-plot(E20, eff_20 * sim_align_20GeV_1mm_RR,'-','linewidth',1.5)
-plot(E20, eff_20 * sim_align_20GeV_1mm_woRR,'-','linewidth',1.5)
-plot(E20, eff_20 * sim_align_20GeV_1mm_woSH,'-','linewidth',1.5)
-ylabel('dP/dE [1/mm]');xlabel('Energy [GeV]');
-ylim([0, 15e-3])
-xticklabels('auto'); yticklabels('auto')
+plot(E20, eff_20 * sim_align_20GeV_1mm_stoch,'-','linewidth',1.5)
 grid on
-legend('Data','Sim')
+xticklabels('auto'); yticklabels('auto')
 
 axes(ha(2));
 hold on
@@ -564,12 +548,14 @@ title('40GeV e- 1.0mm cut kritisk vinkel')
 errorbar(E40, data_align_40GeV_1mm,data_align_40GeV_1mm_err,'o','MarkerFaceColor','auto')
 plot(E40, eff_40 * sim_align_40GeV_1mm_RR,'-','linewidth',1.5)
 plot(E40, eff_40 * sim_align_40GeV_1mm_woRR,'-','linewidth',1.5)
-plot(E40, eff_40 * sim_align_40GeV_1mm_woSH,'-','linewidth',1.5)
-xlabel('Energy [GeV]');
+plot(E40, eff_40 * sim_align_40GeV_1mm_stoch,'-','linewidth',1.5)
+xlabel('Energy [GeV]');ylabel('dP/dE [1/mm]');
 xticklabels('auto'); yticklabels('auto')
 grid on
-legend('Data','LL','noRR','noSH')
-ylim([0, 25e-3])
+legend('Data','BKCwLL','noRR','Stochastic')
+ax = gca;
+ax.YLim(1) = 0;
+
 axes(ha(3));
 hold on
 box on
@@ -577,10 +563,12 @@ title('80GeV e- 1.0mm cut kritisk vinkel')
 errorbar(E80, data_align_80GeV_1mm,data_align_80GeV_1mm_err,'o','MarkerFaceColor','auto')
 plot(E80, eff_80 * sim_align_80GeV_1mm_RR,'-','linewidth',1.5)
 plot(E80, eff_80 * sim_align_80GeV_1mm_woRR,'-','linewidth',1.5)
-% plot(E80, eff_80 * sim_align_80GeV_1mm_woSH,'-','linewidth',2.5)
-xlabel('Energy [GeV]');
+plot(E80, eff_80 * sim_align_80GeV_1mm_stoch,'-','linewidth',1.5)
+legend('Data','BKCwLL','noRR','Stochastic')
+xlabel('Energy [GeV]');ylabel('dP/dE [1/mm]');
 xticklabels('auto'); yticklabels('auto')
-xlim([0, 80])
+ax = gca;
+ax.YLim(1) = 0;
 grid on
 
 set(f, 'Units','centimeters','PaperUnits','centimeters', 'PaperSize',[18, 36],'PaperPosition',[0, 0, 18, 36],'Position',[0 0 18, 36])
@@ -592,11 +580,8 @@ axes(ha(1));
 title('20GeV 1.5mm cut kritisk vinkel')
 hold on
 box on
-errorbar(E20, data_align_20GeV_1_5mm,data_align_20GeV_1_5mm_err,'^','MarkerFaceColor','auto')
-plot(E20, eff_20_1_5mm * sim_align_20GeV_1_5mm_RR,'-','linewidth',1.5)
-plot(E20, eff_20_1_5mm * sim_align_20GeV_1_5mm_woRR,'-','linewidth',1.5)
-plot(E20, eff_20_1_5mm * sim_align_20GeV_1_5mm_woSH,'-','linewidth',1.5)
-ylim([-7e-4, 20e-03])
+errorbar(E20, data_align_20GeV_1_5mm/1.5,data_align_20GeV_1_5mm_err/1.5,'o','MarkerFaceColor','auto')
+plot(E20, eff_20_1_5mm * sim_align_20GeV_1_5mm_stoch/1.5,'-','linewidth',1.5)
 ylabel('dP/dE [1/mm]')
 xticklabels('auto'); yticklabels('auto')
 grid on
@@ -605,25 +590,29 @@ axes(ha(2));
 hold on
 box on
 title('40GeV 1.5mm cut kritisk vinkel')
-errorbar(E40, data_align_40GeV_1_5mm,data_align_40GeV_1_5mm_err,'^','MarkerFaceColor','auto')
-plot(E40, eff_40_1_5mm * sim_align_40GeV_1_5mm_RR,'-','linewidth',1.5)
-plot(E40, eff_40_1_5mm * sim_align_40GeV_1_5mm_woRR,'-','linewidth',1.5)
-plot(E40, eff_40_1_5mm * sim_align_40GeV_1_5mm_woSH,'-','linewidth',1.5)
-xlabel('Energy [GeV]');
-ylim([-7e-4, 45e-3])
+errorbar(E40, data_align_40GeV_1_5mm/1.5,data_align_40GeV_1_5mm_err/1.5,'o','MarkerFaceColor','auto')
+plot(E40, eff_40_1_5mm * sim_align_40GeV_1_5mm_RR/1.5,'-','linewidth',1.5)
+plot(E40, eff_40_1_5mm * sim_align_40GeV_1_5mm_woRR/1.5,'-','linewidth',1.5)
+plot(E40, eff_40_1_5mm * sim_align_40GeV_1_5mm_stoch/1.5,'-','linewidth',1.5)
+xlabel('Energy [GeV]');ylabel('dP/dE [1/mm]');
 xticklabels('auto'); yticklabels('auto')
+legend('Data','BKCwLL','noRR','Stochastic')
+ax = gca;
+ax.YLim(1) = 0;
 grid on
 
 axes(ha(3));
 hold on
 title('80GeV 1.5mm cut kritisk vinkel')
-errorbar(E80, data_align_80GeV_1_5mm,data_align_80GeV_1_5mm_err,'^','MarkerFaceColor','auto')
-plot(E80, eff_80_1_5mm * sim_align_80GeV_1_5mm_RR,'-','linewidth',1.5)
-plot(E80, eff_80_1_5mm * sim_align_80GeV_1_5mm_woRR,'-','linewidth',1.5)
-% % plot(E80, eff_80_1_5mm * sim_align_80GeV_1_5mm_woSH,'-','linewidth',1.5)
-xlabel('Energy [GeV]');
+errorbar(E80, data_align_80GeV_1_5mm/1.5,data_align_80GeV_1_5mm_err/1.5,'o','MarkerFaceColor','auto')
+plot(E80, eff_80_1_5mm * sim_align_80GeV_1_5mm_RR/1.5,'-','linewidth',1.5)
+plot(E80, eff_80_1_5mm * sim_align_80GeV_1_5mm_woRR/1.5,'-','linewidth',1.5)
+plot(E80, eff_80_1_5mm * sim_align_80GeV_1_5mm_stoch/1.5,'-','linewidth',1.5)
+xlabel('Energy [GeV]');ylabel('dP/dE [1/mm]');
 xticklabels('auto'); yticklabels('auto')
-xlim([0, 80])
+legend('Data','BKCwLL','noRR','Stochastic')
+ax = gca;
+ax.YLim(1) = 0;
 box on
 grid on
 
@@ -635,28 +624,26 @@ f = figure;
 axes(ha(1))
 hold on
 errorbar(E20, enhance_dat_20GeV_1mm,enhance_err_20GeV_1mm,'o','MarkerFaceColor','auto')
-plot(I_20_RR_1mm(:,1),  I_20_RR_1mm(:,2) ./ bremstrahlung_20GeV_1mm_RR,':','linewidth',1.5)
-plot(I_20_RR_1mm_noRR(:,1),  I_20_RR_1mm_noRR(:,2) ./ bremstrahlung_20GeV_1mm_noRR,':','linewidth',1.5)
-plot(I_20_RR_1mm_noSH(:,1),  I_20_RR_1mm_noSH(:,2) ./ bremstrahlung_20GeV_1mm_noSH,':','linewidth',1.5)
-plot(E20, sim_align_20GeV_1mm_RR ./ sim_amorph_20GeV_1mm,'color',colors(2,:),'linewidth',1.5)
-plot(E20, sim_align_20GeV_1mm_woRR ./ sim_amorph_20GeV_1mm,'color',colors(3,:),'linewidth',1.5)
-plot(E20, sim_align_20GeV_1mm_woSH ./ sim_amorph_20GeV_1mm,'color',colors(4,:),'linewidth',1.5)
+plot(I_20_RR_1mm_stoch(:,1),  I_20_RR_1mm_stoch(:,2) ./ bremstrahlung_20GeV_1mm_stoch,':','linewidth',1.5)
+plot(E20, sim_align_20GeV_1mm_stoch ./ sim_amorph_20GeV_1mm,'color',colors(2,:),'linewidth',1.5)
 xticklabels('auto'); yticklabels('auto')
-ylim([-20, 150]);
+% ylim([-20, 150]);
 grid on
 box on
 title('enhancement 20GeV 1mm')
+ylim([0, 160]);
 
 axes(ha(2))
 hold on
 errorbar(E40, enhance_dat_40GeV_1mm,enhance_err_40GeV_1mm,'o','MarkerFaceColor','auto')
 plot(I_40_RR_1mm(:,1),  I_40_RR_1mm(:,2) ./ bremstrahlung_40GeV_1mm_RR,':','linewidth',1.5)
 plot(I_40_RR_1mm_noRR(:,1),  I_40_RR_1mm_noRR(:,2) ./ bremstrahlung_40GeV_1mm_noRR,':','linewidth',1.5)
-plot(I_40_RR_1mm_noSH(:,1),  I_40_RR_1mm_noSH(:,2) ./ bremstrahlung_40GeV_1mm_noSH,':','linewidth',1.5)
+plot(I_40_RR_1mm_stoch(:,1),  I_40_RR_1mm_stoch(:,2) ./ bremstrahlung_40GeV_1mm_stoch,':','linewidth',1.5)
 plot(E40, sim_align_40GeV_1mm_RR ./ sim_amorph_40GeV_1mm,'color',colors(2,:),'linewidth',1.5)
 plot(E40, sim_align_40GeV_1mm_woRR ./ sim_amorph_40GeV_1mm,'color',colors(3,:),'linewidth',1.5)
-plot(E40, sim_align_40GeV_1mm_woSH ./ sim_amorph_40GeV_1mm,'color',colors(4,:),'linewidth',1.5)
+plot(E40, sim_align_40GeV_1mm_stoch ./ sim_amorph_40GeV_1mm,'color',colors(4,:),'linewidth',1.5)
 xticklabels('auto'); yticklabels('auto')
+legend('Data','BKCwLL','noRR','Stochastic')
 xlim([0, 40])
 ylim([0, 160]);
 grid on
@@ -668,11 +655,12 @@ hold on
 errorbar(E80, enhance_dat_80GeV_1mm,enhance_err_80GeV_1mm,'o','MarkerFaceColor','auto')
 plot(I_80_RR_1mm(:,1),  I_80_RR_1mm(:,2) ./ bremstrahlung_80GeV_1mm_RR,':','linewidth',1.5)
 plot(I_80_RR_1mm_noRR(:,1),  I_80_RR_1mm_noRR(:,2) ./ bremstrahlung_80GeV_1mm_noRR,':','linewidth',1.5)
-plot(I_80_RR_1mm_noSH(:,1),  I_80_RR_1mm_noSH(:,2) ./ bremstrahlung_80GeV_1mm_noSH,':','linewidth',1.5)
+plot(I_80_RR_1mm_stoch(:,1),  I_80_RR_1mm_stoch(:,2) ./ bremstrahlung_80GeV_1mm_stoch,':','linewidth',1.5)
 plot(E80, sim_align_80GeV_1mm_RR ./ sim_amorph_80GeV_1mm,'color',colors(2,:),'linewidth',1.5)
 plot(E80, sim_align_80GeV_1mm_woRR ./ sim_amorph_80GeV_1mm,'color',colors(3,:),'linewidth',1.5)
-% plot(E80, sim_align_80GeV_1mm_woSH ./ sim_amorph_80GeV_1mm,'color',colors(4,:),'linewidth',1.5)
+plot(E80, sim_align_80GeV_1mm_stoch ./ sim_amorph_80GeV_1mm,'color',colors(4,:),'linewidth',1.5)
 xticklabels('auto'); yticklabels('auto')
+legend('Data','BKCwLL','noRR','Stochastic')
 xlim([0, 80])
 ylim([0, 200]);
 grid on
@@ -685,30 +673,26 @@ f = figure;
 [ha, ~] = tight_subplot(3,1,[.12 .04],[.05 .05],[.07 .07]);
 axes(ha(1))
 hold on
+hold on
 errorbar(E20, enhance_dat_20GeV_1_5mm,enhance_err_20GeV_1_5mm,'o','MarkerFaceColor','auto')
-plot(I_20_RR_1_5mm(:,1),  I_20_RR_1_5mm(:,2) ./ bremstrahlung_20GeV_1_5mm_RR,':','linewidth',1.5)
-plot(I_20_RR_1_5mm(:,1),  I_20_RR_1_5mm_noRR(:,2) ./ bremstrahlung_20GeV_1_5mm_RR,':','linewidth',1.5)
-plot(I_20_RR_1_5mm(:,1),  I_20_RR_1_5mm_noSH(:,2) ./ bremstrahlung_20GeV_1_5mm_RR,':','linewidth',1.5)
-plot(E20, sim_align_20GeV_1_5mm_RR ./ sim_amorph_20GeV_1_5mm,'color',colors(2,:),'linewidth',1.5)
-plot(E20, sim_align_20GeV_1_5mm_woRR ./ sim_amorph_20GeV_1_5mm,'color',colors(3,:),'linewidth',1.5)
-plot(E20, sim_align_20GeV_1_5mm_woSH ./ sim_amorph_20GeV_1_5mm,'color',colors(4,:),'linewidth',1.5)
+plot(I_20_RR_1_5mm_stoch(:,1),  I_20_RR_1_5mm_stoch(:,2) ./ bremstrahlung_20GeV_1_5mm_stoch,':','linewidth',1.5)
+plot(E20, sim_align_20GeV_1_5mm_stoch ./ sim_amorph_20GeV_1_5mm,'color',colors(2,:),'linewidth',1.5)
 xticklabels('auto'); yticklabels('auto')
-xlim([0, 20])
-ylim([-3, 120]);
 grid on
 box on
 title('enhancement 20GeV 1.5mm')
+ylim([0, 160]);
 
 axes(ha(2))
 hold on
 errorbar(E40, enhance_dat_40GeV_1_5mm,enhance_err_40GeV_1_5mm,'o','MarkerFaceColor','auto')
 plot(I_40_RR_1_5mm(:,1),  I_40_RR_1_5mm(:,2) ./ bremstrahlung_40GeV_1_5mm_RR,':','linewidth',1.5)
-plot(I_40_RR_1_5mm(:,1),  I_40_RR_1_5mm_noRR(:,2) ./ bremstrahlung_40GeV_1_5mm_noRR,':','linewidth',1.5)
-plot(I_40_RR_1_5mm(:,1),  I_40_RR_1_5mm_noSH(:,2) ./ bremstrahlung_40GeV_1_5mm_noSH,':','linewidth',1.5)
+plot(I_40_RR_1_5mm_noRR(:,1),  I_40_RR_1_5mm_noRR(:,2) ./ bremstrahlung_40GeV_1_5mm_noRR,':','linewidth',1.5)
+plot(I_40_RR_1_5mm_stoch(:,1),  I_40_RR_1_5mm_stoch(:,2) ./ bremstrahlung_40GeV_1_5mm_stoch,':','linewidth',1.5)
 plot(E40, sim_align_40GeV_1_5mm_RR ./ sim_amorph_40GeV_1_5mm,'color',colors(2,:),'linewidth',1.5)
 plot(E40, sim_align_40GeV_1_5mm_woRR ./ sim_amorph_40GeV_1_5mm,'color',colors(3,:),'linewidth',1.5)
-plot(E40, sim_align_40GeV_1_5mm_woSH ./ sim_amorph_40GeV_1_5mm,'color',colors(4,:),'linewidth',1.5)
-legend('Data','LL','no RR','no Schott')
+plot(E40, sim_align_40GeV_1_5mm_stoch ./ sim_amorph_40GeV_1_5mm,'color',colors(4,:),'linewidth',1.5)
+legend('Data','BKCwLL','noRR','Stochastic')
 xticklabels('auto'); yticklabels('auto')
 xlim([0, 40])
 ylim([-20, 160]);
@@ -720,12 +704,12 @@ axes(ha(3))
 hold on
 errorbar(E80, enhance_dat_80GeV_1_5mm,enhance_err_80GeV_1_5mm,'o','MarkerFaceColor','auto')
 plot(I_80_RR_1_5mm(:,1),  I_80_RR_1_5mm(:,2) ./ bremstrahlung_80GeV_1_5mm_RR,':','linewidth',1.5)
-plot(I_80_RR_1_5mm(:,1),  I_80_RR_1_5mm_noRR(:,2) ./ bremstrahlung_80GeV_1_5mm_RR,':','linewidth',1.5)
-% plot(I_80_RR_1_5mm(:,1),  I_80_RR_1_5mm_noSH(:,2) ./ bremstrahlung_80GeV_1_5mm_RR,':','linewidth',1.5)
+plot(I_80_RR_1_5mm_noRR(:,1),  I_80_RR_1_5mm_noRR(:,2) ./ bremstrahlung_80GeV_1_5mm_noRR,':','linewidth',1.5)
+plot(I_80_RR_1_5mm_stoch(:,1),  I_80_RR_1_5mm_stoch(:,2) ./ bremstrahlung_80GeV_1_5mm_stoch,':','linewidth',1.5)
 plot(E80, sim_align_80GeV_1_5mm_RR ./ sim_amorph_80GeV_1_5mm,'color',colors(2,:),'linewidth',1.5)
 plot(E80, sim_align_80GeV_1_5mm_woRR ./ sim_amorph_80GeV_1_5mm,'color',colors(3,:),'linewidth',1.5)
-% plot(E80, sim_align_80GeV_1_5mm_woSH ./ sim_amorph_80GeV_1_5mm,'color',colors(4,:),'linewidth',1.5)
-legend('Data','LL','no RR','no Schott')
+plot(E80, sim_align_80GeV_1_5mm_stoch ./ sim_amorph_80GeV_1_5mm,'color',colors(4,:),'linewidth',1.5)
+legend('Data','BKCwLL','noRR','Stochastic')
 xticklabels('auto'); yticklabels('auto')
 xlim([0, 80])
 ylim([-10, 200]);
