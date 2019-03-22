@@ -1,5 +1,9 @@
 #include "auxillary_functions.h"
 
+// Load list of doubles
+// Input:
+//          file_name   Name (and path + extension) of file from which to load data
+//          data        vector where data is saved
 void LoadDoubles(std::string file_name, std::vector<double> &data)
 {
     std::ifstream data_file(file_name);
@@ -23,6 +27,10 @@ void LoadDoubles(std::string file_name, std::vector<double> &data)
     }
 }
 
+// Print list of doubles
+// Input:
+//          file_name   Name (and path + extension) of file from which to load data
+//          input       vector with data
 void PrintVector(std::string file_name, std::vector<std::vector<double>> input)
 {
     std::ofstream output;
@@ -37,6 +45,10 @@ void PrintVector(std::string file_name, std::vector<std::vector<double>> input)
     output.close();
 }
 
+// Print list of ints, if file exists then sum all entries in file, add new value and overwrite file
+// Input:
+//          file_name       Name (and path + extension) of file from which to load data
+//          input_number    Inputted number
 void PrintIntSum(std::string file_name, int input_number)
 {
     std::ifstream input(file_name);

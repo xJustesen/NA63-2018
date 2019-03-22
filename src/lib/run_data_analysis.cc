@@ -1,9 +1,13 @@
 #include "run_data_analysis.h"
 
-RunDataAnalysis::RunDataAnalysis(PreProcessor *initialize, const char *input_data_file)
+// RunDataAnalysis carries out the analysis of ROOT files.
+// Input:
+//      *initialize:        The pre_processor class
+//      *kinput_data_file:  The name of the ROOT data file
+RunDataAnalysis::RunDataAnalysis(PreProcessor *initialize, const char *kinput_data_file)
 {
     analyser *Analyse = new analyser(initialize->z_,
-                                     input_data_file,
+                                     kinput_data_file,
                                      initialize->config_.runno,
                                      initialize->config_.BeamProfile);
     cout << "\n \t\t Inconsequential ROOT warnings: \n\n";
@@ -47,11 +51,13 @@ RunDataAnalysis::RunDataAnalysis(PreProcessor *initialize, const char *input_dat
     number_of_events_ = Analyse->GetEventsWithinCut();
 }
 
+// Returns a vector with energies in different events
 vector<vector<double>> RunDataAnalysis::GetEnergies()
 {
     return energies_;
 }
 
+// Returns number of events
 int RunDataAnalysis::GetEvents()
 {
     return number_of_events_;

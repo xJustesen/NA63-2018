@@ -1,5 +1,16 @@
 #include "simulator.h"
 
+// Constructor for simulator class.
+// Input:
+//          N                   Events to simulate
+//          z                   z-coordinates of detectors
+//          run                 Type of run to simulate, ie. amorphous, background or aligned
+//          BeamEnergy          Energy of the beam
+//          CrystalThickness    Thickness of crystal
+//          filename            Name (suffix) of the file containing beam parameters etc.
+//          TheorySpectrum      The theoretical spectrum, not used in amorphous and background run
+//          bg                  1 if background radiation is included 0 if not
+// Calls "LoadConfigFile", "LoadDoubles", "LinearInterpolation", "LinSpace", "TrapezoidalIntegrator" and "LoadHotpixels"
 simulator::simulator(int N, vector<double> z, string run, double BeamEnergy, double CrystalThickness, string filename, string TheorySpectrum, int bg)
 {
     // Simulation paramters
@@ -48,7 +59,7 @@ simulator::simulator(int N, vector<double> z, string run, double BeamEnergy, dou
         angle_spectrum_ = " ";
     }
     // Load alignment of detectors and hot pixels
-    alignment_matrix.load("/home/christian/Documents/cern2018/alignment_matrix.txt", arma_ascii);
+    alignment_matrix.load("./alignment_matrix.txt", arma_ascii);
     hot_pixels_.resize(6);
     LoadHotpixels();
     // Make probability distributions and seed rng for Monte-Carlo methods
@@ -71,6 +82,11 @@ simulator::simulator(int N, vector<double> z, string run, double BeamEnergy, dou
     cout << "\nConversion rate: \t" << 200.0 * (7.0) / (9.0 * X0_Ta_) * 100 << "%\n";
 }
 
+// Parse JSON data into detector struct
+// Input:
+//          config      Name of configuration file
+//          tree        property tree
+//          detector    struct with detector parameters
 void simulator::AssignDetectorParameters(string config, pt::ptree tree, DETECTOR &detector)
 {
     for (auto i : as_vector<double>(tree, config + ".x"))
@@ -88,6 +104,10 @@ void simulator::AssignDetectorParameters(string config, pt::ptree tree, DETECTOR
     detector.number = tree.get<int>(config + ".Number");
 }
 
+// Load JSON data and assign parameters
+// Input:
+//          configfile  name of configuration file (including path and extension)
+// Calls "AssignDetectorParameters"
 void simulator::LoadConfigFile(const string &configfile)
 {
     // Create empty property tree object
@@ -118,6 +138,10 @@ void simulator::LoadConfigFile(const string &configfile)
     AssignDetectorParameters("Detectors.M6", tree, M6);
 }
 
+// Calculate integral using trapezoidal method
+// Input:
+//          x_coordinate    vector with x coordinates
+//          y_coordinate    vector with y coordinates
 double simulator::TrapezoidalIntegrator(vector<double> x_coordinate, vector<double> y_coordinate)
 {
     double integral = 0.0;
@@ -129,6 +153,10 @@ double simulator::TrapezoidalIntegrator(vector<double> x_coordinate, vector<doub
     return integral;
 }
 
+// Return which pixel a coordinate lies in
+// Input:
+//          x_coordinate : x coordinate of point
+//          y_coordinate : y coordinate of point
 int simulator::Coord2Pixel(double x_coordinate, double y_coordinate)
 {
     int nrows = 576;
@@ -142,6 +170,8 @@ int simulator::Coord2Pixel(double x_coordinate, double y_coordinate)
     return rowno * ncols + colno;
 }
 
+// Load list of hot pixels
+// Calls "LoadInt"
 void simulator::LoadHotpixels(void)
 {
     for (int i = 0; i < 6; i++)
@@ -152,6 +182,10 @@ void simulator::LoadHotpixels(void)
     }
 }
 
+// Load list of doubles
+// Input:
+//          file_name   Name (and path + extension) of file from which to load data
+//          data        vector where data is saved
 void simulator::LoadDoubles(string file_name, vector<double> &data)
 {
     ifstream data_file(file_name);
@@ -162,7 +196,9 @@ void simulator::LoadDoubles(string file_name, vector<double> &data)
         {
             data_file >> val;
             if (data_file.eof())
+            {
                 break;
+            }
             data.push_back(val);
         }
         data_file.close();
@@ -173,6 +209,11 @@ void simulator::LoadDoubles(string file_name, vector<double> &data)
     }
 }
 
+// Load list of doubles
+// Input:
+//          file_name   Name (and path + extension) of file from which to load data
+//          data0       vector where column 1 of data is saved
+//          data1       vector where column 2 of data is saved
 void simulator::LoadDoubles(string file_name, vector<double> &data0, vector<double> &data1)
 {
     ifstream data_file(file_name);
@@ -183,10 +224,10 @@ void simulator::LoadDoubles(string file_name, vector<double> &data0, vector<doub
         while (true)
         {
             data_file >> val0 >> val1;
-
             if (data_file.eof())
+            {
                 break;
-
+            }
             data0.push_back(val0);
             data1.push_back(val1);
         }
@@ -198,7 +239,13 @@ void simulator::LoadDoubles(string file_name, vector<double> &data0, vector<doub
         cerr << "Unable to open file: " << file_name << "\n";
     }
 }
-
+// Load list of doubles
+// Input:
+//          file_name   Name (and path + extension) of file from which to load data
+//          data0       vector where column 1 of data is saved
+//          data1       vector where column 2 of data is saved
+//          data2       vector where column 3 of data is saved
+//          data3       vector where column 4 of data is saved
 void simulator::LoadDoubles(string file_name, vector<double> &data0, vector<double> &data1, vector<double> &data2, vector<double> &data3)
 {
     ifstream data_file(file_name);
@@ -208,16 +255,15 @@ void simulator::LoadDoubles(string file_name, vector<double> &data0, vector<doub
         while (true)
         {
             data_file >> val0 >> val1 >> val2 >> val3;
-
             if (data_file.eof())
+            {
                 break;
-
+            }
             data0.push_back(val0);
             data1.push_back(val1);
             data2.push_back(val2);
             data3.push_back(val3);
         }
-
         data_file.close();
     }
     else
@@ -226,6 +272,10 @@ void simulator::LoadDoubles(string file_name, vector<double> &data0, vector<doub
     }
 }
 
+// Load list of ints
+// Input:
+//          file_name   Name (and path + extension) of file from which to load data
+//          data       vector where column 1 of data is saved
 void simulator::LoadInt(string file_name, vector<int> &data)
 {
     ifstream data_file(file_name);
@@ -237,11 +287,11 @@ void simulator::LoadInt(string file_name, vector<int> &data)
             data_file >> val;
 
             if (data_file.eof())
+            {
                 break;
-
+            }
             data.push_back(val);
         }
-
         data_file.close();
     }
     else
@@ -250,6 +300,7 @@ void simulator::LoadInt(string file_name, vector<int> &data)
     }
 }
 
+// Print hit coordinates from MIMOSA detectors on disk
 void simulator::PrintHits(void)
 {
     string file_name = data_path_ + "/simulated_hits_coord_data" + crystal_type_ + ".txt";
@@ -268,6 +319,7 @@ void simulator::PrintHits(void)
 }
 
 // Generate a beam-profile using measured data and store hits in Events
+// Calls "LoadDoubles"
 void simulator::LoadBeamParameters(void)
 {
     // Open the text file for reading
@@ -287,7 +339,8 @@ void simulator::LoadBeamParameters(void)
     LoadDoubles(file_name7, y_coordinate_);
 }
 
-// Propagates particles through the experiment. All radiation lengths are taken from PDG
+// Generates synthetic data set.
+// Calls "SelectMember", "AddPhotons", "AmorphMaterial", "MultipleScattering", "MimosaDetector", "ProjectPhotons", ConverterFoil
 void simulator::GenerateSyntheticData(void)
 {
     double start_time = omp_get_wtime();
@@ -634,7 +687,15 @@ void simulator::GenerateSyntheticData(void)
     cout << "Total conversions: " << total_photon_conversions_ << "\n";
 }
 
-// Simulate a particle travelling through an amorphous crystal.
+// Add photons from amorphous material without messing with the beam. This is used to add additional background radtiation.
+// Input:
+//          emitted_event       counts number of events with photons
+//          X0 scattering       length of material
+//          d                   thickness of material
+//          generator           Mersenne-Twister RNG
+//          local_photons       vector with photons
+//          local_particle      vector with particles
+// Calls "PhotonicEnergyDistribution", "SimplexNelderMead", "deflection_angle"
 void simulator::AddPhotons(int &emitted_event, double X0, double d, mt19937_64 generator, vector<vector<double>> &local_photons, vector<vector<double>> local_particles)
 {
     double minimum_energy = 2 * 0.5109989461E-03; // 2 * electron mass in GeV
@@ -678,6 +739,16 @@ void simulator::AddPhotons(int &emitted_event, double X0, double d, mt19937_64 g
     }
 }
 
+// Simulates particle traversing an amorphous material.
+// Input:
+//          emitted_event       counts number of events with photons
+//          X0 scattering       length of material
+//          d                   thickness of material
+//          generator           Mersenne-Twister RNG
+//          local_photons       vector with photons
+//          local_particle      vector with particles
+//          slices              number of slices to split material into
+// Calls "SimplexNelderMead", "SimplexNelderMead", "deflection_angle"
 void simulator::AmorphMaterial(int &emitted_event, double X0, double z, double length, mt19937_64 generator, vector<vector<double>> &local_photons, vector<vector<double>> &local_particles, int slices)
 {
     double minimum_energy = 2.0 * 0.5109989461E-03;
@@ -719,7 +790,6 @@ void simulator::AmorphMaterial(int &emitted_event, double X0, double z, double l
                 },
                                                       initial_simplex, 1.0E-08);
                 // Determine direction of photon
-                photon_energy(0) = 20.0;
                 double gamma = local_particles[i][5] / (5.109989461E-4);
                 uniform_real_distribution<double> deflection_angle(-1.0 / gamma, 1.0 / gamma);
                 double x_deflection_angle = deflection_angle(generator);
@@ -739,6 +809,14 @@ void simulator::AmorphMaterial(int &emitted_event, double X0, double z, double l
     }     // events end
 }
 
+// Simulates conversion of a photon into an electron/positron pair
+// Input:
+//          X0              Radiation length of material
+//          generator       Mersenne-Twister RNG
+//          slices          Number of slices of material, shold be O(1e2)
+//          local_photons   Container with photons
+//          local_particles Container with particles
+// Calls "ElectronicEnergyDistribution" and "BorsellinoOpeningAngle"
 void simulator::ConverterFoil(double X0, mt19937_64 generator, int slices, vector<vector<double>> &local_photons, vector<vector<double>> &local_particles)
 {
     double slice_thickness = foil_thickness_ / (double)slices;
@@ -788,12 +866,22 @@ void simulator::ConverterFoil(double X0, mt19937_64 generator, int slices, vecto
     }
 }
 
+// Removes particles from experiment
+// Input:
+//          local_particles Container with particles
 void simulator::MbplMagnet(vector<vector<double>> &local_particles)
 {
     local_particles.clear(); // the MPBL magnet removes all particles
 }
 
-// Simulate a particle travelling through an aligned crystal. Multiple scattering is taken into account in the "propagte particles" function.
+// Simulate a particle travelling through an aligned crystal.
+// Input:
+//          emitted_event       counts number of events with photons
+//          generator           Mersenne-Twister RNG
+//          local_photons       vector with photons
+//          local_particle      vector with particles
+//          slices              number of slices to split material into
+// Calls "SelectMember"
 void simulator::AlignedCrystal(int &emitted_event, int slices, mt19937_64 generator, vector<vector<double>> &local_photons, vector<vector<double>> &local_particles)
 {
     double slice_thickness = crystal_thicknes_ / (double)slices;
@@ -842,6 +930,13 @@ void simulator::AlignedCrystal(int &emitted_event, int slices, mt19937_64 genera
     }     // end events
 }
 
+// Simulates MIMOSA detector
+// Input:
+//          detector        Struct with detector information
+//          event           Number of event
+//          detections      Number of total detections
+//          generator       Mersenne-Twister RNG
+//          local_particles Container with particles
 void simulator::MimosaDetector(DETECTOR detector, int event, int &detections, mt19937_64 generator, vector<vector<double>> local_particles)
 {
     // Take into account detector resoultion by adding a random (Dx, Dy) displacement drawn from gaussian distro with stdev = 3.5mu, mean = 0mu
@@ -851,7 +946,6 @@ void simulator::MimosaDetector(DETECTOR detector, int event, int &detections, mt
     {
         // Check if particle is within physical boundaries of detector.
         bool inside_bounds = IsInsidePolygon(4, detector.x, detector.y, local_particles[i][0], local_particles[i][1]);
-        // inside_bounds = true;
         if (inside_bounds)
         {
             double Dx = distribution(generator);
@@ -893,11 +987,21 @@ void simulator::MimosaDetector(DETECTOR detector, int event, int &detections, mt
     }
 }
 
-double simulator::CalculateDistance(double x0, double y0, double x1, double y1)
+// Calculate euclidean distance
+// Input:
+//          Ax x-coordinate of point A
+//          Ay y-coordinate of point A
+//          Bx x-coordinate of point B
+//          By y-coordinate of point B
+double simulator::CalculateDistance(double Ax, double Ay, double Bx, double By)
 {
-    return sqrt(pow(x1 - x0, 2) + pow(y1 - y0, 2));
+    return sqrt(pow(Bx - Ax, 2) + pow(By - Ay, 2));
 }
 
+// Projects photons to specified z value
+// Input:
+//          local_photons   Container with photons
+//          z_coordinate    Final z-coordinate of photon
 void simulator::ProjectPhotons(vector<vector<double>> &local_photons, double z_coordinate)
 {
     for (size_t i = 0; i < local_photons.size(); i++)
@@ -910,6 +1014,13 @@ void simulator::ProjectPhotons(vector<vector<double>> &local_photons, double z_c
     }
 }
 
+// Calculates multiple scattering through amorphous material.
+// Input:
+//          X0                  scattering length of material
+//          d                   thickness of material
+//          generator           Mersenne-Twister RNG
+//          local_particle      vector with particles
+//          z_coordinate        Final z coordinate of particle
 void simulator::MultipleScattering(double X0, double z_coordinate, mt19937_64 generator, vector<vector<double>> &local_particles)
 {
     // Iterate over paticles traversing medium
@@ -932,6 +1043,8 @@ void simulator::MultipleScattering(double X0, double z_coordinate, mt19937_64 ge
 }
 
 // Calculate the deflection of a charged particle traversing the mimosa magnet. Magnet only deflects in x-direction.
+// Input:
+//          local_particles     Container with particles
 void simulator::MimosaMagnet(vector<vector<double>> &local_particles)
 {
     double length = 0.15;         // length traveled through Mimosa magnet in m
@@ -942,6 +1055,13 @@ void simulator::MimosaMagnet(vector<vector<double>> &local_particles)
     }
 }
 
+// Calculate opening angle of electron+positron pair
+// Input:
+//          energy_particle_1       Energy of particle 1
+//          energy_particle_2       Energy of particle 2
+//          energy_photon           Energy of photon
+//          deflection_particle_1   Deflection of particle 1
+//          deflection_particle_2   Deflection of particle 2
 void simulator::BorsellinoOpeningAngle(double energy_particle_1, double energy_particle_2, double energy_photon, double &deflection_particle_1, double &deflection_particle_2)
 {
     double u1 = (double)rand() / RAND_MAX, u2 = (double)rand() / RAND_MAX;
@@ -952,17 +1072,31 @@ void simulator::BorsellinoOpeningAngle(double energy_particle_1, double energy_p
 }
 
 // Analytical solution to CDF(x) = random_number (see Flohr's thesis) integrated and solved 3rd order poly. equation (2.58)
+// Input:
+//      random_number   Uniformly distributed random number between 0 and 1
 void simulator::ElectronicEnergyDistribution(double &random_number)
 {
     random_number = 0.25 * (1.5874 * pow(sqrt(196.0 * random_number * random_number - 196.0 * random_number + 81.0) + 14 * random_number - 7.0, 1.0 / 3.0) - 5.03968 / pow(sqrt(196.0 * random_number * random_number - 196.0 * random_number + 81.0) + 14.0 * random_number - 7.0, 1.0 / 3.0) + 2.0);
 }
 
-double simulator::PhotonicEnergyDistribution(vec energy, double random_number, double beam_energy, double norm)
+// Calculate energy of photon emitted by charge traversing amorpohus material
+// Input:
+//      energy          Energy of photon
+//      random_number   Uniformly distributed random number between 0 and 1
+//      particle_energy Energy of particle
+//      norm            Normalization constant
+double simulator::PhotonicEnergyDistribution(vec energy, double random_number, double particle_energy, double norm)
 {
     double minimum_energy = 2.0 * 0.5109989461E-3; // 2 * electron mass GeV
-    return energy(0) > 0 ? abs((4.0 / 3.0 * log(energy(0) / minimum_energy) - 4.0 / 3.0 * (energy(0) - minimum_energy) / beam_energy + 1.0 / (2.0 * beam_energy * beam_energy) * (energy(0) * energy(0) - minimum_energy * minimum_energy)) - random_number * norm) : 1E+17;
+    return energy(0) > 0 ? abs((4.0 / 3.0 * log(energy(0) / minimum_energy) - 4.0 / 3.0 * (energy(0) - minimum_energy) / particle_energy + 1.0 / (2.0 * particle_energy * particle_energy) * (energy(0) * energy(0) - minimum_energy * minimum_energy)) - random_number * norm) : 1E+17;
 }
 
+// Binary search algorithm for list of integers
+// Input:
+//      numbers List of numbers to search
+//      low     lowest index in list to use
+//      high    highest index in list to use
+//      value   value in list to retrieve
 int simulator::BinarySearch(vector<int> numbers, int low, int high, int value)
 {
     if (high >= low)
@@ -981,6 +1115,12 @@ int simulator::BinarySearch(vector<int> numbers, int low, int high, int value)
     return -1; // returned only if "value" is not in "numbers"
 }
 
+// Binary search algorithm for list of doubles
+// Input:
+//      numbers List of numbers to search
+//      low     lowest index in list to use
+//      high    highest index in list to use
+//      value   value in list to retrieve
 int simulator::BinarySearch(vector<double> numbers, int low, int high, double value)
 {
     if (high >= low)
@@ -999,7 +1139,13 @@ int simulator::BinarySearch(vector<double> numbers, int low, int high, double va
     return -1; // returned only if "value" is not in "numbers"
 }
 
-// This function takes a test point (x_coordinate, y_coordinate) and checks if it is within an vertices-sided polygon defined by the vertices vertex_x_coordinate and vertex_y_coordinate. Function is a slightly modified version of the one posted on https://wrf.ecse.rpi.edu//Research/Short_Notes/pnpoly.html
+// Check if point lies within boundaries of a polygon
+// Input:
+//          vertices            : number of vertices
+//          vertex_x_coordinate : x coordinate of vertices
+//          vertex_y_coordinate : y coordinate of vertices
+//          x_coordinate        : x coordinate of point
+//          y_coordinate        : y coordinate of point
 int simulator::IsInsidePolygon(int vertices, vector<double> vertex_x_coordinate, vector<double> vertex_y_coordinate, double x_coordinate, double y_coordinate)
 {
     int i, j, c = 0;
@@ -1013,7 +1159,9 @@ int simulator::IsInsidePolygon(int vertices, vector<double> vertex_x_coordinate,
     return c;
 }
 
-// This function selects a member from a weighted ("weights") list and returns the indx
+// This function selects a member from a weighted ("weights") list and returns the index
+// Input:
+//      weights     Container with weights
 int simulator::SelectMember(vector<double> weights)
 {
     // Calculate cumulative sum of weights to represent the probability that a number will be picked
@@ -1044,6 +1192,11 @@ int simulator::SelectMember(vector<double> weights)
     return -1; // if this is returned, somehting has gone wrong
 }
 
+// Return vector of linearly spaced doubles
+// Input:
+//      min : minimum double in vector
+//      max : maximum double in vector
+//      N   : number of doubles in vector
 vector<double> simulator::Linspace(double min, double max, int N)
 {
     vector<double> range;
@@ -1057,6 +1210,12 @@ vector<double> simulator::Linspace(double min, double max, int N)
     return range;
 }
 
+// Do linear interpolation of list
+// Input:
+//      x_coordinates : x-coordinate of list to be interpolated
+//      y_coordinates : y-coordinate of list to be interpolated
+//      x_interpolated_coordinates : x coordinate of interpolated list
+//      y_interpolated_coordinates : y coordinate of interpolated list
 void simulator::LinearInterpolation(vector<double> x_coordinates, vector<double> y_coordinates, vector<double> x_interpolated_coordinates, vector<double> &y_interpolated_coordinates)
 {
     y_interpolated_coordinates.resize(x_interpolated_coordinates.size());
@@ -1070,9 +1229,13 @@ void simulator::LinearInterpolation(vector<double> x_coordinates, vector<double>
         {
             int guess = (high + low) / 2;
             if (x_interpolated_coordinates[j] > x_coordinates[guess])
+            {
                 low = guess;
+            }
             else
+            {
                 high = guess;
+            }
         }
         // Calculate slope and do interpolation
         double dydx = (y_coordinates[low + 1] - y_coordinates[low]) / (x_coordinates[low + 1] - x_coordinates[low]);
@@ -1080,25 +1243,37 @@ void simulator::LinearInterpolation(vector<double> x_coordinates, vector<double>
     }
 }
 
-// Reflect highest point against centroid
+// Reflect highest point against centroid of simplex
+// Input:
+//      highest Highest point in simplex
+//      centroid Centroid in simplex
 vec simulator::SimplexReflect(vec highest, vec centroid)
 {
     return 2.0 * centroid - highest;
 }
 
-// Reflect highest point against centroid, then double distance to centroid
+// Reflect highest point against centroid, then double distance to centroid of simplex
+// Input:
+//      highest Highest point in simplex
+//      centroid Centroid in simplex
 vec simulator::SimplexExpand(vec highest, vec centroid)
 {
     return 3.0 * centroid - 2.0 * highest;
 }
 
-// Highest point halves its distance from centroid
+// Highest point halves its distance from centroid of simplex
+// Input:
+//      highest Highest point in simplex
+//      centroid Centroid in simplex
 vec simulator::SimplexContract(vec highest, vec centroid)
 {
     return 0.5 * (centroid + highest);
 }
 
-// All points, except lowest, halves their distance to lowest point
+// All points, except lowest, halves their distance to lowest point of simplex
+// Input:
+//      simplex Simplex
+//      low_index Index of lowest point
 void simulator::SimplexReduce(vector<vec> &simplex, int low_index)
 {
     for (size_t i = 0; i < simplex.size(); i++)
@@ -1110,7 +1285,9 @@ void simulator::SimplexReduce(vector<vec> &simplex, int low_index)
     }
 }
 
-// Calculate size of the simplex-polygon
+// Calculate size of the simplex-polygon of simplex
+// Input:
+//      simplex Simplex
 double simulator::SimplexSize(vector<vec> simplex)
 {
     double current_size = norm(simplex[0] - simplex.back(), 2);
@@ -1126,6 +1303,12 @@ double simulator::SimplexSize(vector<vec> simplex)
 }
 
 // Update high_index, low_index and centroid.
+// Input:
+//      simplex     Simplex
+//      function    Function values
+//      centroid    centroid of simplex
+//      high_index  Index of simplex highest point
+//      low_index   Index of simplex lowest point
 void simulator::SimplexUpdate(vector<vec> simplex, vec function, vec &centroid, int &high_index, int &low_index)
 {
     high_index = 0;
@@ -1160,6 +1343,10 @@ void simulator::SimplexUpdate(vector<vec> simplex, vec function, vec &centroid, 
     }
 }
 
+// Save vector on disk
+// Input:
+//      name    Name of file, excluding path and extension
+//      data    Data to save
 void simulator::SaveVector(string name, vector<double> data)
 {
     string file_name = data_path_ + "/" + name + ".txt";
@@ -1170,6 +1357,10 @@ void simulator::SaveVector(string name, vector<double> data)
     }
 }
 
+// Save vector on disk
+// Input:
+//      name    Name of file, excluding path and extension
+//      data    Data to save
 void simulator::SaveVector(string name, vector<vector<double>> data)
 {
     string file_name = data_path_ + "/" + name + ".txt";
@@ -1184,6 +1375,10 @@ void simulator::SaveVector(string name, vector<vector<double>> data)
     }
 }
 
+// Save vector on disk
+// Input:
+//      name    Name of file, excluding path and extension
+//      data    Data to save
 void simulator::SaveVector(string name, vector<vector<vector<double>>> data)
 {
     string file_name = data_path_ + "/" + name + ".txt";

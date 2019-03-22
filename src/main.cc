@@ -1,13 +1,8 @@
-#include "./lib/analyser.h"
-#include "./lib/simulator.h"
-#include "./lib/auxillary_functions.h"
-#include "./lib/pre_processor.h"
-#include "./lib/run_simulation.h"
-#include "./lib/run_data_analysis.h"
+#include "main.h"
 
 int main(int argc, char const *argv[])
 {
-    // Check if user has provided the proper input
+    /* Check if user has provided the proper input */
     if (argc == 1)
     {
         cerr << "No input given main, remember to input config file\n";
@@ -23,11 +18,11 @@ int main(int argc, char const *argv[])
         cerr << "Only legal input for main is a config.txt file and run no.\nTerminating program\n";
         return 0;
     }
-    // Load configuration file and assign values to config struct
+    /* Load configuration file and assign values to config struct */
     string config_file = argv[1];
     PreProcessor *Initializer = new PreProcessor(config_file);
     const char *InputDataFile = "";
-    // Check that user has provided ROOT-file if Simulation flag is 0
+    /* Check that user has provided ROOT-file if Simulation flag is 0 */
     if (!Initializer->config_.Simulation)
     {
         if (argc < 3)
@@ -44,7 +39,7 @@ int main(int argc, char const *argv[])
         cout << "InputDataFile: " << argv[2] << "\n";
         InputDataFile = argv[2];
     }
-    // Processing
+    /* Processing */
     vector<vector<double>> energies;
     int number_of_events;
     if (Initializer->config_.Simulation)
@@ -59,7 +54,7 @@ int main(int argc, char const *argv[])
         energies = Analyser->GetEnergies();
         number_of_events = Analyser->GetEvents();
     }
-    // Post-processing
+    /* Post-processing */
     cout << "\nAnalysis finished, saving to file\n";
     PrintVector(Initializer->config_.OutputDataFilename, energies);
     PrintIntSum(Initializer->config_.OutputEventFilename, number_of_events);
